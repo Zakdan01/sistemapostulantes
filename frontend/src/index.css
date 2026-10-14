@@ -1,0 +1,165 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: 'Segoe UI', system-ui, Roboto, sans-serif;
+  --color-brand-500: #06b6d4;
+  --color-brand-600: #0891b2;
+  --color-brand-700: #0e7490;
+}
+
+body {
+  background: #f1f5f9;
+  color: #1e293b;
+  font-size: 17px;
+}
+
+.dark body {
+  background: #020617;
+  color: #e2e8f0;
+}
+
+input, select {
+  color-scheme: light;
+}
+.dark input, .dark select {
+  color-scheme: dark;
+}
+
+/* Superficies y componentes reutilizables (claro + oscuro) */
+.card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+}
+.dark .card {
+  background: #0f172a;
+  border-color: #1e293b;
+}
+.card-accent {
+  border-top: 4px solid #06b6d4;
+}
+.btn-primary {
+  background: #0e7490;
+  color: #fff;
+  font-weight: 600;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+}
+.btn-primary:hover {
+  background: #155e75;
+}
+.dark .btn-primary {
+  background: #0891b2;
+}
+.dark .btn-primary:hover {
+  background: #06b6d4;
+}
+.btn-secondary {
+  background: #e2e8f0;
+  border-radius: 0.75rem;
+}
+.btn-secondary:hover {
+  background: #cbd5e1;
+}
+.dark .btn-secondary {
+  background: #334155;
+  color: #f1f5f9;
+}
+.dark .btn-secondary:hover {
+  background: #475569;
+}
+.input {
+  border: 1px solid #cbd5e1;
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  background: #fff;
+}
+.dark .input {
+  border-color: #334155;
+  background: #1e293b;
+  color: #f1f5f9;
+}
+.input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #06b6d4;
+}
+.lab {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #334155;
+  margin-bottom: 0.25rem;
+}
+.dark .lab {
+  color: #e2e8f0;
+}
+.page-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+}
+@media (min-width: 768px) {
+  .page-title {
+    font-size: 1.875rem;
+  }
+}
+.section-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+.help {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+.dark .help {
+  color: #94a3b8;
+}
+.err-msg {
+  color: #dc2626;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.dark .err-msg {
+  color: #f87171;
+}
+.ok-msg {
+  color: #15803d;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.dark .ok-msg {
+  color: #4ade80;
+}
+.tbl-wrap {
+  overflow-x: auto;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+}
+.dark .tbl-wrap {
+  background: #0f172a;
+  border-color: #1e293b;
+}
+.tbl thead {
+  background: #155e75;
+  color: #fff;
+}
+.dark .tbl thead {
+  background: #083344;
+}
+.tbl tbody tr {
+  border-top: 1px solid #e2e8f0;
+}
+.dark .tbl tbody tr {
+  border-top-color: #1e293b;
+}
+.tbl tbody tr:hover {
+  background: #f8fafc;
+}
+.dark .tbl tbody tr:hover {
+  background: #1e293b;
+}

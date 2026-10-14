@@ -1,0 +1,4 @@
+Sí — hay cuentas genéricas de demo para los 3 roles (todas con contraseña Admin123!):
+Admin		admin@consultora.com
+Reclutador	reclutador1@consultora.com (y reclutador2@)	
+postulante	postulante01@test.com 
