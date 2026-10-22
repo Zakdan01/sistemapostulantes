@@ -1,4 +1,5 @@
 const { pool } = require('../config/db');
+const { NIVEL_ORDEN } = require('../domain/catalogos');
 
 async function catalogoId(conn, tabla, nombre) {
   if (!nombre) return null;
@@ -85,7 +86,7 @@ async function listar({ tecs, modo, anios_min, tipo_trabajo, nivel }) {
     joins.push(`JOIN (SELECT DISTINCT persona_id FROM experiencias_laborales x2 JOIN catalogo_tipo_trabajo c2 ON c2.id=x2.tipo_trabajo_id WHERE c2.nombre=$${params.length}) xt ON xt.persona_id=p.id`);
   }
   const q = `
-    SELECT p.id, p.nombres, p.apellidos, p.correo, p.telefono,
+    SELECT p.id, p.nombres, p.apellidos, p.correo, p.telefono, p.disponibilidad, p.actualizado_en,
       COALESCE(e.total_eventos,0) AS total_eventos,
       COALESCE(x.total_experiencias,0) AS total_experiencias,
       COALESCE(f.total_formaciones,0) AS total_formaciones,
@@ -114,7 +115,6 @@ async function listar({ tecs, modo, anios_min, tipo_trabajo, nivel }) {
     GROUP BY p.id, e.total_eventos, x.total_experiencias, x.actuales, f.total_formaciones, h.total_habilidades, h.anios_max, h.nivel_alto, h.nivel_max
   `;
   const { rows } = await pool.query(q, params);
-  const RANGO_NIVEL = { principiante: 1, basico: 2, intermedio: 3, avanzado: 4, experto: 5 };
   let out = rows.map((r) => ({
     ...r,
     anios_max: Number(r.anios_max || 0),
@@ -134,7 +134,7 @@ async function listar({ tecs, modo, anios_min, tipo_trabajo, nivel }) {
     if (modo === 'solo') out = out.filter((r) => r.coincidencias === tecs.length && r.total_habilidades === tecs.length);
   }
   if (anios_min !== undefined && anios_min !== null) out = out.filter((r) => r.anios_max >= anios_min);
-  if (nivel) out = out.filter((r) => r.nivel_max >= (RANGO_NIVEL[nivel] || 0));
+  if (nivel) out = out.filter((r) => r.nivel_max >= (NIVEL_ORDEN[nivel] || 0));
   return out;
 }
 
@@ -161,6 +161,19 @@ async function detalle(id) {
   return { ...p, habilidades: hab.rows, experiencias: exp.rows, formaciones: form.rows, eventos: ev.rows };
 }
 
+async function porUsuario(usuarioId) {
+  const { rows } = await pool.query('SELECT * FROM personas WHERE usuario_id=$1', [usuarioId]);
+  return rows[0] || null;
+}
+
+// Bitacora del padron (eventos_postulacion). Ya NO define disponibilidad ni enlistado:
+// solo deja constancia de que la persona toco su perfil o de que el staff la tomo.
+async function registrarEvento(conn, personaId, disponibilidad) {
+  await conn.query(
+    'INSERT INTO eventos_postulacion (persona_id, fecha, hora, disponibilidad) VALUES ($1, CURRENT_DATE, CURRENT_TIME, $2)',
+    [personaId, disponibilidad || null]);
+}
+
 async function conteoParaKpi(id) {
   const { rows } = await pool.query(`
     SELECT
@@ -171,17 +184,19 @@ async function conteoParaKpi(id) {
       COALESCE((SELECT MAX(anios_uso) FROM habilidades_postulante WHERE persona_id=$1),0) AS anios_max,
       COALESCE((SELECT COUNT(*) FROM habilidades_postulante hp JOIN catalogo_nivel_tecnologia nt ON nt.id=hp.nivel_id
         WHERE hp.persona_id=$1 AND nt.nombre IN ('intermedio','avanzado','experto')),0) AS nivel_alto,
-      COALESCE((SELECT COUNT(*) FROM experiencias_laborales WHERE persona_id=$1 AND es_actual=1),0) AS actuales
+      COALESCE((SELECT COUNT(*) FROM experiencias_laborales WHERE persona_id=$1 AND es_actual=1),0) AS actuales,
+      (SELECT actualizado_en FROM personas WHERE id=$1) AS actualizado_en
   `, [id]);
   const r = rows[0];
   return {
     total_eventos: Number(r.total_eventos), total_experiencias: Number(r.total_experiencias),
     total_formaciones: Number(r.total_formaciones), total_habilidades: Number(r.total_habilidades),
-    anios_max: Number(r.anios_max), nivel_alto: Number(r.nivel_alto), actuales: Number(r.actuales)
+    anios_max: Number(r.anios_max), nivel_alto: Number(r.nivel_alto), actuales: Number(r.actuales),
+    actualizado_en: r.actualizado_en
   };
 }
 
 module.exports = {
   reemplazarHabilidades, reemplazarExperiencias, reemplazarFormaciones,
-  listar, detalle, conteoParaKpi
+  listar, detalle, porUsuario, registrarEvento, conteoParaKpi
 };

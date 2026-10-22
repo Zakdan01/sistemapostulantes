@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const { HttpError } = require('./utils/errors');
 
 const app = express();
 app.use(cors());
@@ -11,14 +12,19 @@ app.get('/api/health', (req, res) => {
 
 app.use('/api', require('./routes/index'));
 
-// 404 JSON
-app.use((req, res) => res.status(404).json({ error: 'Ruta no encontrada' }));
+// 404 JSON (ruta desconocida)
+app.use((req, res, next) => next(new HttpError(404, 'Ruta no encontrada')));
 
-// Manejo central errores
-// eslint-disable-next-line no-unused-vars
-app.use((err, req, res, next) => {
-  const status = err.status || 500;
-  res.status(status).json({ error: err.message || 'Error interno' });
+// Manejo central de errores: todo error sale como { error }.
+// Los errores con status (HttpError) se muestran tal cual; los inesperados (500)
+// se registran en consola y NO filtran el detalle interno al cliente.
+app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
+  const status = Number(err && err.status) || 500;
+  if (status >= 500) {
+    console.error('[error]', err);
+    return res.status(status).json({ error: 'Error interno del servidor' });
+  }
+  return res.status(status).json({ error: err.message || 'Error' });
 });
 
 module.exports = app;

@@ -1,41 +1,42 @@
 const { pool } = require('../config/db');
+const { HttpError } = require('../utils/errors');
+const { CLAVES_CONFIG_KPI, PESOS_PERFIL } = require('../domain/catalogos');
 
-async function obtenerConfig() {
+// La configuracion del KPI se lee en CADA calculo (ranking, perfiles, resumenes).
+// Se cachea unos segundos y se invalida al guardar un cambio.
+const TTL_MS = 30 * 1000;
+let cache = { ts: 0, datos: null };
+
+function invalidarConfig() {
+  cache = { ts: 0, datos: null };
+}
+
+async function leer() {
   const { rows } = await pool.query('SELECT clave, valor FROM configuracion_kpi');
   const cfg = {};
   for (const r of rows) cfg[r.clave] = Number(r.valor);
   return cfg;
 }
 
+async function obtenerConfig() {
+  if (cache.datos && Date.now() - cache.ts < TTL_MS) return cache.datos;
+  const datos = await leer();
+  cache = { ts: Date.now(), datos };
+  return datos;
+}
+
 async function actualizarConfig(cambios) {
   const actual = await obtenerConfig();
-  const permitido = ['peso_experiencia', 'peso_formacion', 'peso_tecnologias', 'peso_nivel', 'peso_actualidad', 'umbral_alto', 'umbral_medio', 'anios_referencia',
-    'mult_obligatorio', 'mult_deseable', 'peso_exp_afin', 'tope_anios_req'];
   const merged = { ...actual };
   for (const [k, v] of Object.entries(cambios)) {
-    if (!permitido.includes(k)) {
-      const e = new Error(`clave desconocida: ${k}`);
-      e.status = 400;
-      throw e;
-    }
-    if (typeof v !== 'number' || v < 0) {
-      const e = new Error(`valor inválido para ${k}`);
-      e.status = 400;
-      throw e;
-    }
+    if (!CLAVES_CONFIG_KPI.includes(k)) throw HttpError.badRequest(`clave desconocida: ${k}`);
+    if (typeof v !== 'number' || v < 0) throw HttpError.badRequest(`valor inválido para ${k}`);
     merged[k] = v;
   }
-  const suma = ['peso_experiencia', 'peso_formacion', 'peso_tecnologias', 'peso_nivel', 'peso_actualidad']
-    .reduce((a, k) => a + Number(merged[k] || 0), 0);
-  if (suma !== 100) {
-    const e = new Error('Los cinco pesos deben sumar 100');
-    e.status = 400;
-    throw e;
-  }
+  const suma = PESOS_PERFIL.reduce((a, k) => a + Number(merged[k] || 0), 0);
+  if (suma !== 100) throw HttpError.badRequest('Los cinco pesos deben sumar 100');
   if (Number(merged.umbral_medio) > Number(merged.umbral_alto)) {
-    const e = new Error('umbral_medio debe ser <= umbral_alto');
-    e.status = 400;
-    throw e;
+    throw HttpError.badRequest('umbral_medio debe ser <= umbral_alto');
   }
   for (const [k, v] of Object.entries(cambios)) {
     await pool.query(
@@ -43,7 +44,8 @@ async function actualizarConfig(cambios) {
       [k, v]
     );
   }
+  invalidarConfig();
   return obtenerConfig();
 }
 
-module.exports = { obtenerConfig, actualizarConfig };
+module.exports = { obtenerConfig, actualizarConfig, invalidarConfig };

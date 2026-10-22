@@ -57,13 +57,23 @@ test('registro publico no puede crear reclutador (siempre postulante)', async ()
   await api(`/api/admin/usuarios/${me.id}/rechazar`, { method: 'PATCH', headers: { Authorization: `Bearer ${admin}` } });
 });
 
-test('pendiente entra pero no puede postular 403', async () => {
-  const convs = await api('/api/convocatorias', { headers: { Authorization: `Bearer ${admin}` } });
-  const abierta = convs.body.find((v) => v.estado === 'abierta');
-  const r = await api(`/api/convocatorias/${abierta.id}/postular`, {
-    method: 'POST', headers: { Authorization: `Bearer ${tokenPend}` }, body: JSON.stringify({})
+test('pendiente entra pero no puede editar su perfil 403', async () => {
+  const r = await api('/api/yo', {
+    method: 'PUT', headers: { Authorization: `Bearer ${tokenPend}` },
+    body: JSON.stringify({ telefono: '70000009' })
   });
   assert.equal(r.status, 403);
+});
+
+test('pendiente no entra al padron de candidatos', async () => {
+  // el postulante pendiente ve el tablero pero NO aparece en el padron de la convocatoria
+  const convs = await api('/api/convocatorias', { headers: { Authorization: `Bearer ${admin}` } });
+  const abierta = convs.body.find((v) => v.estado === 'abierta');
+  assert.ok(abierta);
+  const r = await api(`/api/convocatorias/${abierta.id}/ranking`, { headers: { Authorization: `Bearer ${admin}` } });
+  assert.equal(r.status, 200);
+  const correos = [...r.body.resultados, ...r.body.excluidos].map((p) => p.correo);
+  assert.ok(!correos.includes(CORREO), 'la cuenta pendiente no esta en el padron');
 });
 
 test('admin lista pendientes y aprueba', async () => {
@@ -75,6 +85,16 @@ test('admin lista pendientes y aprueba', async () => {
   const a = await api(`/api/admin/usuarios/${uid}/aprobar`, { method: 'PATCH', headers: { Authorization: `Bearer ${admin}` } });
   assert.equal(a.status, 200);
   assert.equal(a.body.estado_cuenta, 'activa');
+});
+
+test('tras aprobar, la cuenta entra al padron de candidatos', async () => {
+  const convs = await api('/api/convocatorias', { headers: { Authorization: `Bearer ${admin}` } });
+  const abierta = convs.body.find((v) => v.estado === 'abierta');
+  assert.ok(abierta);
+  const r = await api(`/api/convocatorias/${abierta.id}/ranking`, { headers: { Authorization: `Bearer ${admin}` } });
+  assert.equal(r.status, 200);
+  const correos = [...r.body.resultados, ...r.body.excluidos].map((p) => p.correo);
+  assert.ok(correos.includes(CORREO), 'la cuenta aprobada ya esta en el padron');
 });
 
 test('tras aprobar, login dice activa', async () => {

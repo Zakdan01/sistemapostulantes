@@ -43,7 +43,19 @@ test('reclutador ranking ajeno 403, propio 200', async () => {
   const propia = all.body.find((v) => v.creada_por_correo === 'reclutador1@consultora.com' && v.estado === 'abierta');
   const si = await api(`/api/convocatorias/${propia.id}/ranking`, { headers: { Authorization: `Bearer ${rec1}` } });
   assert.equal(si.status, 200);
-  assert.ok(typeof si.body.resultados[0].postulacion_id === 'number' || si.body.resultados[0].postulacion_id === null);
+  // la lista es VIVA: trae candidatos con su persona_id y el padron completo
+  assert.ok(si.body.total > 0, 'la lista viva tiene candidatos');
+  assert.ok(si.body.total_patron > 0);
+  assert.ok(si.body.resultados[0].persona_id > 0);
+});
+
+test('reclutador no puede cambiar el umbral de otra convocatoria 403', async () => {
+  const all = await api('/api/convocatorias', { headers: { Authorization: `Bearer ${admin}` } });
+  const ajena = all.body.find((v) => v.creada_por_correo === 'admin@consultora.com' && v.estado === 'abierta');
+  const no = await api(`/api/convocatorias/${ajena.id}/umbral`, {
+    method: 'PATCH', headers: { Authorization: `Bearer ${rec1}` }, body: JSON.stringify({ kpi_minimo: 10 })
+  });
+  assert.equal(no.status, 403);
 });
 
 test('reclutador detalle: propio 200, ajeno 403', async () => {
@@ -52,8 +64,8 @@ test('reclutador detalle: propio 200, ajeno 403', async () => {
   const p13 = per.body.resultados.find((p) => p.correo === 'postulante13@test.com');
   const no = await api(`/api/personas/${p13.id}`, { headers: { Authorization: `Bearer ${rec1}` } });
   assert.equal(no.status, 403);
-  // alguien postulado a QA Manual (rec1) si la ve
-  const cola = await api('/api/postulaciones?estado=contratado', { headers: { Authorization: `Bearer ${rec1}` } });
+  // alguien tomado en el pipeline de QA Manual (rec1) si la ve
+  const cola = await api('/api/candidatos?estado=contratado', { headers: { Authorization: `Bearer ${rec1}` } });
   const pid = cola.body[0].persona_id;
   const si = await api(`/api/personas/${pid}`, { headers: { Authorization: `Bearer ${rec1}` } });
   assert.equal(si.status, 200);
@@ -63,8 +75,9 @@ test('reclutador resumen y cola solo lo suyo', async () => {
   const r = await api('/api/admin/resumen', { headers: { Authorization: `Bearer ${rec1}` } });
   assert.equal(r.status, 200);
   assert.ok(r.body.postulantes <= 13);
-  const c = await api('/api/postulaciones', { headers: { Authorization: `Bearer ${rec1}` } });
+  const c = await api('/api/candidatos', { headers: { Authorization: `Bearer ${rec1}` } });
   assert.ok(c.body.length >= 1);
+  assert.ok(c.body.every((x) => typeof x.convocatoria_id === 'number' && typeof x.persona_id === 'number'));
 });
 
 test('reclutador no aprueba convocatorias 403', async () => {

@@ -141,6 +141,8 @@ test('GET /yo devuelve el perfil propio del postulante', async () => {
   assert.equal(r.body.correo, 'postulante01@test.com');
   assert.ok(Array.isArray(r.body.habilidades));
   assert.ok(typeof r.body.kpi === 'number');
+  assert.ok(r.body.disponibilidad, 'la disponibilidad vive en personas');
+  assert.ok(r.body.actualizado_en, 'actualizado_en permite medir la actualidad del perfil');
 });
 
 test('GET /yo como admin 403', async () => {

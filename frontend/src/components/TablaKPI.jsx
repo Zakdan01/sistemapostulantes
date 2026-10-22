@@ -1,47 +1,77 @@
-const NIVEL_NOMBRE = { 1: 'principiante', 2: 'basico', 3: 'intermedio', 4: 'avanzado', 5: 'experto' };
+import { useCatalogos } from '../lib/catalogos';
+import { Avatar, EmptyState, Pill } from './ui';
+import { IconoUsuarios } from './Iconos';
 
 export function Badge({ valor }) {
-  const color = valor === 'Alto'
-    ? 'bg-green-100 dark:bg-green-900 dark:bg-green-900 dark:text-green-100 text-green-800'
-    : valor === 'Medio'
-      ? 'bg-yellow-100 dark:bg-yellow-900 dark:text-yellow-100 text-yellow-800'
-      : 'bg-red-100 dark:bg-red-900 dark:text-red-100 text-red-800';
-  return <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${color}`}>{valor}</span>;
+  const tono = valor === 'Alto' ? 'green' : valor === 'Medio' ? 'amber' : 'red';
+  return <Pill tono={tono}>{valor}</Pill>;
 }
 
 export function TablaKPI({ filas, onVer }) {
-  if (!filas.length) return <p className="text-slate-500 dark:text-slate-400">Sin resultados.</p>;
+  const catalogos = useCatalogos();
+  const niveles = (catalogos && catalogos.niveles_tecnologia) || [];
+  const nombreNivel = (orden) => {
+    const n = niveles.find((x) => x.orden === orden);
+    return n ? n.nombre : '—';
+  };
+
+  if (!filas.length) {
+    return (
+      <EmptyState
+        icono={IconoUsuarios}
+        titulo="Sin resultados"
+        texto="Probá ajustar los filtros o la búsqueda para ver más personas."
+      />
+    );
+  }
+
   return (
     <div className="tbl-wrap">
       <table className="min-w-full tbl">
         <thead>
           <tr>
-            <th className="p-2 text-left">ID</th>
-            <th className="p-2 text-left">Nombres</th>
-            <th className="p-2 text-right" title="Calidad general del perfil">Perfil %</th>
-            <th className="p-2 text-left">Clasif.</th>
-            <th className="p-2 text-left">Lenguajes</th>
-            <th className="p-2 text-right" title="Cantidad de experiencias laborales registradas">N.º exps.</th>
-            <th className="p-2 text-right" title="Máximos años de uso en una tecnología">Años</th>
-            <th className="p-2 text-right" title="Cantidad de tecnologías que domina">Habs</th>
-            <th className="p-2 text-left" title="Nivel máximo alcanzado en alguna tecnología">Nivel máx</th>
-            <th className="p-2"></th>
+            <th className="text-left">ID</th>
+            <th className="text-left">Nombres</th>
+            <th className="text-right" title="Calidad general del perfil">Perfil %</th>
+            <th className="text-left">Clasif.</th>
+            <th className="text-left">Lenguajes</th>
+            <th className="text-right" title="Cantidad de experiencias laborales registradas">N.º exps.</th>
+            <th className="text-right" title="Máximos años de uso en una tecnología">Años</th>
+            <th className="text-right" title="Cantidad de tecnologías que domina">Habs</th>
+            <th className="text-left" title="Nivel máximo alcanzado en alguna tecnología">Nivel máx</th>
+            <th className="text-right"><span className="sr-only">Acciones</span></th>
           </tr>
         </thead>
         <tbody>
           {filas.map((f) => (
-            <tr key={f.id} className="border-t hover:bg-slate-50 dark:hover:bg-slate-800">
-              <td className="p-2">{f.id}</td>
-              <td className="p-2">{f.nombres} {f.apellidos}</td>
-              <td className="p-2 text-right font-bold">{f.kpi ?? f.score}</td>
-              <td className="p-2">{f.clasificacion ? <Badge valor={f.clasificacion} /> : '—'}</td>
-              <td className="p-2">{(f.lenguajes || []).join(', ')}</td>
-              <td className="p-2 text-right">{f.total_experiencias ?? ''}</td>
-              <td className="p-2 text-right">{f.anios_max ?? ''}</td>
-              <td className="p-2 text-right">{f.total_habilidades ?? ''}</td>
-              <td className="p-2">{NIVEL_NOMBRE[f.nivel_max] || '—'}</td>
-              <td className="p-2 text-right">
-                {onVer && <button className="text-cyan-700 dark:text-cyan-400 underline" onClick={() => onVer(f)}>Ver</button>}
+            <tr key={f.id}>
+              <td className="text-xs tabular-nums text-slate-400 dark:text-slate-500">#{f.id}</td>
+              <td>
+                <div className="flex min-w-0 items-center gap-2.5">
+                  <Avatar nombre={`${f.nombres} ${f.apellidos}`} tamano="sm" />
+                  <span className="truncate font-semibold">{f.nombres} {f.apellidos}</span>
+                </div>
+              </td>
+              <td className="text-right font-bold tabular-nums">{f.kpi ?? f.score}</td>
+              <td>{f.clasificacion ? <Badge valor={f.clasificacion} /> : '—'}</td>
+              <td className="max-w-[15rem] truncate" title={(f.lenguajes || []).join(', ')}>
+                {(f.lenguajes || []).join(', ') || '—'}
+              </td>
+              <td className="text-right tabular-nums">{f.total_experiencias ?? ''}</td>
+              <td className="text-right tabular-nums">{f.anios_max ?? ''}</td>
+              <td className="text-right tabular-nums">{f.total_habilidades ?? ''}</td>
+              <td>{nombreNivel(f.nivel_max)}</td>
+              <td className="text-right">
+                {onVer ? (
+                  <button
+                    type="button"
+                    className="link text-xs"
+                    onClick={() => onVer(f)}
+                    aria-label={`Ver el perfil de ${f.nombres} ${f.apellidos}`}
+                  >
+                    Ver
+                  </button>
+                ) : null}
               </td>
             </tr>
           ))}

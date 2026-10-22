@@ -1,20 +1,33 @@
 const bcrypt = require('bcryptjs');
-const { pool, conTransaccion } = require('../config/db');
+const { conTransaccion } = require('../config/db');
 const Usuario = require('../models/usuario.model');
 const Persona = require('../models/persona.model');
 const { firmar } = require('../middlewares/auth');
 const { HttpError } = require('../utils/errors');
-const { exigirCorreo, datosPersona, listaHabilidades, listaExperiencias, listaFormaciones } = require('../utils/validar');
+const Candidatos = require('../services/candidatos');
+const {
+  exigirCorreo, datosPersona, listaHabilidades, listaExperiencias, listaFormaciones, DISPONIBILIDADES
+} = require('../utils/validar');
+
+// La disponibilidad vive en personas (columna personas.disponibilidad): es lo que usa
+// el KPI de convocatoria (+10 si coincide con la de la convocatoria).
+function disponibilidadDe(body) {
+  const d = body.disponibilidad === undefined || body.disponibilidad === null
+    ? DISPONIBILIDADES[0]
+    : String(body.disponibilidad).trim();
+  if (!DISPONIBILIDADES.includes(d)) throw HttpError.badRequest('disponibilidad inválida');
+  return d;
+}
 
 async function registro(req, res) {
   // Registro público SOLO postulante, 6 campos. Nace pendiente (entra limitado).
-  const { correo, password } = req.body;
-  const c = exigirCorreo(correo);
-  if (!password || String(password).length < 8) throw new HttpError(400, 'password mínimo 8 caracteres');
-  const existe = await Usuario.buscarPorCorreo(c);
-  if (existe) throw new HttpError(409, 'El correo ya está registrado');
+  const c = exigirCorreo(req.body.correo);
+  const password = String(req.body.password || '');
+  if (password.length < 8) throw HttpError.badRequest('password mínimo 8 caracteres');
+  if (await Usuario.buscarPorCorreo(c)) throw HttpError.conflict('El correo ya está registrado');
   const nombres = String(req.body.nombres || '').trim();
-  if (!nombres) throw new HttpError(400, 'nombres es requerido');
+  if (!nombres) throw HttpError.badRequest('nombres es requerido');
+
   const datos = {
     nombres,
     apellidos: String(req.body.apellidos || '').trim(),
@@ -25,38 +38,44 @@ async function registro(req, res) {
   const habilidades = listaHabilidades(req.body);
   const experiencias = listaExperiencias(req.body);
   const formaciones = listaFormaciones(req.body);
+  const disponibilidad = disponibilidadDe(req.body);
 
   const out = await conTransaccion(async (conn) => {
-    const hash = await bcrypt.hash(String(password), 10);
-    const u = await Usuario.crear(conn, { correo: c, password_hash: hash, rol: 'postulante', estado_cuenta: 'pendiente' });
+    const hash = await bcrypt.hash(password, 10);
+    const u = await Usuario.crear(conn, {
+      correo: c, password_hash: hash, rol: 'postulante', estado_cuenta: 'pendiente'
+    });
     const rp = await conn.query(
-      `INSERT INTO personas (usuario_id, nombres, apellidos, correo, telefono, direccion, linkedin, github, portafolio_url)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,
-      [u.id, datos.nombres, datos.apellidos || '', c, datos.telefono, datos.direccion, datos.linkedin, datos.github, datos.portafolio_url]
+      `INSERT INTO personas (usuario_id, nombres, apellidos, correo, telefono, direccion, linkedin, github, portafolio_url, disponibilidad, actualizado_en)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10, now()) RETURNING id`,
+      [u.id, datos.nombres, datos.apellidos, c, datos.telefono, datos.direccion,
+        datos.linkedin, datos.github, datos.portafolio_url, disponibilidad]
     );
     const personaId = rp.rows[0].id;
     await Persona.reemplazarHabilidades(conn, personaId, habilidades);
     await Persona.reemplazarExperiencias(conn, personaId, experiencias);
     await Persona.reemplazarFormaciones(conn, personaId, formaciones);
-    await conn.query(
-      'INSERT INTO eventos_postulacion (persona_id, fecha, hora, disponibilidad) VALUES ($1, CURRENT_DATE, CURRENT_TIME, $2)',
-      [personaId, req.body.disponibilidad || 'Inmediata']
-    );
+    await Persona.registrarEvento(conn, personaId, disponibilidad);
     return { personaId, usuario: u };
   });
-  const token = firmar(out.usuario);
-  res.status(201).json({ mensaje: 'Registro exitoso. Tu cuenta está pendiente de aprobación.', postulante_id: out.personaId, persona_id: out.personaId, token, estado_cuenta: 'pendiente' });
+  Candidatos.invalidarPadron();
+  res.status(201).json({
+    mensaje: 'Registro exitoso. Tu cuenta está pendiente de aprobación.',
+    postulante_id: out.personaId,
+    persona_id: out.personaId,
+    token: firmar(out.usuario),
+    estado_cuenta: 'pendiente'
+  });
 }
 
 async function login(req, res) {
   const c = exigirCorreo(req.body.correo);
   const u = await Usuario.buscarPorCorreo(c);
-  if (!u) throw new HttpError(401, 'Credenciales inválidas');
-  if (u.estado_cuenta === 'rechazada') throw new HttpError(401, 'Cuenta rechazada por el admin');
+  if (!u) throw HttpError.unauthorized('Credenciales inválidas');
+  if (u.estado_cuenta === 'rechazada') throw HttpError.unauthorized('Cuenta rechazada por el admin');
   const ok = await bcrypt.compare(String(req.body.password || ''), u.password_hash);
-  if (!ok) throw new HttpError(401, 'Credenciales inválidas');
-  const token = firmar(u);
-  res.json({ token, rol: u.rol, estado_cuenta: u.estado_cuenta || 'activa' });
+  if (!ok) throw HttpError.unauthorized('Credenciales inválidas');
+  res.json({ token: firmar(u), rol: u.rol, estado_cuenta: u.estado_cuenta || 'activa' });
 }
 
 async function upsert(req, res) {
@@ -66,34 +85,36 @@ async function upsert(req, res) {
   const habilidades = listaHabilidades(req.body);
   const experiencias = listaExperiencias(req.body);
   const formaciones = listaFormaciones(req.body);
+  const disponibilidad = disponibilidadDe(req.body);
+
   const out = await conTransaccion(async (conn) => {
-    let r = await conn.query('SELECT id FROM personas WHERE correo=$1', [c]);
+    const existe = await conn.query('SELECT id FROM personas WHERE correo=$1', [c]);
     let personaId;
-    if (r.rows[0]) {
-      personaId = r.rows[0].id;
+    if (existe.rows[0]) {
+      personaId = existe.rows[0].id;
       await conn.query(
-        'UPDATE personas SET nombres=$2, apellidos=$3, telefono=$4, direccion=$5, linkedin=$6, github=$7, portafolio_url=$8 WHERE id=$1',
-        [personaId, datos.nombres, datos.apellidos || '', datos.telefono, datos.direccion, datos.linkedin, datos.github, datos.portafolio_url]
+        `UPDATE personas SET nombres=$2, apellidos=$3, telefono=$4, direccion=$5, linkedin=$6,
+           github=$7, portafolio_url=$8, disponibilidad=$9, actualizado_en=now() WHERE id=$1`,
+        [personaId, datos.nombres, datos.apellidos, datos.telefono, datos.direccion,
+          datos.linkedin, datos.github, datos.portafolio_url, disponibilidad]
       );
     } else {
-      r = await conn.query(
-        `INSERT INTO personas (nombres, apellidos, correo, telefono, direccion, linkedin, github, portafolio_url)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`,
-        [datos.nombres, datos.apellidos || '', c, datos.telefono, datos.direccion, datos.linkedin, datos.github, datos.portafolio_url]
+      const r = await conn.query(
+        `INSERT INTO personas (nombres, apellidos, correo, telefono, direccion, linkedin, github, portafolio_url, disponibilidad, actualizado_en)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9, now()) RETURNING id`,
+        [datos.nombres, datos.apellidos, c, datos.telefono, datos.direccion,
+          datos.linkedin, datos.github, datos.portafolio_url, disponibilidad]
       );
       personaId = r.rows[0].id;
     }
     await Persona.reemplazarHabilidades(conn, personaId, habilidades);
     await Persona.reemplazarExperiencias(conn, personaId, experiencias);
     await Persona.reemplazarFormaciones(conn, personaId, formaciones);
-    await conn.query(
-      'INSERT INTO eventos_postulacion (persona_id, fecha, hora, disponibilidad) VALUES ($1, CURRENT_DATE, CURRENT_TIME, $2)',
-      [personaId, req.body.disponibilidad || 'Inmediata']
-    );
+    await Persona.registrarEvento(conn, personaId, disponibilidad);
     return { personaId };
   });
-  const det = await Persona.detalle(out.personaId);
-  res.status(201).json(det);
+  Candidatos.invalidarPadron();
+  res.status(201).json(await Persona.detalle(out.personaId));
 }
 
 module.exports = { registro, login, upsert };

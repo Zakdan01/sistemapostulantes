@@ -10,50 +10,67 @@ const Usuarios = require('../controllers/usuarios.controller');
 
 const r = Router();
 
+// Los permisos por ROL viven SOLO aca. El scoping por fila (reclutador = solo lo suyo)
+// lo hacen los controllers (exigirDueno) y los modelos.
+const staff = soloRol('admin', 'reclutador');
+const admin = soloRol('admin');
+
+// ---- Publico ----------------------------------------------------------------
 r.post('/auth/registro', asyncHandler(Auth.registro));
 r.post('/auth/login', asyncHandler(Auth.login));
-
 r.get('/tecnologias', asyncHandler(Tec.listar));
+
+// ---- Catalogos (el frontend NO hardcodea estados ni factores) ---------------
 r.get('/catalogos', autenticar, asyncHandler(Tec.catalogos));
 
-r.post('/personas/upsert', autenticar, soloRol('admin', 'reclutador'), asyncHandler(Auth.upsert));
-r.get('/personas', autenticar, soloRol('admin', 'reclutador'), asyncHandler(Personas.listar));
+// ---- Personas / perfil ------------------------------------------------------
+r.post('/personas/upsert', autenticar, staff, asyncHandler(Auth.upsert));
+r.get('/personas', autenticar, staff, asyncHandler(Personas.listar));
+r.get('/personas/:id', autenticar, staff, asyncHandler(Personas.detalle));
+r.get('/eventos', autenticar, staff, asyncHandler(Personas.eventos));
 r.get('/yo', autenticar, asyncHandler(Personas.yo));
+// Solo un postulante ACTIVO puede editar su CV (un pendiente recibe 403 de soloActiva).
 r.put('/yo', autenticar, soloRol('postulante'), soloActiva, asyncHandler(Personas.actualizarYo));
-r.get('/personas/:id', autenticar, soloRol('admin', 'reclutador'), asyncHandler(Personas.detalle));
-r.get('/eventos', autenticar, soloRol('admin', 'reclutador'), asyncHandler(Personas.eventos));
 
-r.get('/configuracion', autenticar, soloRol('admin'), asyncHandler(Cfg.ver));
-r.put('/configuracion', autenticar, soloRol('admin'), asyncHandler(Cfg.actualizar));
+// ---- Configuracion del KPI de perfil ---------------------------------------
+r.get('/configuracion', autenticar, admin, asyncHandler(Cfg.ver));
+r.put('/configuracion', autenticar, admin, asyncHandler(Cfg.actualizar));
 
-// Convocatorias (alias /vacantes* temporal para compatibilidad)
-r.post('/convocatorias', autenticar, soloRol('admin', 'reclutador'), asyncHandler(Conv.crear));
-r.get('/convocatorias', autenticar, asyncHandler(Conv.listar));
-r.get('/convocatorias/:id', autenticar, asyncHandler(Conv.detalle));
-r.patch('/convocatorias/:id/cerrar', autenticar, soloRol('admin', 'reclutador'), asyncHandler(Conv.cerrar));
-r.patch('/convocatorias/:id/aprobar', autenticar, soloRol('admin'), asyncHandler(Conv.aprobar));
-r.patch('/convocatorias/:id/rechazar', autenticar, soloRol('admin'), asyncHandler(Conv.rechazar));
-r.delete('/convocatorias/:id', autenticar, soloRol('admin'), asyncHandler(Conv.eliminar));
-r.get('/convocatorias/:id/ranking', autenticar, soloRol('admin', 'reclutador'), asyncHandler(Conv.ranking));
-r.post('/convocatorias/:id/postular', autenticar, soloActiva, asyncHandler(Conv.postular));
-r.post('/vacantes', autenticar, soloRol('admin', 'reclutador'), asyncHandler(Conv.crear));
-r.get('/vacantes', autenticar, asyncHandler(Conv.listar));
-r.get('/vacantes/:id', autenticar, asyncHandler(Conv.detalle));
-r.patch('/vacantes/:id/cerrar', autenticar, soloRol('admin', 'reclutador'), asyncHandler(Conv.cerrar));
-r.delete('/vacantes/:id', autenticar, soloRol('admin'), asyncHandler(Conv.eliminar));
-r.get('/vacantes/:id/ranking', autenticar, soloRol('admin', 'reclutador'), asyncHandler(Conv.ranking));
-r.post('/vacantes/:id/postular', autenticar, soloActiva, asyncHandler(Conv.postular));
-r.get('/mis-postulaciones', autenticar, asyncHandler(Conv.misPostulaciones));
-r.patch('/postulaciones/:id/estado', autenticar, soloRol('admin', 'reclutador'), asyncHandler(Conv.cambiarEstado));
+// ---- Convocatorias ----------------------------------------------------------
+// Ya no existe la postulacion: el postulante actualiza su perfil y el sistema lo
+// enlista solo (lista viva, ordenada por kpi_conv) segun el umbral de la convocatoria.
+function montarConvocatorias(prefijo) {
+  const p = `/${prefijo}`;
+  r.post(p, autenticar, staff, asyncHandler(Conv.crear));
+  r.get(p, autenticar, asyncHandler(Conv.listar));
+  r.get(`${p}/:id`, autenticar, asyncHandler(Conv.detalle));
+  r.patch(`${p}/:id/cerrar`, autenticar, staff, asyncHandler(Conv.cerrar));
+  r.patch(`${p}/:id/aprobar`, autenticar, admin, asyncHandler(Conv.aprobar));
+  r.patch(`${p}/:id/rechazar`, autenticar, admin, asyncHandler(Conv.rechazar));
+  r.delete(`${p}/:id`, autenticar, admin, asyncHandler(Conv.eliminar));
+  r.get(`${p}/:id/ranking`, autenticar, staff, asyncHandler(Conv.ranking));
+  // Umbral de enlistado (kpi_minimo): define a quien aparece en la lista de candidatos.
+  r.patch(`${p}/:id/umbral`, autenticar, staff, asyncHandler(Conv.umbral));
+  // Cupos (vacantes): al llenarse la convocatoria se cierra sola.
+  r.patch(`${p}/:id/cupos`, autenticar, staff, asyncHandler(Conv.cupos));
+  // El staff toma a un candidato de la lista y lo mueve por el pipeline.
+  r.patch(`${p}/:id/candidatos/:persona_id/estado`, autenticar, staff, asyncHandler(Conv.estadoCandidato));
+}
+montarConvocatorias('convocatorias');
+montarConvocatorias('vacantes'); // alias legacy (la UI vieja apuntaba a /vacantes)
 
-// Admin de cuentas: crear staff + aprobar/rechazar registros
-r.post('/admin/usuarios', autenticar, soloRol('admin'), asyncHandler(Usuarios.crear));
-r.get('/admin/usuarios', autenticar, soloRol('admin'), asyncHandler(Usuarios.listar));
-r.patch('/admin/usuarios/:id/aprobar', autenticar, soloRol('admin'), asyncHandler(Usuarios.aprobar));
-r.patch('/admin/usuarios/:id/rechazar', autenticar, soloRol('admin'), asyncHandler(Usuarios.rechazar));
+// Postulante: convocatorias abiertas donde califica (y donde no, con el motivo).
+r.get('/mis-convocatorias', autenticar, asyncHandler(Conv.misConvocatorias));
 
-// Gestor: resumen + colas (postulante ve el tablero general en su Gestor)
-r.get('/admin/resumen', autenticar, soloRol('admin', 'reclutador'), asyncHandler(Conv.resumen));
+// ---- Admin de cuentas -------------------------------------------------------
+r.post('/admin/usuarios', autenticar, admin, asyncHandler(Usuarios.crear));
+r.get('/admin/usuarios', autenticar, admin, asyncHandler(Usuarios.listar));
+r.patch('/admin/usuarios/:id/aprobar', autenticar, admin, asyncHandler(Usuarios.aprobar));
+r.patch('/admin/usuarios/:id/rechazar', autenticar, admin, asyncHandler(Usuarios.rechazar));
+r.get('/admin/resumen', autenticar, staff, asyncHandler(Conv.resumen));
+
+// ---- Cola del pipeline (dos nombres para el mismo recurso) ------------------
 r.get('/postulaciones', autenticar, asyncHandler(Conv.cola));
+r.get('/candidatos', autenticar, asyncHandler(Conv.cola));
 
 module.exports = r;

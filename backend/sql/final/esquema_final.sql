@@ -1,12 +1,14 @@
 -- esquema_final.sql � Sistema Postulantes v2 (ESQUEMA FINAL, creacion de cero)
 -- Base: sistemapostulantes. 16 tablas + vista. Incluye: nombres finales (convocatorias), 4 estados + default pendiente, jornada de 2 valores.
 -- Orden: DROP limpio -> catalogos -> usuarios/personas -> dependientes -> convocatorias -> vista.
--- Roles: admin todo; reclutador ve todo + crea/cierra/mueve pipeline (no borra ni toca config) + aprueba NO; postulante solo ve abiertas y se postula.
+-- Roles: admin todo; reclutador ve todo + crea/cierra/mueve pipeline (no borra ni toca config) + aprueba NO; postulante ve abiertas y su perfil.
+-- El postulante NO se postula: el sistema arma la lista de candidatos sola (kpi_minimo por convocatoria).
 -- Dueno de convocatoria = convocatorias.creada_por (sin tabla empresas). Se ejecuta UNA vez en base nueva, luego datos_final.sql.
 
 -- ===== LIMPIEZA (la base se recrea de cero) =====
 DROP VIEW IF EXISTS v_perfil_completo;
-DROP TABLE IF EXISTS postulaciones_convocatoria, convocatorias_requisitos, convocatorias CASCADE;
+DROP TABLE IF EXISTS postulaciones_convocatoria CASCADE; -- nombre legacy: ahora es candidatos_convocatoria
+DROP TABLE IF EXISTS candidatos_convocatoria, convocatorias_requisitos, convocatorias CASCADE;
 DROP TABLE IF EXISTS habilidades_postulante, tecnologias, formaciones_academicas, experiencias_laborales CASCADE;
 DROP TABLE IF EXISTS eventos_postulacion, personas, usuarios CASCADE;
 DROP TABLE IF EXISTS configuracion_kpi CASCADE;
@@ -69,10 +71,15 @@ CREATE TABLE personas (
   linkedin VARCHAR(200),
   github VARCHAR(200),
   portafolio_url VARCHAR(200),
-  creado_en TIMESTAMP DEFAULT now()
+  disponibilidad VARCHAR(30) NOT NULL DEFAULT 'Inmediata'
+    CHECK (disponibilidad IN ('Inmediata','En 15 días','En 1 mes','Medio tiempo','No disponible')),
+  creado_en TIMESTAMP DEFAULT now(),
+  actualizado_en TIMESTAMP NOT NULL DEFAULT now()
 );
 COMMENT ON TABLE personas IS 'Persona/postulante: una fila por correo unico. Su CV cuelga de aqui.';
 COMMENT ON COLUMN personas.correo IS 'Unico, lower/trim. Upsert por este campo.';
+COMMENT ON COLUMN personas.disponibilidad IS 'Cuando puede empezar a trabajar. Es la fuente de verdad del KPI de convocatoria (+10 si coincide con la convocatoria).';
+COMMENT ON COLUMN personas.actualizado_en IS 'Ultima vez que se toco el perfil. Alimenta el criterio "actualidad" del KPI de perfil.';
 CREATE INDEX idx_personas_correo ON personas (correo);
 CREATE INDEX idx_usuarios_estado ON usuarios (estado_cuenta);
 
@@ -86,7 +93,7 @@ CREATE TABLE eventos_postulacion (
     CHECK (disponibilidad IN ('Inmediata','En 15 días','En 1 mes','Medio tiempo','No disponible')),
   creado_en TIMESTAMP DEFAULT now()
 );
-COMMENT ON TABLE eventos_postulacion IS 'Cada vez que una persona se postula: fecha/hora/disponibilidad. No copia el CV.';
+COMMENT ON TABLE eventos_postulacion IS 'Bitacora de actividad: cada actualizacion de perfil o toma de candidato. No copia el CV. La disponibilidad vive en personas.';
 CREATE INDEX idx_eventos_persona ON eventos_postulacion (persona_id);
 
 -- ===== EXPERIENCIAS LABORALES (cuelgan de la persona) =====
@@ -156,10 +163,15 @@ CREATE TABLE convocatorias (
   disponibilidad VARCHAR(30) NULL
     CHECK (disponibilidad IS NULL OR disponibilidad IN ('Inmediata','En 15 días','En 1 mes','Medio tiempo','No disponible')),
   estado VARCHAR(20) DEFAULT 'pendiente' CHECK (estado IN ('pendiente','abierta','cerrada','rechazada')),
+  kpi_minimo SMALLINT NOT NULL DEFAULT 25 CHECK (kpi_minimo BETWEEN 0 AND 100),
+  cupos SMALLINT NOT NULL DEFAULT 1 CHECK (cupos > 0),
   creada_por INT REFERENCES usuarios(id) ON DELETE SET NULL,
-  creada_en TIMESTAMP DEFAULT now()
+  creada_en TIMESTAMP DEFAULT now(),
+  actualizado_en TIMESTAMP NOT NULL DEFAULT now()
 );
 COMMENT ON TABLE convocatorias IS 'Convocatorias: titulo + requisitos + estado. creada_por indica el dueno (admin o reclutador).';
+COMMENT ON COLUMN convocatorias.kpi_minimo IS 'KPI de convocatoria minimo para entrar a la lista de candidatos. La lista se calcula en vivo en cada consulta.';
+COMMENT ON COLUMN convocatorias.cupos IS 'Vacantes de la convocatoria: al llegar a esa cantidad de contratados se cierra sola y el pipeline queda en solo lectura.';
 CREATE INDEX idx_convocatorias_estado ON convocatorias (estado);
 
 CREATE TABLE convocatorias_requisitos (
@@ -172,27 +184,29 @@ CREATE TABLE convocatorias_requisitos (
 COMMENT ON TABLE convocatorias_requisitos IS 'Que tecnologias pide cada convocatoria, si son obligatorias y con qué nivel mínimo (NULL = sin mínimo).';
 CREATE INDEX idx_requisitos_tecnologia ON convocatorias_requisitos (tecnologia_id);
 
-CREATE TABLE postulaciones_convocatoria (
+CREATE TABLE candidatos_convocatoria (
   id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   convocatoria_id INT NOT NULL REFERENCES convocatorias(id) ON DELETE CASCADE,
   persona_id INT NOT NULL REFERENCES personas(id) ON DELETE CASCADE,
   evento_id INT NULL REFERENCES eventos_postulacion(id) ON DELETE SET NULL,
   estado VARCHAR(20) DEFAULT 'postulado'
-    CHECK (estado IN ('postulado','preseleccionado','descartado','contratado')),
-  kpi_al_postular INT NULL,
+    CHECK (estado IN ('postulado','consulta','preseleccionado','descartado','contratado')),
+  kpi_al_tomar INT NULL,
   match_pct DECIMAL(5,2) NULL,
   kpi_perfil INT NULL,
   creada_en TIMESTAMP DEFAULT now(),
+  actualizado_en TIMESTAMP NOT NULL DEFAULT now(),
   UNIQUE (convocatoria_id, persona_id)
 );
-COMMENT ON TABLE postulaciones_convocatoria IS 'Pipeline: quien se postulo a que convocatoria y en que estado va. El postulante solo ve las suyas.';
-CREATE INDEX idx_postulaciones_persona ON postulaciones_convocatoria (persona_id);
-CREATE INDEX idx_postulaciones_convocatoria ON postulaciones_convocatoria (convocatoria_id);
+COMMENT ON TABLE candidatos_convocatoria IS 'Pipeline: a quien tomo el staff como candidato de esa convocatoria y en que estado va. La fila la crea el staff, no el postulante.';
+COMMENT ON COLUMN candidatos_convocatoria.kpi_al_tomar IS 'KPI de convocatoria congelado en el momento en que el staff tomo al candidato. El ranking muestra el valor vivo.';
+CREATE INDEX idx_candidatos_persona ON candidatos_convocatoria (persona_id);
+CREATE INDEX idx_candidatos_convocatoria ON candidatos_convocatoria (convocatoria_id);
 
 -- ===== VISTA RESUMEN (solo lectura; el KPI se calcula en el servidor) =====
 CREATE OR REPLACE VIEW v_perfil_completo AS
 SELECT
-  p.id AS persona_id, p.nombres, p.apellidos, p.correo,
+  p.id AS persona_id, p.nombres, p.apellidos, p.correo, p.disponibilidad, p.actualizado_en,
   COALESCE(e.total_eventos,0) AS total_eventos,
   COALESCE(x.total_experiencias,0) AS total_experiencias,
   COALESCE(f.total_formaciones,0) AS total_formaciones,

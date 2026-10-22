@@ -1,4 +1,4 @@
-const { pool } = require('../config/db');
+const { pool, conTransaccion } = require('../config/db');
 
 async function buscarPorCorreo(correo) {
   const { rows } = await pool.query('SELECT * FROM usuarios WHERE correo=$1', [correo]);
@@ -34,7 +34,6 @@ async function cambiarEstado(id, estado) {
 }
 
 async function eliminarConPersona(id) {
-  const { pool: p, conTransaccion } = require('../config/db');
   return conTransaccion(async (conn) => {
     await conn.query('DELETE FROM personas WHERE usuario_id=$1', [id]);
     const { rowCount } = await conn.query('DELETE FROM usuarios WHERE id=$1', [id]);
