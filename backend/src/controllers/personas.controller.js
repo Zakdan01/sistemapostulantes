@@ -18,7 +18,7 @@ function conKpi(fila, cfg) {
     anios_max: fila.anios_max, nivel_alto: fila.nivel_alto, actuales: fila.actuales,
     actualizado_en: fila.actualizado_en
   };
-  const { kpi, clasificacion, cumple } = calcularKpi(conteo, cfg);
+  const { kpi, clasificacion, cumple } = calcularKpi(conteo, cfg, fila);
   const { coincidencias, ...resto } = fila; // eslint-disable-line no-unused-vars
   return { ...resto, kpi, clasificacion, cumple };
 }
@@ -61,7 +61,7 @@ async function detalle(req, res) {
   if (!det) throw HttpError.notFound('Persona no encontrada');
   const cfg = await Config.obtenerConfig();
   const conteo = await Persona.conteoParaKpi(id);
-  const { kpi, clasificacion, cumple } = calcularKpi(conteo, cfg);
+  const { kpi, clasificacion, cumple } = calcularKpi(conteo, cfg, det);
   res.json({ ...det, kpi, clasificacion, cumple });
 }
 
@@ -79,7 +79,7 @@ async function yo(req, res) {
   const det = await Persona.detalle(persona.id);
   const cfg = await Config.obtenerConfig();
   const conteo = await Persona.conteoParaKpi(persona.id);
-  const { kpi, clasificacion, cumple } = calcularKpi(conteo, cfg);
+  const { kpi, clasificacion, cumple } = calcularKpi(conteo, cfg, det);
   res.json({ ...det, kpi, clasificacion, cumple });
 }
 
@@ -130,7 +130,7 @@ async function actualizarYo(req, res) {
   const det = await Persona.detalle(personaId);
   const cfg = await Config.obtenerConfig();
   const conteo = await Persona.conteoParaKpi(personaId);
-  const { kpi, clasificacion, cumple } = calcularKpi(conteo, cfg);
+  const { kpi, clasificacion, cumple } = calcularKpi(conteo, cfg, det);
   res.json({ ...det, kpi, clasificacion, cumple });
 }
 

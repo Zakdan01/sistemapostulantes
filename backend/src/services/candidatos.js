@@ -154,7 +154,7 @@ function calcularUno(convocatoria, personas, cfg, estados, umbral) {
       disponibilidad: convocatoria.disponibilidad,
       cfg
     });
-    const { kpi, clasificacion, cumple } = calcularKpi(p.conteo, cfg);
+    const { kpi, clasificacion, cumple } = calcularKpi(p.conteo, cfg, p);
     const est = estados[p.id] || null;
     if (kc.kpi_conv >= umbral) {
       resultados.push({

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import { Badge } from '../components/TablaKPI';
@@ -40,7 +40,6 @@ export function Ranking() {
   const [cuposEdit, setCuposEdit] = useState('');
   const [verExcluidos, setVerExcluidos] = useState(false);
   const [verDetalle, setVerDetalle] = useState(true);
-
   const cargar = useCallback(async () => {
     try {
       const d = await api(`/api/convocatorias/${id}/ranking`);
@@ -52,6 +51,13 @@ export function Ranking() {
   }, [id, setError]);
 
   useEffect(() => { cargar(); }, [cargar]);
+
+  const resultadosFiltrados = useMemo(() => {
+    let arr = r?.resultados || [];
+    arr = arr.filter(perfilCompleto);
+    arr = arr.filter((p) => cumpleObligatorios(p, r?.convocatoria?.requisitos));
+    return arr;
+  }, [r]);
 
   function cambiar(personaId, estado, etiqueta) {
     return ejecutar(`${personaId}${estado}`, async () => {
@@ -124,6 +130,27 @@ export function Ranking() {
   const contratados = Number(r.contratados ?? r.convocatoria.contratados ?? 0);
   const disponibles = Math.max(cupos - contratados, 0);
   const tonoEstado = estadoConv === 'abierta' ? 'green' : estadoConv === 'pendiente' ? 'amber' : estadoConv === 'cerrada' ? 'slate' : 'red';
+
+  function perfilCompleto(p) {
+    const tieneContacto = !!(p.correo || p.telefono || p.direccion || p.linkedin || p.github || p.portafolio_url);
+    const tieneDisp = !!p.disponibilidad;
+    const tieneHab = (p.total_habilidades ?? (Array.isArray(p.habilidades) ? p.habilidades.length : 0)) > 0;
+    const tieneExp = (p.total_experiencias ?? (Array.isArray(p.experiencias) ? p.experiencias.length : 0)) > 0;
+    const tieneForm = (p.total_formaciones ?? 0) > 0;
+    return tieneContacto && tieneDisp && tieneHab && tieneExp && tieneForm;
+  }
+
+  function cumpleObligatorios(p, requisitos = []) {
+    const obligatorios = (requisitos || []).filter((r) => r.obligatorio);
+    if (obligatorios.length === 0) return true;
+    const setHab = new Set(
+      [
+        ...(Array.isArray(p.lenguajes) ? p.lenguajes : []),
+        ...(Array.isArray(p.habilidades) ? p.habilidades.map((h) => (typeof h === 'string' ? h : h.nombre || h)) : [])
+      ].map((x) => String(x || '').toLowerCase())
+    );
+    return obligatorios.every((req) => setHab.has(String(req.nombre || '').toLowerCase()));
+  }
 
   function detalle(p) {
     const d = p.desglose || {};
@@ -313,7 +340,7 @@ export function Ranking() {
       ) : null}
 
       <Seccion
-        titulo={`Ranking de candidatos (${r.total} de ${r.total_patron})`}
+        titulo={`Ranking de candidatos (${resultadosFiltrados.length} de ${r.total})`}
         icono={IconoUsuarios}
         extra={<Pill tono="cyan">ordenado por KPI</Pill>}
       >
@@ -326,6 +353,12 @@ export function Ranking() {
             icono={IconoUsuarios}
             titulo="Nadie alcanza el umbral"
             texto="Bajá el umbral de enlistado para ampliar la lista de candidatos."
+          />
+        ) : resultadosFiltrados.length === 0 ? (
+          <EmptyState
+            icono={IconoFiltro}
+            titulo="No hay candidatos que cumplan perfiles completos y todos los requisitos obligatorios"
+            texto="Ninguno de los candidatos que pasan el umbral cumple ambos criterios."
           />
         ) : (
           <div className="tbl-wrap">
@@ -344,7 +377,7 @@ export function Ranking() {
                 </tr>
               </thead>
               <tbody>
-                {r.resultados.map((p) => {
+                {resultadosFiltrados.map((p) => {
                   const d = p.desglose || {};
                   const cob = Number(d.puntos_cobertura ?? 0);
                   const cal = Number(d.puntos_calidad ?? 0);

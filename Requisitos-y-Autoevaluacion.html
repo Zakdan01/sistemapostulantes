@@ -1,0 +1,1686 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Requisitos y autoevaluación · Sistema Postulantes v2</title>
+<style>
+  :root{
+    --bg:#f5f7fb; --surface:#fff; --surface-2:#f9fafc;
+    --ink:#0f172a; --ink-2:#334155; --muted:#5b6678;
+    --line:#dfe4ee; --line-2:#eef1f6;
+    --brand:#0e7490; --brand-2:#155e75; --brand-soft:#e6f4f8;
+    --ok:#047857; --ok-bg:#e7f8f0; --ok-line:#b7ead6;
+    --part:#9a5b00; --part-bg:#fdf4e3; --part-line:#f0d9a8;
+    --no:#b91c1c; --no-bg:#fdecec; --no-line:#f3c2c2;
+    --na:#475569; --na-bg:#eef2f7; --na-line:#dbe3ec;
+    --shadow:0 1px 2px rgba(15,23,42,.05),0 8px 24px -18px rgba(15,23,42,.35);
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.62;
+    font-family:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--brand-2);text-decoration:none}
+  a:hover{text-decoration:underline}
+  code{
+    font-family:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
+    font-size:.85em;background:#eef2f7;color:#0b3a4a;padding:.1em .35em;border-radius:5px;
+    overflow-wrap:anywhere;
+  }
+  .wrap{max-width:1260px;margin:0 auto;padding:0 20px 72px}
+
+  header.cover{
+    margin:0 -20px 26px;padding:44px 40px 34px;color:#eafcff;
+    background:
+      radial-gradient(900px 320px at 88% -10%,rgba(34,211,238,.28),transparent 60%),
+      linear-gradient(140deg,#082f3c 0%,#0b4a5c 52%,#0e7490 100%);
+  }
+  .cover .eyebrow{
+    display:inline-block;font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+    font-weight:700;color:#a5f3fc;border:1px solid rgba(165,243,252,.35);
+    padding:5px 10px;border-radius:999px;
+  }
+  .cover h1{margin:16px 0 6px;font-size:clamp(26px,3.4vw,40px);line-height:1.15;letter-spacing:-.02em}
+  .cover h1 small{display:block;font-size:.5em;font-weight:600;color:#bae6fd;letter-spacing:0}
+  .cover p.lead{max-width:78ch;margin:10px 0 0;color:#cffafe;font-size:15px}
+  .cover .meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+  .cover .meta span{
+    background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);
+    padding:5px 11px;border-radius:999px;font-size:12.5px;color:#e0f2fe;
+  }
+
+  .layout{display:grid;grid-template-columns:270px minmax(0,1fr);gap:28px;align-items:start}
+  nav.toc{
+    position:sticky;top:18px;background:var(--surface);border:1px solid var(--line);
+    border-radius:var(--radius);padding:16px 14px;box-shadow:var(--shadow);font-size:13.5px;
+    max-height:calc(100vh - 36px);overflow:auto;
+  }
+  nav.toc h2{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 10px;padding-left:8px}
+  nav.toc ol{list-style:none;margin:0;padding:0;counter-reset:toc}
+  nav.toc li{margin:1px 0}
+  nav.toc a{display:block;padding:5px 8px;border-radius:8px;color:var(--ink-2)}
+  nav.toc a:hover{background:var(--brand-soft);text-decoration:none;color:var(--brand-2)}
+  nav.toc .sub a{padding-left:22px;font-size:12.5px;color:var(--muted)}
+
+  main{min-width:0}
+  section.card{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    padding:26px 26px 20px;margin:0 0 22px;box-shadow:var(--shadow);scroll-margin-top:16px;
+  }
+  h2.sec{font-size:22px;letter-spacing:-.01em;margin:0 0 6px;display:flex;align-items:baseline;gap:10px}
+  h2.sec .num{color:var(--brand);font-variant-numeric:tabular-nums;font-size:.8em;font-weight:800}
+  h3.sub{font-size:16px;margin:26px 0 8px;color:var(--ink);border-left:4px solid var(--brand);padding-left:10px}
+  h4.mini{font-size:13.5px;margin:18px 0 6px;color:var(--ink-2);text-transform:uppercase;letter-spacing:.08em}
+  p{margin:9px 0}
+  .muted{color:var(--muted)}
+  .small{font-size:12.8px}
+
+  .grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+  .grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+  .box{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:var(--surface-2)}
+  .box h4{margin:0 0 6px;font-size:14px}
+  .box p{margin:0;font-size:13.4px;color:var(--ink-2)}
+
+  .callout{border-radius:12px;padding:13px 16px;margin:14px 0;border:1px solid;font-size:13.8px}
+  .callout strong{font-weight:700}
+  .callout.info{background:var(--brand-soft);border-color:#bfe5ef;color:#0b4a5c}
+  .callout.good{background:var(--ok-bg);border-color:var(--ok-line);color:#065f46}
+  .callout.warn{background:var(--part-bg);border-color:var(--part-line);color:#7c4a03}
+  .callout.danger{background:var(--no-bg);border-color:var(--no-line);color:#8f1d1d}
+
+  .badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11.5px;font-weight:700;white-space:nowrap;border:1px solid}
+  .b-ok{color:var(--ok);background:var(--ok-bg);border-color:var(--ok-line)}
+  .b-part{color:var(--part);background:var(--part-bg);border-color:var(--part-line)}
+  .b-no{color:var(--no);background:var(--no-bg);border-color:var(--no-line)}
+  .b-na{color:var(--na);background:var(--na-bg);border-color:var(--na-line)}
+  .b-info{color:var(--brand-2);background:var(--brand-soft);border-color:#bfe5ef}
+
+  .tbl-wrap{overflow-x:auto;margin:12px 0 6px;border:1px solid var(--line);border-radius:12px}
+  table.tbl{width:100%;border-collapse:collapse;font-size:13.1px;min-width:680px}
+  table.tbl thead th{
+    background:#eef4f7;color:#0b3a4a;text-align:left;font-size:11px;letter-spacing:.09em;
+    text-transform:uppercase;padding:9px 11px;border-bottom:1px solid var(--line);position:relative;
+  }
+  table.tbl td{padding:8px 11px;border-bottom:1px solid var(--line-2);vertical-align:top}
+  table.tbl tbody tr:last-child td{border-bottom:0}
+  table.tbl tbody tr:nth-child(even) td{background:#fbfcfe}
+  table.tbl tr.grp td{
+    background:#e6f4f8 !important;color:#0b4a5c;font-weight:800;font-size:12px;
+    letter-spacing:.06em;text-transform:uppercase;padding:7px 11px;
+  }
+  table.tbl td.id{font-weight:700;color:var(--brand-2);white-space:nowrap;font-variant-numeric:tabular-nums}
+  table.tbl td.est{white-space:nowrap;text-align:center}
+  table.tbl.compact{min-width:520px;font-size:12.8px}
+
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin:16px 0}
+  .kpi{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:var(--surface)}
+  .kpi .n{font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1.1;font-variant-numeric:tabular-nums}
+  .kpi .l{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+  .kpi .s{font-size:12.4px;color:var(--ink-2);margin-top:4px}
+  .kpi.ok .n{color:var(--ok)} .kpi.part .n{color:var(--part)} .kpi.no .n{color:var(--no)}
+  .kpi.brand .n{color:var(--brand)}
+
+  .bar{height:9px;background:#e8edf4;border-radius:99px;overflow:hidden;margin-top:8px}
+  .bar > span{display:block;height:100%;border-radius:99px}
+  .bar.ok > span{background:linear-gradient(90deg,#10b981,#047857)}
+  .bar.part > span{background:linear-gradient(90deg,#f59e0b,#b45309)}
+  .bar.no > span{background:linear-gradient(90deg,#ef4444,#b91c1c)}
+  .bar.brand > span{background:linear-gradient(90deg,#22d3ee,#0e7490)}
+
+  .flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0;font-size:12.8px}
+  .flow .step{background:#eef4f7;border:1px solid var(--line);border-radius:9px;padding:7px 11px;font-weight:600;color:#0b4a5c}
+  .flow .arr{color:var(--muted);font-weight:700}
+
+  .swatch{display:inline-block;width:10px;height:10px;border-radius:3px;vertical-align:middle;margin-right:6px}
+
+  .cover-footer{margin-top:26px;padding-top:14px;border-top:1px solid rgba(255,255,255,.18);color:#bae6fd;font-size:12px}
+
+  @media (max-width:980px){
+    .layout{grid-template-columns:1fr}
+    nav.toc{position:static;max-height:none}
+    header.cover{padding:32px 22px 26px}
+    section.card{padding:20px 16px 14px}
+  }
+  @media print{
+    body{background:#fff;font-size:10.5pt}
+    .wrap{max-width:none;padding:0}
+    header.cover{margin:0 0 12px;padding:22px 18px;background:#082f3c !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    nav.toc{display:none}
+    .layout{display:block}
+    section.card{box-shadow:none;border:1px solid #ccc;page-break-inside:auto;margin-bottom:12px}
+    h2.sec{page-break-after:avoid}
+    table.tbl{font-size:8.6pt}
+    table.tbl thead{display:table-header-group}
+    tr,img{page-break-inside:avoid}
+    .callout,.box,.kpi{break-inside:avoid}
+    a{color:#0b4a5c;text-decoration:none}
+  }
+</style>
+</head>
+<body>
+
+<header class="cover">
+  <span class="eyebrow">Ingeniería de software · Documento de requisitos</span>
+  <h1>Requisitos y autoevaluación
+    <small>Sistema de gestión de postulantes y selección por convocatoria — Postulantes v2</small>
+  </h1>
+  <p class="lead">
+    Especificación de requisitos funcionales y no funcionales derivada del código en producción del repositorio,
+    seguida de una autoevaluación estricta y equilibrada del grado de cumplimiento real, con brechas priorizadas
+    y recomendaciones.
+  </p>
+  <div class="meta">
+    <span>Versión del documento: 1.0</span>
+    <span>Fecha: 29 de octubre de 2026</span>
+    <span>102 requisitos funcionales</span>
+    <span>47 requisitos no funcionales</span>
+    <span>Base: código + esquema SQL + suite de pruebas</span>
+  </div>
+  <div class="cover-footer">
+    Backend Node.js + Express 5 + PostgreSQL 18 · Frontend React 19 + Vite 8 + Tailwind v4
+  </div>
+</header>
+
+<div class="wrap">
+<div class="layout">
+
+<nav class="toc" aria-label="Índice del documento">
+  <h2>Contenido</h2>
+  <ol>
+    <li><a href="#resumen">Resumen ejecutivo</a></li>
+    <li><a href="#alcance">1. Alcance y modelo de negocio</a></li>
+    <li><a href="#actores">2. Actores y permisos</a></li>
+    <li><a href="#rf">3. Requisitos funcionales</a></li>
+    <li class="sub"><a href="#rf-a">RF-A · Cuentas y sesión</a></li>
+    <li class="sub"><a href="#rf-b">RF-B · Perfil y hoja de vida</a></li>
+    <li class="sub"><a href="#rf-c">RF-C · Padrón y búsqueda</a></li>
+    <li class="sub"><a href="#rf-d">RF-D · Convocatorias</a></li>
+    <li class="sub"><a href="#rf-e">RF-E · Lista viva y KPI</a></li>
+    <li class="sub"><a href="#rf-f">RF-F · Pipeline y cupos</a></li>
+    <li class="sub"><a href="#rf-g">RF-G · Experiencia del postulante</a></li>
+    <li class="sub"><a href="#rf-h">RF-H · Panel y cola de trabajo</a></li>
+    <li class="sub"><a href="#rf-i">RF-I · Configuración del KPI</a></li>
+    <li class="sub"><a href="#rf-j">RF-J · Catálogos y dominio</a></li>
+    <li class="sub"><a href="#rf-k">RF-K · Bitácora y operación</a></li>
+    <li class="sub"><a href="#rf-l">RF-L · Interfaz y navegación</a></li>
+    <li><a href="#rnf">4. Requisitos no funcionales</a></li>
+    <li><a href="#matriz">5. Matriz de trazabilidad</a></li>
+    <li><a href="#autoevaluacion">6. Autoevaluación</a></li>
+    <li><a href="#brechas">7. Brechas y plan de mejora</a></li>
+    <li><a href="#conclusiones">8. Conclusiones</a></li>
+    <li><a href="#anexos">9. Anexos</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<section class="card" id="resumen">
+  <h2 class="sec"><span class="num">00</span> Resumen ejecutivo</h2>
+  <p>
+    <strong>Postulantes v2</strong> es una aplicación web de dos capas (API REST + SPA) para gestionar el
+    reclutamiento de una consultora. Su decisión de diseño central es la <strong>eliminación del acto de
+    postulación</strong>: el candidato mantiene su perfil actualizado y el sistema lo incorpora automáticamente a
+    una <em>lista viva</em> por convocatoria, ordenada por un KPI calculado contra los requisitos del puesto. El
+    staff no recibe postulaciones: <em>toma</em> candidatos de esa lista y los mueve por un pipeline con cupos y
+    cierre automático.
+  </p>
+  <p>
+    El documento enumera <strong>102 requisitos funcionales</strong> agrupados en 12 módulos y
+    <strong>47 requisitos no funcionales</strong> agrupados en 11 categorías. Cada requisito incluye actor,
+    evidencia en código (endpoint y archivo) y veredicto. La autoevaluación aplica una escala de tres niveles
+    con crédito parcial de 0,5 y una ponderación global de 60&nbsp;% funcional / 40&nbsp;% no funcional.
+  </p>
+
+  <div class="kpis">
+    <div class="kpi brand"><div class="l">Requisitos funcionales</div><div class="n">94,6&nbsp;%</div><div class="s">93 cumple · 7 parcial · 2 no cumple</div></div>
+    <div class="kpi part"><div class="l">Requisitos no funcionales</div><div class="n">59,8&nbsp;%</div><div class="s">22 cumple · 11 parcial · 13 no · 1 N/A</div></div>
+    <div class="kpi brand"><div class="l">Puntaje ponderado</div><div class="n">80,7</div><div class="s">sobre 100 · “Cumple con observaciones”</div></div>
+    <div class="kpi ok"><div class="l">Pruebas automatizadas</div><div class="n">84</div><div class="s">70 de integración + 14 unitarias</div></div>
+  </div>
+
+  <div class="callout good">
+    <strong>Veredicto en una línea.</strong> El sistema <strong>cumple el núcleo funcional</strong> del alcance
+    definido (perfil, padrón vivo, KPI, convocatorias, pipeline y cupos) con una implementación coherente y
+    verificable; su deuda está concentrada en <strong>seguridad, privacidad, operación y configuración del
+    KPI</strong>, no en las reglas de negocio. Es apto para demostración académica y uso interno controlado; no es
+    apto para exposición pública a Internet sin cerrar las brechas P1.
+  </div>
+
+  <h3 class="sub">Verificación ejecutada para este documento</h3>
+  <div class="tbl-wrap">
+    <table class="tbl compact">
+      <thead><tr><th>Comando</th><th>Resultado</th><th>Alcance</th></tr></thead>
+      <tbody>
+        <tr><td><code>node --test tests/kpiConv.test.js</code></td><td><span class="badge b-ok">14 / 14 OK</span></td><td>Unitarias puras del KPI de convocatoria; no requieren servidor ni base de datos.</td></tr>
+        <tr><td><code>npm run lint</code> (frontend)</td><td><span class="badge b-ok">exit 0</span> · 4 warnings</td><td>oxlint; los 4 avisos son <code>react(set-state-in-effect)</code> y no bloquean.</td></tr>
+        <tr><td><code>npm run build</code> (frontend)</td><td><span class="badge b-ok">OK</span> · 1,15 s</td><td>45 módulos; JS 404,04 kB (114,51 kB gzip) y CSS 51,76 kB (10,83 kB gzip).</td></tr>
+        <tr><td><code>npm test</code> (backend)</td><td><span class="badge b-info">84 / 84 documentado</span></td><td>No re-ejecutado: la suite escribe en la base (reescribe el CV de un postulante y crea/borra registros).</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small muted">
+    Las cifras de la suite completa provienen de la corrida registrada en la documentación del proyecto
+    (84 pruebas: 70 de integración + 14 unitarias, 0 fallidas). Las 14 unitarias se re-ejecutaron para este
+    informe y confirman el resultado.
+  </p>
+</section>
+
+<section class="card" id="alcance">
+  <h2 class="sec"><span class="num">01</span> Alcance y modelo de negocio</h2>
+
+  <h3 class="sub">1.1 Problema y propuesta</h3>
+  <p>
+    El proceso tradicional obliga al candidato a “postularse” a cada vacante y al reclutador a revisar
+    postulaciones una por una. Postulantes v2 invierte el flujo: el candidato <strong>solo mantiene su perfil</strong>
+    y el sistema <strong>lo enlista solo</strong> en toda convocatoria cuyo umbral de KPI supere. El resultado es
+    un padrón siempre actualizado y un ranking vivo por convocatoria.
+  </p>
+
+  <div class="flow" aria-label="Flujo principal del sistema">
+    <span class="step">Registro o alta de persona</span><span class="arr">→</span>
+    <span class="step">Perfil y CV</span><span class="arr">→</span>
+    <span class="step">Padrón elegible</span><span class="arr">→</span>
+    <span class="step">KPI por convocatoria</span><span class="arr">→</span>
+    <span class="step">Lista viva + excluidos</span><span class="arr">→</span>
+    <span class="step">Toma y pipeline</span><span class="arr">→</span>
+    <span class="step">Contratación y cierre por cupos</span>
+  </div>
+
+  <h3 class="sub">1.2 Qué queda fuera de alcance</h3>
+  <div class="grid-2">
+    <div class="box"><h4>No existe la postulación</h4><p>Las rutas <code>POST /convocatorias/:id/postular</code>, <code>GET /mis-postulaciones</code> y <code>PATCH /postulaciones/:id/estado</code> fueron eliminadas y responden 404. Sus pantallas también se retiraron.</p></div>
+    <div class="box"><h4>Sin carga de archivos</h4><p>El CV no se sube: se compone de datos estructurados y enlaces (LinkedIn, GitHub, portafolio). Los certificados se guardan como URL de texto.</p></div>
+    <div class="box"><h4>Sin notificaciones ni correo saliente</h4><p>No hay envío de emails, verificación de correo ni recuperación de contraseña. La comunicación es presencial o externa al sistema.</p></div>
+    <div class="box"><h4>Sin multi-empresa ni multi-idioma</h4><p>Una sola consultora, una sola moneda conceptual y una sola interfaz en español. No hay tenants ni i18n.</p></div>
+  </div>
+
+  <h3 class="sub">1.3 Stack y topología</h3>
+  <div class="tbl-wrap">
+    <table class="tbl compact">
+      <thead><tr><th>Capa</th><th>Tecnología</th><th>Detalle relevante</th></tr></thead>
+      <tbody>
+        <tr><td>API</td><td>Node.js + Express 5 (CommonJS)</td><td>Puerto 3000; <code>/api/health</code>; errores siempre en JSON <code>{ error }</code>.</td></tr>
+        <tr><td>Persistencia</td><td>PostgreSQL 18 + <code>pg</code></td><td>SQL crudo y parametrizado; transacciones con <code>conTransaccion</code>.</td></tr>
+        <tr><td>Autenticación</td><td>JWT (<code>jsonwebtoken</code>) + <code>bcryptjs</code></td><td>Token de 8 h; hash con costo 10; roles <code>admin</code>, <code>reclutador</code>, <code>postulante</code>.</td></tr>
+        <tr><td>Frontend</td><td>React 19 + Vite 8 + Tailwind v4</td><td>SPA con React Router; estado de sesión en <code>localStorage</code>; sin proxy de desarrollo.</td></tr>
+        <tr><td>Pruebas</td><td><code>node:test</code></td><td>70 de integración (requieren servidor y semilla) + 14 unitarias puras.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="sub">1.4 Reglas de negocio que gobiernan todo el sistema</h3>
+  <ul>
+    <li><strong>Padrón elegible:</strong> personas sin cuenta <em>o</em> con usuario <code>postulante</code> y cuenta <code>activa</code>. El staff y las cuentas <code>pendiente</code>/<code>rechazada</code> quedan fuera. Se cachea 60 s y se invalida al tocar un perfil o aprobar/rechazar una cuenta.</li>
+    <li><strong>Umbral de enlistado:</strong> <code>convocatorias.kpi_minimo</code> (entero 0–100, por defecto 25). Quien no lo alcanza no desaparece: aparece en <code>excluidos[]</code> con <code>motivo_exclusion</code>.</li>
+    <li><strong>Cupos:</strong> entero 1–999, por defecto 1. Al contratar el último cupo la convocatoria se cierra dentro de la misma transacción y la respuesta incluye <code>cierre_automatico: true</code>.</li>
+    <li><strong>KPI calculado, nunca autoritativo:</strong> el ranking se ordena por <code>kpi_conv</code>; el KPI de perfil solo desempata. Nada se guarda como “puntaje oficial”, salvo los snapshots al tomar un candidato.</li>
+    <li><strong>Sin filtro duro:</strong> incumplir requisitos baja el puntaje, no expulsa de la lista. La única exclusión es no superar el umbral, y es visible.</li>
+  </ul>
+</section>
+
+<section class="card" id="actores">
+  <h2 class="sec"><span class="num">02</span> Actores y matriz de permisos</h2>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Actor</th><th>Puede</th><th>No puede</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Visitante</strong></td><td>Registrarse como postulante, iniciar sesión, consultar tecnologías y salud del servicio.</td><td>Ver padrón, convocatorias, candidatos ni configuración.</td></tr>
+        <tr><td><strong>Postulante activo</strong></td><td>Ver y editar su perfil y CV, consultar convocatorias abiertas con su KPI, posición y motivo; ver su panel.</td><td>Listar personas, ver pipelines ajenos, gestionar convocatorias, cambiar configuración.</td></tr>
+        <tr><td><strong>Postulante pendiente</strong></td><td>Iniciar sesión y consultar su perfil en modo lectura; la interfaz lo confina a inicio y mi perfil.</td><td>Editar el perfil (<code>403</code> por <code>soloActiva</code>); figurar en el padrón.</td></tr>
+        <tr><td><strong>Reclutador</strong></td><td>Buscar en el padrón, gestionar <em>sus</em> convocatorias, ver su ranking, tomar y mover candidatos, ver su resumen.</td><td>Aprobar cuentas o convocatorias, crear staff, eliminar convocatorias, editar la configuración KPI, gestionar convocatorias ajenas (<code>403</code>).</td></tr>
+        <tr><td><strong>Administrador</strong></td><td>Todo lo del reclutador sin restricción de dueño, más aprobación de cuentas y convocatorias, alta de staff, borrado y configuración del KPI.</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout info">
+    <strong>Cómo se aplica.</strong> Las puertas por rol viven solo en <code>backend/src/routes/index.js</code>. El
+    alcance por fila (reclutador = solo lo suyo) lo aplican los controladores con <code>exigirDueno</code> o los
+    modelos con <code>creada_por</code>. La interfaz replica las guardas, pero <strong>la API es la autoridad</strong>.
+  </div>
+</section>
+
+<section class="card" id="rf">
+  <h2 class="sec"><span class="num">03</span> Requisitos funcionales</h2>
+  <p>
+    Se listan <strong>102 requisitos</strong> con identificador estable, actor principal, evidencia verificable
+    (endpoint, archivo o pantalla) y veredicto. La columna <em>Estado</em> de esta sección es la
+    <strong>autoevaluación</strong>; el método y el resumen por módulo están en la sección 6.
+  </p>
+  <div class="callout info">
+    <strong>Convención de evidencia.</strong> <code>API</code> indica la ruta HTTP; <code>Ctrl</code>,
+    <code>Svc</code> y <code>Model</code> los archivos del backend; <code>UI</code> la pantalla del frontend.
+    Los estados se abrevian: <span class="badge b-ok">Cumple</span>
+    <span class="badge b-part">Parcial</span> <span class="badge b-no">No cumple</span>.
+  </div>
+
+  <h3 class="sub" id="rf-a">RF-A · Cuentas, autenticación y sesión</h3>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th style="width:62px">ID</th><th>Requisito funcional</th><th style="width:78px">Actor</th><th style="width:210px">Evidencia</th><th style="width:96px">Estado</th></tr></thead>
+      <tbody>
+        <tr class="grp"><td colspan="5">Registro, ingreso y control de acceso</td></tr>
+        <tr>
+          <td class="id">RF-A01</td>
+          <td>El visitante puede registrarse con <strong>seis datos</strong> (correo, contraseña, nombres, apellidos, teléfono, dirección), más disponibilidad opcional y arreglos de CV. La cuenta nace siempre con rol <code>postulante</code> y estado <code>pendiente</code>, en una sola transacción que crea usuario, persona, CV y evento de bitácora. Correo inválido <code>400</code>, duplicado <code>409</code>, contraseña de menos de 8 caracteres <code>400</code>. Devuelve token y <code>estado_cuenta</code>.</td>
+          <td>Visitante</td>
+          <td><code>POST /api/auth/registro</code> · <code>auth.controller.js</code> · <code>Registro.jsx</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-A02</td>
+          <td>El usuario puede iniciar sesión con correo y contraseña. El correo se normaliza a minúsculas; credenciales inválidas devuelven <code>401</code> y una cuenta <code>rechazada</code> también queda bloqueada. La respuesta incluye JWT, rol, correo, <code>estado_cuenta</code>, <code>persona_id</code> y nombre.</td>
+          <td>Todos</td>
+          <td><code>POST /api/auth/login</code> · <code>auth.controller.js</code> · <code>Login.jsx</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-A03</td>
+          <td>Toda ruta privada exige <code>Authorization: Bearer &lt;token&gt;</code>. Sin token, token inválido o expirado responde <code>401</code>. El token dura <strong>8 horas</strong> y transporta id, rol y estado de cuenta.</td>
+          <td>Todos</td>
+          <td><code>middlewares/auth.js</code> · <code>lib/api.js</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-A04</td>
+          <td>El sistema restringe cada operación a los roles autorizados (<code>soloRol</code>), distinguiendo <code>staff</code> = admin + reclutador y <code>admin</code>. Un rol no autorizado recibe <code>403</code> con mensaje genérico.</td>
+          <td>Todos</td>
+          <td><code>routes/index.js</code> · <code>middlewares/auth.js</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-A05</td>
+          <td>Una cuenta <strong>pendiente</strong> puede iniciar sesión, pero no editar su perfil: <code>PUT /api/yo</code> responde <code>403</code> (<code>soloActiva</code>). La interfaz la confina a inicio y mi perfil, muestra su estado y no la incluye en el padrón hasta la aprobación.</td>
+          <td>Postulante</td>
+          <td><code>soloActiva</code> · <code>App.jsx</code> · <code>MiPerfil.jsx</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-A06</td>
+          <td>El administrador puede listar cuentas filtrando por estado y <strong>aprobar</strong> una cuenta <code>pendiente</code>, que pasa a <code>activa</code> y entra al padrón. Aprobar una cuenta que no está pendiente devuelve <code>409</code>; un id inexistente, <code>404</code>. La aprobación invalida el padrón cacheado.</td>
+          <td>Admin</td>
+          <td><code>GET /api/admin/usuarios</code> · <code>PATCH /api/admin/usuarios/:id/aprobar</code> · <code>usuarios.controller.js</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-A07</td>
+          <td>El administrador puede <strong>rechazar</strong> una cuenta pendiente; la operación solo procede desde <code>pendiente</code> (<code>409</code> en otro estado) y elimina usuario y persona asociada. El estado <code>rechazada</code> existe en el catálogo y bloquea el login, pero <em>no se asigna</em>: el rechazo borra la cuenta.</td>
+          <td>Admin</td>
+          <td><code>PATCH /api/admin/usuarios/:id/rechazar</code> · <code>usuarios.controller.js</code></td>
+          <td class="est"><span class="badge b-part">Parcial</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-A08</td>
+          <td>El administrador puede crear cuentas de <strong>staff</strong> (<code>admin</code> o <code>reclutador</code>), que nacen activas y sin persona ni CV. Valida rol permitido, correo y contraseña mínima de 8; duplicado <code>409</code>.</td>
+          <td>Admin</td>
+          <td><code>POST /api/admin/usuarios</code> · <code>usuarios.controller.js</code> · <code>Gestor.jsx</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-A09</td>
+          <td>El usuario puede cerrar sesión en el cliente, que elimina token, rol, correo y estado de <code>localStorage</code>. Ante cualquier <code>401</code> la sesión se limpia automáticamente y se redirige al login.</td>
+          <td>Todos</td>
+          <td><code>lib/api.js</code> · <code>App.jsx</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-A10</td>
+          <td>La navegación está protegida por rol: sin token redirige a <code>/login</code>; un rol fuera de la ruta autorizada redirige a su panel; una cuenta pendiente solo accede a inicio y mi perfil; una ruta desconocida redirige a login.</td>
+          <td>Todos</td>
+          <td><code>App.jsx</code> · <code>components/ErrorBoundary.jsx</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="sub" id="rf-b">RF-B · Perfil y hoja de vida del postulante</h3>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th style="width:62px">ID</th><th>Requisito funcional</th><th style="width:78px">Actor</th><th style="width:210px">Evidencia</th><th style="width:96px">Estado</th></tr></thead>
+      <tbody>
+        <tr class="grp"><td colspan="5">Autogestión del CV</td></tr>
+        <tr>
+          <td class="id">RF-B01</td>
+          <td>El postulante puede consultar su perfil completo (<code>GET /api/yo</code>): datos personales, disponibilidad, habilidades con nivel y años, experiencias, formaciones, sus eventos y su KPI con clasificación y criterios cumplidos. Otro rol recibe <code>403</code>.</td>
+          <td>Postulante</td>
+          <td><code>GET /api/yo</code> · <code>personas.controller.js</code> · <code>MiPerfil.jsx</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-B02</td>
+          <td>El postulante activo puede editar parcialmente su perfil con <code>PUT /api/yo</code>: nombres, apellidos, teléfono, dirección, LinkedIn, GitHub y portafolio. Los textos se recortan y limitan (200 caracteres en enlaces y dirección); nombres vacíos <code>400</code>. La operación actualiza <code>actualizado_en</code>.</td>
+          <td>Postulante</td>
+          <td><code>PUT /api/yo</code> · <code>personas.controller.js</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-B03</td>
+          <td>La disponibilidad se elige de un catálogo cerrado de cinco valores (Inmediata, En 15 días, En 1 mes, Medio tiempo, No disponible). Un valor fuera del catálogo <code>400</code>. Es la disponibilidad que usa el KPI de convocatoria (+10 si coincide).</td>
+          <td>Postulante</td>
+          <td><code>validar.js</code> · <code>catalogos.js</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-B04</td>
+          <td>El postulante puede declarar <strong>habilidades</strong> por tecnología, con nivel (Básico, Intermedio, Avanzado, Experto y un quinto nivel del catálogo) y años de uso entre 0 y 60, aceptando nombre o <code>tecnologia_id</code>. Se reemplazan en bloque dentro de la transacción del perfil.</td>
+          <td>Postulante</td>
+          <td><code>PUT /api/yo</code> · <code>listaHabilidades</code> · <code>MiPerfil.jsx</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-B05</td>
+          <td>El postulante puede registrar <strong>experiencias</strong> con empresa y cargo obligatorios, descripción, tipo de jornada, fechas y marca de empleo actual. Valida que el inicio no sea posterior al fin y reemplaza el conjunto completo.</td>
+          <td>Postulante</td>
+          <td><code>PUT /api/yo</code> · <code>listaExperiencias</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-B06</td>
+          <td>El postulante puede registrar <strong>formaciones</strong> con título, institución, nivel, fechas y URL de certificado. El título es obligatorio y el conjunto se reemplaza en bloque.</td>
+          <td>Postulante</td>
+          <td><code>PUT /api/yo</code> · <code>listaFormaciones</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-B07</td>
+          <td>Cada actualización de perfil o de CV registra un <strong>evento</strong> en <code>eventos_postulacion</code> con fecha, disponibilidad y origen. La bitácora es histórica y no alimenta el KPI.</td>
+          <td>Sistema</td>
+          <td><code>personas.controller.js</code> · <code>esquema_final.sql</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-B08</td>
+          <td>Al guardar el perfil se invalida el padrón cacheado, de modo que la próxima consulta de cualquier convocatoria refleje el CV nuevo sin esperar los 60 s del caché.</td>
+          <td>Sistema</td>
+          <td><code>Candidatos.invalidarPadron()</code> · <code>services/candidatos.js</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-B09</td>
+          <td>El sistema calcula un <strong>KPI de perfil</strong> de 0 a 100 con cinco criterios binarios (experiencia, formación, tecnologías, disponibilidad y actualidad), lo clasifica en alto/medio/bajo y lo muestra como anillo e indicadores. La “actualidad” debería premiar actividad reciente o empleo vigente; en el código se resuelve por la existencia de un dato de contacto, por lo que un perfil abandonado pero con correo sigue puntuando.</td>
+          <td>Sistema</td>
+          <td><code>services/kpi.js</code> · <code>TablaKPI</code> · <code>MiPerfil.jsx</code></td>
+          <td class="est"><span class="badge b-part">Parcial</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="card" id="rf-c">
+  <h2 class="sec"><span class="num">RF-C</span> Padrón y búsqueda de talento</h2>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th style="width:62px">ID</th><th>Requisito funcional</th><th style="width:78px">Actor</th><th style="width:210px">Evidencia</th><th style="width:96px">Estado</th></tr></thead>
+      <tbody>
+        <tr class="grp"><td colspan="5">Exploración del padrón por parte del staff</td></tr>
+        <tr>
+          <td class="id">RF-C01</td>
+          <td>El staff puede listar el padrón con <code>GET /api/personas</code>. La respuesta es <code>{ total, resultados }</code>; cada fila trae datos de contacto, disponibilidad, conteos de CV, años máximos, nivel máximo, lenguajes y KPI con clasificación. El orden es por KPI descendente.</td>
+          <td>Staff</td>
+          <td><code>GET /api/personas</code> · <code>persona.model.js</code> · <code>Buscar.jsx</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-C02</td>
+          <td>El staff puede filtrar por una o varias <strong>tecnologías</strong> enviadas como lista separada por comas; el filtro se resuelve con SQL parametrizado y acepta nombres normalizados.</td>
+          <td>Staff</td>
+          <td><code>GET /api/personas?tec=...</code> · <code>whereFiltro</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-C03</td>
+          <td>El filtro de tecnologías admite tres modos: <strong>al menos uno</strong>, <strong>todos</strong> (puede saber más) y <strong>solo estos</strong> (no debe saber ningún otro). Un modo inválido <code>400</code>.</td>
+          <td>Staff</td>
+          <td><code>modo=cualquiera|todos|solo</code> · <code>MODOS_FILTRO</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-C04</td>
+          <td>El staff puede exigir una <strong>cantidad mínima de años</strong> de experiencia (0–60). Un valor no numérico o fuera de rango <code>400</code>.</td>
+          <td>Staff</td>
+          <td><code>?anios_min=</code> · <code>validar.js</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-C05</td>
+          <td>El staff puede filtrar por <strong>tipo de jornada</strong> y por <strong>nivel mínimo</strong> de una tecnología, usando los catálogos del sistema; valores desconocidos <code>400</code>.</td>
+          <td>Staff</td>
+          <td><code>?tipo_trabajo=</code> · <code>?nivel=</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-C06</td>
+          <td>El staff puede abrir el <strong>detalle</strong> de una persona con su CV completo y su KPI. Un id inexistente <code>404</code>. El reclutador solo accede a personas que estén en su pipeline o en las listas vivas de sus convocatorias; fuera de ese ámbito recibe <code>403</code>.</td>
+          <td>Staff</td>
+          <td><code>GET /api/personas/:id</code> · <code>personas.controller.js</code> · <code>Detalle.jsx</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-C07</td>
+          <td>El staff puede crear o actualizar una persona por correo (<code>upsert</code>), sin crear cuenta. La persona entra al padrón y puede ser enlista­da de inmediato. La operación es transaccional y valida el correo.</td>
+          <td>Staff</td>
+          <td><code>POST /api/personas/upsert</code> · <code>personas.controller.js</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-C08</td>
+          <td>El padrón elegible se define de forma automática: personas <strong>sin cuenta</strong> o con usuario <code>postulante</code> y cuenta <code>activa</code>. El staff y las cuentas pendientes o rechazadas quedan fuera. El conjunto se cachea 60 s y se invalida por eventos de perfil, alta de persona y aprobación/rechazo.</td>
+          <td>Sistema</td>
+          <td><code>services/candidatos.js</code> · <code>padron()</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-C09</td>
+          <td>El acceso del reclutador al padrón debe ser consistente con su ámbito: si el detalle está restringido a sus procesos, el listado y la búsqueda también deberían estarlo. Hoy <code>GET /api/personas</code> devuelve el padrón completo a cualquier miembro del staff, mientras el detalle aplica la restricción, lo que produce un <code>403</code> al abrir una fila que el propio listado mostró.</td>
+          <td>Staff</td>
+          <td><code>personas.controller.js</code> · <code>persona.model.js</code></td>
+          <td class="est"><span class="badge b-no">No cumple</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="card" id="rf-d">
+  <h2 class="sec"><span class="num">RF-D</span> Gestión de convocatorias</h2>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th style="width:62px">ID</th><th>Requisito funcional</th><th style="width:78px">Actor</th><th style="width:210px">Evidencia</th><th style="width:96px">Estado</th></tr></thead>
+      <tbody>
+        <tr class="grp"><td colspan="5">Ciclo de vida de una convocatoria</td></tr>
+        <tr>
+          <td class="id">RF-D01</td>
+          <td>El staff puede crear una convocatoria con título obligatorio, descripción, años mínimos, disponibilidad exigida, umbral <code>kpi_minimo</code> (0–100, por defecto 25) y cupos (1–999, por defecto 1). Todo se escribe en una transacción: si un requisito es inválido no queda una convocatoria a medias.</td>
+          <td>Staff</td>
+          <td><code>POST /api/convocatorias</code> · <code>convocatoria.model.js</code> · <code>Convocatorias.jsx</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-D02</td>
+          <td>Los requisitos se declaran con tecnología, obligatorio/deseable y nivel mínimo (por defecto <code>basico</code>). Un nivel desconocido <code>400</code>; los duplicados se ignoran; una tecnología inexistente se crea automáticamente en el catálogo bajo la categoría <code>otro</code>.</td>
+          <td>Staff</td>
+          <td><code>convocatoria.model.js</code> · <code>convocatorias_requisitos</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-D03</td>
+          <td>Toda convocatoria nueva nace en estado <code>pendiente</code> y requiere aprobación del administrador para abrirse.</td>
+          <td>Sistema</td>
+          <td><code>convocatoria.model.js</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-D04</td>
+          <td>El listado devuelve un arreglo con <code>total_candidatos</code> vivo, <code>total_postulados</code> del pipeline, contratados, cupos disponibles, bandera de completa y requisitos en texto. Admite filtro por estado validado; el reclutador solo ve las suyas y el postulante solo las abiertas.</td>
+          <td>Todos</td>
+          <td><code>GET /api/convocatorias</code> · <code>convocatorias.service.js</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-D05</td>
+          <td>El detalle devuelve la convocatoria, sus requisitos con pesos y el pipeline de candidatos con snapshots. Un id inexistente <code>404</code>; el reclutador ajeno recibe <code>403</code>.</td>
+          <td>Staff</td>
+          <td><code>GET /api/convocatorias/:id</code> · <code>Conv.detalle</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-D06</td>
+          <td>El administrador puede <strong>aprobar</strong> una convocatoria pendiente, que pasa a <code>abierta</code>; en cualquier otro estado responde <code>409</code>.</td>
+          <td>Admin</td>
+          <td><code>PATCH /api/convocatorias/:id/aprobar</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-D07</td>
+          <td>El administrador puede <strong>rechazar</strong> una convocatoria pendiente, que pasa a <code>rechazada</code> y queda en solo lectura; otro estado <code>409</code>.</td>
+          <td>Admin</td>
+          <td><code>PATCH /api/convocatorias/:id/rechazar</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-D08</td>
+          <td>El staff puede <strong>cerrar</strong> manualmente una convocatoria propia, que pasa a <code>cerrada</code> y queda en solo lectura.</td>
+          <td>Staff</td>
+          <td><code>PATCH /api/convocatorias/:id/cerrar</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-D09</td>
+          <td>El administrador puede <strong>eliminar</strong> una convocatoria; un id inexistente <code>404</code>. La eliminación arrastra requisitos y filas del pipeline por clave foránea.</td>
+          <td>Admin</td>
+          <td><code>DELETE /api/convocatorias/:id</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-D10</td>
+          <td>El staff puede ajustar el <strong>umbral</strong> de enlistado (entero 0–100) y la lista se recalcula al instante. Un valor inválido <code>400</code>; una convocatoria ajena <code>403</code>. El requisito de solo lectura para convocatorias cerradas o rechazadas queda incompleto: la API permite cambiar el umbral aunque la convocatoria ya no admita movimientos.</td>
+          <td>Staff</td>
+          <td><code>PATCH /api/convocatorias/:id/umbral</code> · <code>convocatorias.controller.js</code></td>
+          <td class="est"><span class="badge b-part">Parcial</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-D11</td>
+          <td>El staff puede editar los <strong>cupos</strong> (1–999) mientras la convocatoria no esté cerrada; si el nuevo valor queda por debajo de los contratados, la convocatoria se cierra en el acto. Estado cerrado o rechazado <code>409</code>.</td>
+          <td>Staff</td>
+          <td><code>PATCH /api/convocatorias/:id/cupos</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-D12</td>
+          <td>Todas las rutas de convocatorias conservan el alias heredado <code>/api/vacantes</code>, y el frontend redirige <code>/vacantes</code> a <code>/convocatorias</code>.</td>
+          <td>Todos</td>
+          <td><code>routes/index.js</code> · <code>App.jsx</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-D13</td>
+          <td>Una convocatoria <code>cerrada</code> o <code>rechazada</code> es de solo lectura: todo movimiento del pipeline y todo cambio de cupos responde <code>409</code>, y la interfaz oculta los controles. El cambio de umbral es la excepción no cubierta.</td>
+          <td>Sistema</td>
+          <td><code>services/pipeline.js</code> · <code>Ranking.jsx</code></td>
+          <td class="est"><span class="badge b-part">Parcial</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-D14</td>
+          <td>La pantalla de convocatorias permite filtrar por estado y buscar por título, muestra el avance de cupos y el umbral, agrupa tecnologías por categoría al crear requisitos y ofrece aprobar, rechazar, cerrar o eliminar según el rol.</td>
+          <td>Staff</td>
+          <td><code>Convocatorias.jsx</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="card" id="rf-e">
+  <h2 class="sec"><span class="num">RF-E</span> Lista viva, KPI de convocatoria y ranking</h2>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th style="width:62px">ID</th><th>Requisito funcional</th><th style="width:78px">Actor</th><th style="width:210px">Evidencia</th><th style="width:96px">Estado</th></tr></thead>
+      <tbody>
+        <tr class="grp"><td colspan="5">Cálculo del puntaje y armado de la lista</td></tr>
+        <tr>
+          <td class="id">RF-E01</td>
+          <td>El sistema calcula <code>kpi_conv</code> de 0 a 100 contra los requisitos de cada convocatoria: hasta <strong>80 puntos</strong> por requisitos, más experiencia afín, más <strong>10 puntos</strong> por disponibilidad; el total se limita a 100 y se redondea a dos decimales.</td>
+          <td>Sistema</td>
+          <td><code>services/kpiConvocatoria.js</code> · <code>calcularKpiConvocatoria</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-E02</td>
+          <td>Cada requisito pesa según su obligatoriedad: obligatorio ×2 y deseable ×1 (multiplicador configurable en el dominio). Los pesos se normalizan para que el bloque de requisitos sume como máximo 80 y se exponen en la API para que el frontend no repita la fórmula.</td>
+          <td>Sistema</td>
+          <td><code>pesosDeRequisitos</code> · <code>catalogos.js</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-E03</td>
+          <td>El bloque de requisitos se divide 50 % <strong>cobertura</strong> (tiene la tecnología) y 50 % <strong>calidad</strong> (nivel mínimo, factor de nivel y años de uso hasta el tope del requisito). Los factores de nivel son 0,1 / 0,25 / 0,5 / 0,75 / 1.</td>
+          <td>Sistema</td>
+          <td><code>NIVEL_FACTOR</code> · <code>kpiConvocatoria.js</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-E04</td>
+          <td>Los años mínimos de la convocatoria escalan todo el bloque de requisitos por <code>min(mejor_año / años_mínimos, 1)</code>; sin años mínimos o sin requisitos se conserva la conducta neutral.</td>
+          <td>Sistema</td>
+          <td><code>factor_anios_min</code> · <code>kpiConvocatoria.js</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-E05</td>
+          <td>La experiencia suma <code>peso_exp_afin</code> si la trayectoria menciona alguna tecnología exigida; la mitad si hay experiencia genérica; cero si no hay experiencia.</td>
+          <td>Sistema</td>
+          <td><code>PESO_EXP_AFIN</code> · <code>kpiConvocatoria.js</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-E06</td>
+          <td>La disponibilidad suma 10 puntos cuando coincide con la exigida por la convocatoria, o cuando la convocatoria no exige ninguna.</td>
+          <td>Sistema</td>
+          <td><code>PUNTOS_DISPONIBILIDAD</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-E07</td>
+          <td>El enlistado se decide por umbral: quien obtiene <code>kpi_conv ≥ kpi_minimo</code> aparece en <code>resultados[]</code>; quien no, en <code>excluidos[]</code> con <code>motivo_exclusion</code>. <strong>Nadie se oculta</strong> y no hay filtro duro por requisitos incumplidos.</td>
+          <td>Sistema</td>
+          <td><code>services/candidatos.js</code> · <code>ranking</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-E08</td>
+          <td>El orden es por <code>score</code> (<code>kpi_conv</code>) descendente, con el KPI de perfil como primer desempate y el id como desempate final y estable. La respuesta informa <code>total</code>, <code>total_patron</code> y <code>umbral</code>.</td>
+          <td>Sistema</td>
+          <td><code>services/candidatos.js</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-E09</td>
+          <td>Cada candidato incluye <strong>desglose</strong> (<code>puntos_requisitos</code>, cobertura, calidad, factor de años, experiencia, disponibilidad), detalle por requisito y <code>match_pct</code> informativo (obligatorios presentes sobre obligatorios totales).</td>
+          <td>Staff</td>
+          <td><code>desglose</code> · <code>matchPct</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-E10</td>
+          <td>El staff puede consultar el ranking de una convocatoria propia (<code>GET /:id/ranking</code>) con convocatoria, requisitos ponderados, cupos, disponibles, resultados y excluidos. Id inexistente <code>404</code>; reclutador ajeno <code>403</code>.</td>
+          <td>Staff</td>
+          <td><code>GET /api/convocatorias/:id/ranking</code> · <code>Convocatorias.ranking</code> · <code>Ranking.jsx</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-E11</td>
+          <td>La lista es <strong>viva</strong>: no se persiste. Se recalcula en cada consulta y refleja el CV actual; al cambiar el umbral, la composición cambia de inmediato.</td>
+          <td>Sistema</td>
+          <td><code>services/candidatos.js</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-E12</td>
+          <td>El cálculo se optimiza por lote: una sola carga de padrón, configuraciones y requisitos permite puntuar varias convocatorias sin repetir consultas por cada una.</td>
+          <td>Sistema</td>
+          <td><code>calcularVarios</code> · <code>services/candidatos.js</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="card" id="rf-f">
+  <h2 class="sec"><span class="num">RF-F</span> Pipeline de candidatos y control de cupos</h2>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th style="width:62px">ID</th><th>Requisito funcional</th><th style="width:78px">Actor</th><th style="width:210px">Evidencia</th><th style="width:96px">Estado</th></tr></thead>
+      <tbody>
+        <tr class="grp"><td colspan="5">Toma, transiciones y cierre</td></tr>
+        <tr>
+          <td class="id">RF-F01</td>
+          <td>El staff puede <strong>tomar</strong> a una persona de la lista viva indicando un estado inicial. La primera toma crea la fila (<code>UPSERT</code>) y no requiere transición previa; la clave única es (convocatoria, persona).</td>
+          <td>Staff</td>
+          <td><code>PATCH /api/convocatorias/:id/candidatos/:persona_id/estado</code> · <code>services/pipeline.js</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-F02</td>
+          <td>En la primera toma se <strong>congelan</strong> los snapshots <code>kpi_al_tomar</code>, <code>match_pct</code> y <code>kpi_perfil</code>. Los movimientos posteriores no los recalculan; sirven como evidencia de la decisión.</td>
+          <td>Sistema</td>
+          <td><code>services/pipeline.js</code> · <code>candidatos_convocatoria</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-F03</td>
+          <td>Las transiciones se validan contra una tabla única: <code>postulado→consulta|descartado</code>, <code>consulta→preseleccionado|descartado</code>, <code>preseleccionado→contratado|descartado</code> y <code>descartado→consulta</code>. Una transición inválida responde <code>409</code> con las opciones permitidas; repetir el mismo estado es un no-op exitoso.</td>
+          <td>Staff</td>
+          <td><code>TRANSICIONES</code> · <code>puedeTransitar</code> · <code>pipeline.js</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-F04</td>
+          <td><code>contratado</code> es terminal: no admite salida. <code>descartado</code> puede reabrirse a <code>consulta</code>. Un estado desconocido <code>400</code>.</td>
+          <td>Sistema</td>
+          <td><code>catalogos.js</code> · <code>pipeline.js</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-F05</td>
+          <td>Contratar exige cupo libre. Si la convocatoria ya cubrió sus vacantes, la operación responde <code>409</code> y no altera el pipeline.</td>
+          <td>Staff</td>
+          <td><code>services/pipeline.js</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-F06</td>
+          <td>Al contratar el <strong>último cupo</strong>, la convocatoria pasa a <code>cerrada</code> dentro de la misma transacción y la respuesta incluye <code>cierre_automatico: true</code>.</td>
+          <td>Sistema</td>
+          <td><code>services/pipeline.js</code> · <code>mover()</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-F07</td>
+          <td>La toma y la contratación bloquean la fila de la convocatoria con <code>SELECT ... FOR UPDATE</code>, de modo que dos contrataciones simultáneas no superan los cupos.</td>
+          <td>Sistema</td>
+          <td><code>services/pipeline.js</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-F08</td>
+          <td>Sobre una convocatoria cerrada o rechazada, cualquier movimiento del pipeline responde <code>409</code>.</td>
+          <td>Sistema</td>
+          <td><code>services/pipeline.js</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-F09</td>
+          <td>Cada movimiento agrega una fila a <code>eventos_postulacion</code> dentro de la transacción, dejando bitácora de la decisión.</td>
+          <td>Sistema</td>
+          <td><code>services/pipeline.js</code> · <code>eventos_postulacion</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-F10</td>
+          <td>La interfaz de candidatos ofrece solo las transiciones válidas que publica el catálogo, sin duplicar la tabla en el frontend; muestra el desglose del KPI, el estado, los cupos y el aviso de solo lectura.</td>
+          <td>Staff</td>
+          <td><code>Ranking.jsx</code> · <code>lib/estados.js</code> · <code>EstadoCandidato.jsx</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-F11</td>
+          <td>El staff puede editar umbral y cupos desde la pantalla de candidatos, con validación en cliente y servidor, confirmación y aviso de éxito o error.</td>
+          <td>Staff</td>
+          <td><code>Ranking.jsx</code> · <code>hooks/useAccion.js</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="card" id="rf-g">
+  <h2 class="sec"><span class="num">RF-G</span> Experiencia del postulante</h2>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th style="width:62px">ID</th><th>Requisito funcional</th><th style="width:78px">Actor</th><th style="width:210px">Evidencia</th><th style="width:96px">Estado</th></tr></thead>
+      <tbody>
+        <tr class="grp"><td colspan="5">Transparencia del proceso para el candidato</td></tr>
+        <tr>
+          <td class="id">RF-G01</td>
+          <td>El postulante ve todas las convocatorias abiertas con su <code>kpi_conv</code>, el umbral vigente, si califica, su <strong>posición</strong>, el total de candidatos, su <code>estado_candidato</code> y, si no califica, el <code>motivo_exclusion</code>. No hay ocultamiento.</td>
+          <td>Postulante</td>
+          <td><code>GET /api/mis-convocatorias</code> · <code>MisConvocatorias.jsx</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-G02</td>
+          <td>El sistema confirma que <strong>no existe postulación</strong>: las rutas heredadas <code>POST /convocatorias/:id/postular</code>, <code>GET /mis-postulaciones</code> y <code>PATCH /postulaciones/:id/estado</code> responden <code>404</code>, y sus pantallas fueron retiradas.</td>
+          <td>Postulante</td>
+          <td><code>routes/index.js</code> · <code>App.jsx</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-G03</td>
+          <td>El panel del postulante muestra cuatro indicadores: convocatorias abiertas, convocatorias donde cumple el umbral, candidaturas en selección y mejor posición, con el título de esa convocatoria.</td>
+          <td>Postulante</td>
+          <td><code>Gestor.jsx</code> · <code>MisConvocatorias.jsx</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-G04</td>
+          <td>El postulante puede ver el <strong>desglose</strong> de por qué obtiene su puntaje y qué requisitos le faltan, con enlace directo a mejorar el perfil.</td>
+          <td>Postulante</td>
+          <td><code>TablaKPI.jsx</code> · <code>Ranking.jsx</code> (modo lectura)</td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-G05</td>
+          <td>Mientras la cuenta está pendiente, el postulante ve su estado, no puede editar el CV y la interfaz le explica que debe esperar aprobación. Un rechazo elimina la cuenta y el acceso.</td>
+          <td>Postulante</td>
+          <td><code>MiPerfil.jsx</code> · <code>App.jsx</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-G06</td>
+          <td>El staff puede consultar el encaje de una persona concreta en todas las convocatorias usando <code>?persona_id=</code>; sin el parámetro recibe <code>400</code>.</td>
+          <td>Staff</td>
+          <td><code>GET /api/mis-convocatorias?persona_id=</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="card" id="rf-h">
+  <h2 class="sec"><span class="num">RF-H</span> Panel de control y cola de trabajo</h2>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th style="width:62px">ID</th><th>Requisito funcional</th><th style="width:78px">Actor</th><th style="width:210px">Evidencia</th><th style="width:96px">Estado</th></tr></thead>
+      <tbody>
+        <tr class="grp"><td colspan="5">Indicadores y operación diaria</td></tr>
+        <tr>
+          <td class="id">RF-H01</td>
+          <td>El resumen devuelve convocatorias abiertas y cerradas, pendientes de aprobación, total de postulantes, cuentas pendientes y conteos del pipeline (consultas, preseleccionados, contratados, descartados), además del total de <strong>candidatos únicos</strong> en las listas vivas.</td>
+          <td>Staff</td>
+          <td><code>GET /api/admin/resumen</code> · <code>convocatorias.service.js</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-H02</td>
+          <td>El resumen del reclutador solo cuenta sus convocatorias y su pipeline; el del administrador cuenta todo el sistema.</td>
+          <td>Staff</td>
+          <td><code>convocatorias.service.js</code> · <code>creada_por</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-H03</td>
+          <td>La <strong>cola de trabajo</strong> lista las filas del pipeline con persona, convocatoria, estado y snapshots, ordenadas de la más reciente a la más antigua y limitadas a 200. Admite filtros por estado y por convocatoria, y el reclutador solo ve lo suyo.</td>
+          <td>Staff</td>
+          <td><code>GET /api/candidatos</code> (alias <code>/api/postulaciones</code>) · <code>Conv.cola</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-H04</td>
+          <td>Un estado de pipeline desconocido en la cola devuelve <code>400</code> con la lista de valores válidos.</td>
+          <td>Staff</td>
+          <td><code>Conv.cola</code> · <code>catalogos.js</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-H05</td>
+          <td>El panel del administrador incluye colas de cuentas y convocatorias pendientes con acciones de aprobar y rechazar (con confirmación), alta de staff y listados globales de postulantes y convocatorias.</td>
+          <td>Admin</td>
+          <td><code>Gestor.jsx</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-H06</td>
+          <td>El panel del reclutador muestra sus procesos y sus candidatos, sin exponer los de otros reclutadores en las secciones de gestión.</td>
+          <td>Reclutador</td>
+          <td><code>Gestor.jsx</code> · <code>Conv.cola</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="card" id="rf-i">
+  <h2 class="sec"><span class="num">RF-I</span> Configuración del KPI y transparencia del cálculo</h2>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th style="width:62px">ID</th><th>Requisito funcional</th><th style="width:78px">Actor</th><th style="width:210px">Evidencia</th><th style="width:96px">Estado</th></tr></thead>
+      <tbody>
+        <tr class="grp"><td colspan="5">Parámetros y explicación</td></tr>
+        <tr>
+          <td class="id">RF-I01</td>
+          <td>El administrador puede leer la configuración vigente del KPI (<code>GET /api/configuracion</code>), devuelta como pares clave-valor numéricos.</td>
+          <td>Admin</td>
+          <td><code>GET /api/configuracion</code> · <code>config.controller.js</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-I02</td>
+          <td>El administrador puede actualizar solo claves de una <strong>lista blanca</strong>; una clave desconocida o un valor no numérico/negativo <code>400</code>. Los cambios se aplican en la siguiente lectura.</td>
+          <td>Admin</td>
+          <td><code>PUT /api/configuracion</code> · <code>config.model.js</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-I03</td>
+          <td>Los cinco pesos del KPI de perfil deben sumar exactamente <strong>100</strong>; cualquier otra suma se rechaza con <code>400</code>.</td>
+          <td>Admin</td>
+          <td><code>config.model.js</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-I04</td>
+          <td>Se exige coherencia de umbrales: <code>umbral_medio ≤ umbral_alto</code>; si no, <code>400</code>.</td>
+          <td>Admin</td>
+          <td><code>config.model.js</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-I05</td>
+          <td>La configuración se cachea 30 s y se invalida al guardar, para no consultar la tabla en cada cálculo sin sacrificar inmediatez.</td>
+          <td>Sistema</td>
+          <td><code>config.model.js</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-I06</td>
+          <td>La pantalla “Cómo se calcula” (admin) explica la fórmula completa, los pesos, los factores de nivel, los umbrales y muestra un ejemplo real por convocatoria con el desglose de puntos, en modo solo lectura.</td>
+          <td>Admin</td>
+          <td><code>ComoSeCalcula.jsx</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-I07</td>
+          <td>Los parámetros configurados deben gobernar el cálculo real del <strong>KPI de perfil</strong>. Hoy <code>services/kpi.js</code> reparte 20 puntos fijos por criterio e ignora <code>peso_*</code>, <code>umbral_alto</code>, <code>umbral_medio</code> y <code>anios_referencia</code>: se validan y se guardan, pero no afectan el resultado.</td>
+          <td>Sistema</td>
+          <td><code>services/kpi.js</code> · <code>configuracion_kpi</code></td>
+          <td class="est"><span class="badge b-no">No cumple</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="card" id="rf-j">
+  <h2 class="sec"><span class="num">RF-J</span> Catálogos y fuente única de verdad</h2>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th style="width:62px">ID</th><th>Requisito funcional</th><th style="width:78px">Actor</th><th style="width:210px">Evidencia</th><th style="width:96px">Estado</th></tr></thead>
+      <tbody>
+        <tr class="grp"><td colspan="5">Valores de negocio compartidos</td></tr>
+        <tr>
+          <td class="id">RF-J01</td>
+          <td>El catálogo de tecnologías es público y devuelve nombre, categoría, niveles y conteos de uso, para poblar formularios sin autenticación.</td>
+          <td>Visitante</td>
+          <td><code>GET /api/tecnologias</code> · <code>tecnologias.controller.js</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-J02</td>
+          <td><code>GET /api/catalogos</code> entrega, en una sola llamada, los catálogos de base de datos (tecnologías, niveles, jornadas, formaciones, instituciones, categorías) y los valores del dominio: disponibilidades, modos de filtro, niveles con factor y orden, rango y valor por defecto de umbral y cupos, puntos de la fórmula y estados/transiciones del pipeline.</td>
+          <td>Todos</td>
+          <td><code>GET /api/catalogos</code> · <code>catalogos.js</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-J03</td>
+          <td>Los estados, roles, transiciones, disponibilidades, niveles, pesos y límites viven en un único módulo del backend (<code>domain/catalogos.js</code>) que valida y del que dependen modelos, servicios y controladores. Agregar un valor nuevo se hace en un solo lugar.</td>
+          <td>Sistema</td>
+          <td><code>domain/catalogos.js</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-J04</td>
+          <td>El frontend consume los catálogos en lugar de duplicar valores de negocio: las transiciones se piden con <code>transicionesDe()</code> y las etiquetas de estado viven en un módulo aparte. Queda una duplicación menor: la pantalla de búsqueda define localmente los tres modos y sus ayudas en vez de leer <code>modos_filtro</code>.</td>
+          <td>Sistema</td>
+          <td><code>lib/catalogos.js</code> · <code>lib/estados.js</code> · <code>Buscar.jsx</code></td>
+          <td class="est"><span class="badge b-part">Parcial</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-J05</td>
+          <td>Los formularios se inicializan con arreglos vacíos cuando el catálogo aún no llegó, para no romper el render en el primer montaje (defecto que ya ocurrió una vez en <code>/convocatorias</code>).</td>
+          <td>Sistema</td>
+          <td><code>useCatalogos</code> · <code>Convocatorias.jsx</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="card" id="rf-k">
+  <h2 class="sec"><span class="num">RF-K</span> Bitácora, errores y operación</h2>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th style="width:62px">ID</th><th>Requisito funcional</th><th style="width:78px">Actor</th><th style="width:210px">Evidencia</th><th style="width:96px">Estado</th></tr></thead>
+      <tbody>
+        <tr class="grp"><td colspan="5">Trazabilidad y salud del servicio</td></tr>
+        <tr>
+          <td class="id">RF-K01</td>
+          <td>El staff puede consultar los <strong>últimos 100 eventos</strong> con datos de la persona, fecha, disponibilidad y origen. Existe endpoint, pero <strong>no hay pantalla</strong> que los muestre: la bitácora solo es accesible por API.</td>
+          <td>Staff</td>
+          <td><code>GET /api/eventos</code> · <code>personas.controller.js</code></td>
+          <td class="est"><span class="badge b-part">Parcial</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-K02</td>
+          <td>Se registra un evento en el alta de cuenta, en cada actualización de perfil, en el alta de persona por staff y en la primera toma de un candidato.</td>
+          <td>Sistema</td>
+          <td><code>auth.controller.js</code> · <code>personas.controller.js</code> · <code>pipeline.js</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-K03</td>
+          <td>El servicio expone <code>GET /api/health</code> sin autenticación con estado, nombre y fase del servicio, útil para monitoreo o despliegue.</td>
+          <td>Público</td>
+          <td><code>GET /api/health</code> · <code>app.js</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-K04</td>
+          <td>Una ruta desconocida responde <code>404</code> en JSON, y todo error sale como <code>{ error }</code>; los errores 500 se registran en consola sin filtrar detalles internos al cliente.</td>
+          <td>Sistema</td>
+          <td><code>app.js</code> · <code>utils/errors.js</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="card" id="rf-l">
+  <h2 class="sec"><span class="num">RF-L</span> Interfaz, navegación y accesibilidad</h2>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th style="width:62px">ID</th><th>Requisito funcional</th><th style="width:78px">Actor</th><th style="width:210px">Evidencia</th><th style="width:96px">Estado</th></tr></thead>
+      <tbody>
+        <tr class="grp"><td colspan="5">Experiencia de uso</td></tr>
+        <tr>
+          <td class="id">RF-L01</td>
+          <td>Mapa de rutas por rol: <code>/</code> y <code>/login</code> públicas; <code>/mi-perfil</code> y <code>/mis-convocatorias</code> para postulantes; <code>/buscar</code>, <code>/convocatorias</code>, <code>/convocatorias/:id</code>, <code>/personas/:id</code> y <code>/como-se-calcula</code> para staff según permisos.</td>
+          <td>Todos</td>
+          <td><code>App.jsx</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-L02</td>
+          <td>Barra lateral con enlaces filtrados por rol y pie de sesión con avatar, correo, rol y estado; en móvil se convierte en panel desplegable.</td>
+          <td>Todos</td>
+          <td><code>App.jsx</code> · <code>components/ui.jsx</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-L03</td>
+          <td>Tema claro/oscuro con preferencia oscura por defecto, conmutador persistido en <code>localStorage</code> como <code>tema</code>, aplicado por la clase <code>dark</code>.</td>
+          <td>Todos</td>
+          <td><code>App.jsx</code> · <code>index.css</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-L04</td>
+          <td>Diseño responsive: rejillas fluidas, tablas con desplazamiento, sidebar colapsable y tipografía adaptable.</td>
+          <td>Todos</td>
+          <td><code>index.css</code> · <code>App.jsx</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-L05</td>
+          <td>Un <code>ErrorBoundary</code> por ruta evita la pantalla en blanco: muestra el error, lo registra en consola y se reinicia al navegar.</td>
+          <td>Todos</td>
+          <td><code>components/ErrorBoundary.jsx</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-L06</td>
+          <td>Las acciones asíncronas usan <code>useAccion</code>: deshabilitan el botón mientras se ejecutan y muestran un toast de éxito o error; los formularios usan un sistema de toasts accesible.</td>
+          <td>Todos</td>
+          <td><code>hooks/useAccion.js</code> · <code>lib/toast.js</code> · <code>components/Toast.jsx</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-L07</td>
+          <td>Estados de carga con esqueletos, estados vacíos ilustrados, avisos de error con reintento y mensajes en español en todas las pantallas.</td>
+          <td>Todos</td>
+          <td><code>components/ui.jsx</code> · <code>pages/*</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-L08</td>
+          <td>La ruta heredada <code>/vacantes</code> redirige a <code>/convocatorias</code>; una ruta desconocida redirige a login si no hay sesión.</td>
+          <td>Todos</td>
+          <td><code>App.jsx</code></td>
+          <td class="est"><span class="badge b-ok">Cumple</span></td>
+        </tr>
+        <tr>
+          <td class="id">RF-L09</td>
+          <td>Accesibilidad básica: encabezados semánticos, etiquetas asociadas a campos, <code>aria-label</code> en buscadores y botones icónicos, <code>aria-live</code> en avisos, <code>aria-pressed</code> en chips y foco visible. No hay auditoría formal ni pruebas automatizadas de accesibilidad.</td>
+          <td>Todos</td>
+          <td><code>components/ui.jsx</code> · <code>index.css</code></td>
+          <td class="est"><span class="badge b-part">Parcial</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout info">
+    <strong>Total:</strong> 102 requisitos funcionales. Cierre de la sección: 93 cumplen, 7 cumplen parcialmente y
+    2 no cumplen. El detalle del puntaje está en la sección 6.
+  </div>
+</section>
+
+<section class="card" id="rnf">
+  <h2 class="sec"><span class="num">04</span> Requisitos no funcionales</h2>
+  <p>
+    Cada RNF expresa un criterio verificable y la forma en que se comprobó. Se agrupan en 11 categorías. La
+    columna <em>Estado</em> es la autoevaluación; el cómputo y la ponderación están en la sección 6.
+  </p>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th style="width:66px">ID</th><th>Requisito no funcional y criterio de aceptación</th><th style="width:200px">Verificación</th><th style="width:96px">Estado</th></tr></thead>
+      <tbody>
+        <tr class="grp"><td colspan="4">Arquitectura y mantenibilidad</td></tr>
+        <tr><td class="id">RNF-01</td><td><strong>Arquitectura por capas.</strong> El flujo es ruta → controlador → servicio → modelo, y los modelos contienen solo SQL. Un cambio de regla no obliga a tocar la capa HTTP.</td><td>Inspección de <code>routes/</code>, <code>controllers/</code>, <code>services/</code> y <code>models/</code>.</td><td class="est"><span class="badge b-ok">Cumple</span></td></tr>
+        <tr><td class="id">RNF-02</td><td><strong>Fuente única de verdad del dominio.</strong> Roles, estados, transiciones, niveles, pesos y límites existen una sola vez y se consumen por API.</td><td><code>domain/catalogos.js</code> y su uso en el resto del backend.</td><td class="est"><span class="badge b-ok">Cumple</span></td></tr>
+        <tr><td class="id">RNF-03</td><td><strong>Separación estricta del acceso a datos.</strong> Solo los modelos emiten SQL. Hay excepciones: el servicio de candidatos y algunos controladores consultan <code>pool</code> directamente, lo que reparte el conocimiento del esquema.</td><td>Búsqueda de <code>pool.query</code> fuera de <code>models/</code>.</td><td class="est"><span class="badge b-part">Parcial</span></td></tr>
+        <tr><td class="id">RNF-04</td><td><strong>Documentación de arquitectura vigente.</strong> Debe existir un documento que describa módulos, modelo de datos y decisiones. El <code>ESTRUCTURA.md</code> fue eliminado y el <code>README</code> del frontend es plantilla de Vite; solo queda <code>AGENTS.md</code>, orientado a agentes.</td><td>Inventario de documentación del repositorio.</td><td class="est"><span class="badge b-no">No cumple</span></td></tr>
+
+        <tr class="grp"><td colspan="4">Seguridad</td></tr>
+        <tr><td class="id">RNF-05</td><td><strong>Contraseñas no recuperables.</strong> Se almacenan con bcrypt y costo 10; nunca en texto plano ni en respuestas de la API.</td><td><code>bcrypt.hash(pwd, 10)</code>; las consultas no devuelven <code>password_hash</code>.</td><td class="est"><span class="badge b-ok">Cumple</span></td></tr>
+        <tr><td class="id">RNF-06</td><td><strong>Sesiones acotadas.</strong> El JWT expira en 8 h y su firma se verifica en cada petición; un token alterado o vencido produce <code>401</code>.</td><td><code>jwt.sign(..., { expiresIn: '8h' })</code> · <code>jwt.verify</code>.</td><td class="est"><span class="badge b-ok">Cumple</span></td></tr>
+        <tr><td class="id">RNF-07</td><td><strong>Secreto de firma obligatorio por entorno.</strong> La aplicación no debe arrancar con un secreto por defecto. Hoy usa <code>process.env.JWT_SECRET || 'dev'</code>: si falta la variable, cualquiera puede firmar tokens válidos.</td><td><code>middlewares/auth.js</code>.</td><td class="est"><span class="badge b-part">Parcial</span></td></tr>
+        <tr><td class="id">RNF-08</td><td><strong>Autorización por rol en el servidor.</strong> Cada ruta declara sus roles y la interfaz no es la única defensa.</td><td><code>routes/index.js</code> · pruebas <code>scopes.test.js</code>.</td><td class="est"><span class="badge b-ok">Cumple</span></td></tr>
+        <tr><td class="id">RNF-09</td><td><strong>Alcance por fila coherente.</strong> Un reclutador solo debe acceder a las personas y procesos de su ámbito, tanto en listados como en detalles. Hay tres desvíos: el listado de personas es global, la cola de <code>/api/candidatos</code> no filtra por rol y el detalle de convocatoria es legible por cualquier autenticado.</td><td>Revisión de controladores y pruebas manuales de permisos.</td><td class="est"><span class="badge b-part">Parcial</span></td></tr>
+        <tr><td class="id">RNF-10</td><td><strong>Validación de entrada y errores de negocio.</strong> Los valores fuera de rango, estados inválidos y transiciones prohibidas producen <code>400</code>/<code>409</code> con mensaje, no un 500.</td><td><code>utils/validar.js</code> · <code>HttpError</code> · pruebas de integración.</td><td class="est"><span class="badge b-ok">Cumple</span></td></tr>
+        <tr><td class="id">RNF-11</td><td><strong>Resistencia a inyección SQL.</strong> Todas las consultas usan parámetros; los nombres de columna dinámicos provienen de listas blancas.</td><td>Revisión de modelos y servicios.</td><td class="est"><span class="badge b-ok">Cumple</span></td></tr>
+        <tr><td class="id">RNF-12</td><td><strong>Resistencia a XSS y política de contenido.</strong> React escapa la salida y no se usa <code>dangerouslySetInnerHTML</code>; falta una Content-Security-Policy y cabeceras de seguridad, por lo que un XSS en un tercero podría leer el token.</td><td>Búsqueda de <code>innerHTML</code>; revisión de cabeceras en <code>app.js</code>.</td><td class="est"><span class="badge b-part">Parcial</span></td></tr>
+        <tr><td class="id">RNF-13</td><td><strong>No filtración de detalles internos.</strong> Los 5xx devuelven un mensaje genérico y el stack solo va a consola.</td><td><code>app.js</code> (manejador central).</td><td class="est"><span class="badge b-ok">Cumple</span></td></tr>
+        <tr><td class="id">RNF-14</td><td><strong>CORS restringido.</strong> Solo los orígenes legítimos deben poder llamar la API. Hoy <code>cors()</code> acepta cualquier origen con credenciales de portador.</td><td><code>app.js</code>.</td><td class="est"><span class="badge b-no">No cumple</span></td></tr>
+        <tr><td class="id">RNF-15</td><td><strong>Protección contra fuerza bruta.</strong> Debe existir límite de intentos o bloqueo temporal por cuenta/IP. No hay <em>rate limiting</em> ni bloqueo tras intentos fallidos.</td><td>Revisión de <code>auth.controller.js</code> y middleware.</td><td class="est"><span class="badge b-no">No cumple</span></td></tr>
+        <tr><td class="id">RNF-16</td><td><strong>Recuperación de acceso y verificación de correo.</strong> El usuario debe poder restablecer su contraseña y confirmar su correo. No existe ninguno de los dos flujos.</td><td>Inventario de rutas de <code>/auth</code>.</td><td class="est"><span class="badge b-no">No cumple</span></td></tr>
+        <tr><td class="id">RNF-17</td><td><strong>Transporte cifrado.</strong> Todo el tráfico debe ir por HTTPS con HSTS. La aplicación no configura TLS ni fuerza redirección; en desarrollo circula por HTTP.</td><td>Configuración del servidor y de despliegue.</td><td class="est"><span class="badge b-no">No cumple</span></td></tr>
+        <tr><td class="id">RNF-18</td><td><strong>Resguardo del token en el cliente.</strong> El token no debería quedar accesible a JavaScript. Se guarda en <code>localStorage</code>, sin cookie <code>HttpOnly</code> ni <code>SameSite</code>.</td><td><code>lib/api.js</code> · <code>App.jsx</code>.</td><td class="est"><span class="badge b-part">Parcial</span></td></tr>
+        <tr><td class="id">RNF-19</td><td><strong>Secretos fuera del control de versiones.</strong> <code>backend/.env</code> está versionado y contiene credenciales de base y secreto; además se versionan <code>node_modules</code>.</td><td><code>git ls-files</code> · <code>backend/.env</code>.</td><td class="est"><span class="badge b-no">No cumple</span></td></tr>
+
+        <tr class="grp"><td colspan="4">Rendimiento y escalabilidad</td></tr>
+        <tr><td class="id">RNF-20</td><td><strong>Cachés acotados y consistentes.</strong> El padrón se cachea 60 s y la configuración 30 s, con invalidación explícita al cambiar datos; la lista se recalcula al instante tras un cambio de perfil o de umbral.</td><td><code>services/candidatos.js</code> · <code>config.model.js</code>.</td><td class="est"><span class="badge b-ok">Cumple</span></td></tr>
+        <tr><td class="id">RNF-21</td><td><strong>Consultas agregadas y cálculo por lote.</strong> El listado no hace N+1: usa subconsultas agregadas y puntúa varias convocatorias con una sola carga de datos.</td><td><code>persona.model.js</code> · <code>calcularVarios</code>.</td><td class="est"><span class="badge b-ok">Cumple</span></td></tr>
+        <tr><td class="id">RNF-22</td><td><strong>Paginación de colecciones.</strong> Los listados grandes deben paginarse. <code>GET /api/personas</code> devuelve todo el padrón; solo la cola (200) y los eventos (100) tienen tope.</td><td>Endpoints de listado.</td><td class="est"><span class="badge b-no">No cumple</span></td></tr>
+        <tr><td class="id">RNF-23</td><td><strong>Costo de cálculo predecible.</strong> El ranking recorre padrón × convocatorias × requisitos en cada consulta. Con 21 personas es inmediato; el costo crece de forma multiplicativa y no hay materialización ni índice de puntajes.</td><td><code>services/candidatos.js</code> · medición conceptual.</td><td class="est"><span class="badge b-part">Parcial</span></td></tr>
+        <tr><td class="id">RNF-24</td><td><strong>Índices para filtros y uniones.</strong> Existen índices en correo, estado de cuenta, persona de eventos y claves foráneas; las consultas de filtro usan columnas indexadas o catálogos pequeños.</td><td><code>esquema_final.sql</code>.</td><td class="est"><span class="badge b-ok">Cumple</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="card">
+  <h2 class="sec"><span class="num">04</span> Requisitos no funcionales <span class="muted" style="font-size:.65em;font-weight:600">(continuación)</span></h2>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th style="width:66px">ID</th><th>Requisito no funcional y criterio de aceptación</th><th style="width:200px">Verificación</th><th style="width:96px">Estado</th></tr></thead>
+      <tbody>
+        <tr class="grp"><td colspan="4">Integridad y fiabilidad</td></tr>
+        <tr><td class="id">RNF-25</td><td><strong>Integridad declarada en la base.</strong> El esquema impone claves foráneas, <code>CHECK</code> de estados y disponibilidad, y unicidad en correo, usuario-persona y (convocatoria, persona). La base impide estados imposibles aunque la API falle.</td><td><code>esquema_final.sql</code>.</td><td class="est"><span class="badge b-ok">Cumple</span></td></tr>
+        <tr><td class="id">RNF-26</td><td><strong>Atomicidad en escrituras múltiples.</strong> Registro, edición de CV, alta de convocatoria, toma de candidato y cambios de cupos corren en transacción; si algo falla no quedan filas huérfanas.</td><td><code>config/db.js</code> · <code>conTransaccion</code>.</td><td class="est"><span class="badge b-ok">Cumple</span></td></tr>
+        <tr><td class="id">RNF-27</td><td><strong>Concurrencia sobre cupos.</strong> La fila de la convocatoria se bloquea con <code>FOR UPDATE</code> antes de contar contratados, lo que serializa tomas simultáneas.</td><td><code>services/pipeline.js</code>.</td><td class="est"><span class="badge b-ok">Cumple</span></td></tr>
+        <tr><td class="id">RNF-28</td><td><strong>Reversión ante error.</strong> Cualquier excepción dentro de una transacción ejecuta <code>ROLLBACK</code> y libera la conexión en <code>finally</code>.</td><td><code>config/db.js</code>.</td><td class="est"><span class="badge b-ok">Cumple</span></td></tr>
+
+        <tr class="grp"><td colspan="4">Operación, despliegue y continuidad</td></tr>
+        <tr><td class="id">RNF-29</td><td><strong>Integración y despliegue automatizados.</strong> Debe haber CI que ejecute pruebas y build, migraciones versionadas y un artefacto reproducible. No hay CI, ni migraciones, ni Docker; la base se crea a mano con <code>psql</code>.</td><td>Ausencia de <code>.github/</code>, <code>Dockerfile</code>, carpeta de migraciones y scripts raíz.</td><td class="est"><span class="badge b-no">No cumple</span></td></tr>
+        <tr><td class="id">RNF-30</td><td><strong>Observabilidad mínima.</strong> Hay <code>/api/health</code> y registro de errores 500 en consola; faltan logs estructurados, correlación de peticiones y métricas de latencia o errores.</td><td><code>app.js</code> · <code>server.js</code>.</td><td class="est"><span class="badge b-part">Parcial</span></td></tr>
+        <tr><td class="id">RNF-31</td><td><strong>Respaldo y retención.</strong> Debe existir política de copias de seguridad y de conservación de datos. No está definida ni automatizada en el repositorio.</td><td>Documentación y scripts del proyecto.</td><td class="est"><span class="badge b-no">No cumple</span></td></tr>
+
+        <tr class="grp"><td colspan="4">Usabilidad, accesibilidad y compatibilidad</td></tr>
+        <tr><td class="id">RNF-32</td><td><strong>Usabilidad para el usuario final.</strong> Mensajes en español, estados vacíos explicativos, esqueletos de carga, confirmaciones de acción destructiva, ayudas contextuales y navegación consistente.</td><td>Revisión de las 10 pantallas.</td><td class="est"><span class="badge b-ok">Cumple</span></td></tr>
+        <tr><td class="id">RNF-33</td><td><strong>Accesibilidad.</strong> Debe cumplir WCAG 2.1 AA en etiquetado, contraste, foco y teclado. Hay bases (etiquetas, <code>aria-label</code>, <code>aria-live</code>, <code>aria-pressed</code>) pero no auditoría ni pruebas automatizadas; el contraste de varios textos secundarios no se midió.</td><td>Inspección de componentes; no hay <code>axe</code> ni auditoría.</td><td class="est"><span class="badge b-part">Parcial</span></td></tr>
+        <tr><td class="id">RNF-34</td><td><strong>Diseño adaptable.</strong> La interfaz funciona de 360 px a escritorio, sin tablas cortadas: el sidebar colapsa y las tablas se desplazan.</td><td>CSS y revisión responsive.</td><td class="est"><span class="badge b-ok">Cumple</span></td></tr>
+        <tr><td class="id">RNF-35</td><td><strong>Compatibilidad con navegadores modernos.</strong> La aplicación usa APIs estándar de React 19 y Vite 8; funciona en las dos últimas versiones de Chrome, Edge y Firefox. No soporta Internet Explorer.</td><td>Stack y build de producción.</td><td class="est"><span class="badge b-ok">Cumple</span></td></tr>
+        <tr><td class="id">RNF-36</td><td><strong>Compatibilidad de plataforma.</strong> Backend en Node.js moderno, PostgreSQL 18 y sistema operativo indiferente; el <code>pg</code> usa el protocolo estándar y no depende de binarios nativos del cliente.</td><td><code>package.json</code> · conexión <code>pg</code>.</td><td class="est"><span class="badge b-ok">Cumple</span></td></tr>
+
+        <tr class="grp"><td colspan="4">Calidad y pruebas</td></tr>
+        <tr><td class="id">RNF-37</td><td><strong>Suite de pruebas del backend.</strong> 84 pruebas: 70 de integración sobre API real (autenticación, permisos, convocatorias, cuentas, alcance) y 14 unitarias del KPI. Las 14 unitarias se re-ejecutaron: 14/14.</td><td><code>npm test</code> · <code>backend/tests/*.js</code>.</td><td class="est"><span class="badge b-ok">Cumple</span></td></tr>
+        <tr><td class="id">RNF-38</td><td><strong>Cobertura medida.</strong> Debe existir métrica de cobertura de líneas y ramas con umbral. No se mide ni se publica.</td><td><code>package.json</code> (sin script de cobertura).</td><td class="est"><span class="badge b-no">No cumple</span></td></tr>
+        <tr><td class="id">RNF-39</td><td><strong>Pruebas del frontend.</strong> Debe haber pruebas de componentes y de flujos críticos. No existe ninguna.</td><td><code>frontend/package.json</code> (sin runner).</td><td class="est"><span class="badge b-no">No cumple</span></td></tr>
+        <tr><td class="id">RNF-40</td><td><strong>Análisis estático.</strong> oxlint pasa con 4 advertencias <code>set-state-in-effect</code> y 0 errores; <code>react/rules-of-hooks</code> está como error. El backend no tiene linter ni typecheck.</td><td><code>npm run lint</code> · <code>.oxlintrc.json</code>.</td><td class="est"><span class="badge b-part">Parcial</span></td></tr>
+        <tr><td class="id">RNF-41</td><td><strong>Build reproducible.</strong> <code>npm run build</code> termina en 1,15 s con 45 módulos y un bundle único de 404 kB; no hay advertencias de compilación.</td><td>Ejecución verificada para este informe.</td><td class="est"><span class="badge b-ok">Cumple</span></td></tr>
+        <tr><td class="id">RNF-42</td><td><strong>Pruebas idempotentes y aisladas.</strong> La suite no debe depender ni alterar datos de demostración. Hoy reescribe el CV de un postulante, agrega eventos y crea/borra usuarios y convocatorias: exige resembrar la base.</td><td><code>backend/tests/*</code> · <code>AGENTS.md</code>.</td><td class="est"><span class="badge b-no">No cumple</span></td></tr>
+
+        <tr class="grp"><td colspan="4">Mantenibilidad, portabilidad y privacidad</td></tr>
+        <tr><td class="id">RNF-43</td><td><strong>Convenciones y legibilidad.</strong> Nombres en español coherentes con el dominio, controladores delgados, comentarios que explican decisiones no obvias y módulos pequeños con una responsabilidad clara.</td><td>Revisión de estructura y estilo.</td><td class="est"><span class="badge b-ok">Cumple</span></td></tr>
+        <tr><td class="id">RNF-44</td><td><strong>Baja duplicación y contratos estables.</strong> Hay formas de respuesta heterogéneas (a veces arreglo, a veces <code>{ total, resultados }</code>) y rutas duplicadas por alias; obliga a leer cada endpoint antes de consumirlo.</td><td>Comparación de respuestas documentadas.</td><td class="est"><span class="badge b-part">Parcial</span></td></tr>
+        <tr><td class="id">RNF-45</td><td><strong>Portabilidad del entorno.</strong> Instalación y arranque reproducibles en Windows/Linux. El camino de <code>psql</code> está codificado para Windows, la base se crea a mano y el <code>.env</code> versionado apunta a una base concreta: funciona, pero no es portable “clonar y correr”.</td><td><code>AGENTS.md</code> · <code>backend/.env</code>.</td><td class="est"><span class="badge b-part">Parcial</span></td></tr>
+        <tr><td class="id">RNF-46</td><td><strong>Privacidad y protección de datos personales.</strong> Debe haber aviso de privacidad, consentimiento informado, base legal, plazo de conservación y mecanismo de anonimización o borrado. No existe ninguno; los CV quedan indefinidamente y cualquier autenticado puede alcanzar datos por los desvíos de alcance.</td><td>Revisión del esquema y de la interfaz.</td><td class="est"><span class="badge b-no">No cumple</span></td></tr>
+        <tr><td class="id">RNF-47</td><td><strong>Internacionalización.</strong> El sistema es de una sola consultora y una sola lengua; no se requiere multi-idioma.</td><td>Alcance del proyecto.</td><td class="est"><span class="badge b-na">N/A</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="card" id="matriz">
+  <h2 class="sec"><span class="num">05</span> Matriz de trazabilidad</h2>
+  <p>
+    Cada módulo funcional se ancla a sus endpoints, a los archivos que lo implementan y a las pruebas que lo
+    cubren. Esta matriz permite auditar un requisito sin recorrer todo el repositorio.
+  </p>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th style="width:70px">Módulo</th><th style="width:64px">RF</th><th>Endpoints principales</th><th>Implementación</th><th>Pruebas</th></tr></thead>
+      <tbody>
+        <tr><td class="id">RF-A</td><td>10</td><td><code>/auth/registro</code>, <code>/auth/login</code>, <code>/admin/usuarios</code>, <code>/admin/usuarios/:id/aprobar|rechazar</code></td><td><code>auth.controller.js</code>, <code>usuarios.controller.js</code>, <code>middlewares/auth.js</code></td><td><code>api.test.js</code>, <code>cuentas.test.js</code>, <code>scopes.test.js</code></td></tr>
+        <tr><td class="id">RF-B</td><td>9</td><td><code>/yo</code> (GET/PUT)</td><td><code>personas.controller.js</code>, <code>utils/validar.js</code>, <code>services/kpi.js</code></td><td><code>api.test.js</code></td></tr>
+        <tr><td class="id">RF-C</td><td>9</td><td><code>/personas</code>, <code>/personas/:id</code>, <code>/personas/upsert</code></td><td><code>persona.model.js</code>, <code>services/candidatos.js</code></td><td><code>api.test.js</code>, <code>scopes.test.js</code></td></tr>
+        <tr><td class="id">RF-D</td><td>14</td><td><code>/convocatorias</code> y subrutas (<code>aprobar</code>, <code>rechazar</code>, <code>cerrar</code>, <code>umbral</code>, <code>cupos</code>)</td><td><code>convocatorias.controller.js</code>, <code>convocatorias.service.js</code>, <code>convocatoria.model.js</code></td><td><code>convocatorias.test.js</code></td></tr>
+        <tr><td class="id">RF-E</td><td>12</td><td><code>/convocatorias/:id/ranking</code></td><td><code>services/kpiConvocatoria.js</code>, <code>services/candidatos.js</code></td><td><code>kpiConv.test.js</code>, <code>convocatorias.test.js</code></td></tr>
+        <tr><td class="id">RF-F</td><td>11</td><td><code>/convocatorias/:id/candidatos/:persona_id/estado</code></td><td><code>services/pipeline.js</code>, <code>domain/catalogos.js</code></td><td><code>convocatorias.test.js</code></td></tr>
+        <tr><td class="id">RF-G</td><td>6</td><td><code>/mis-convocatorias</code></td><td><code>convocatorias.controller.js</code>, <code>candidatos.js</code>, <code>MisConvocatorias.jsx</code></td><td><code>convocatorias.test.js</code></td></tr>
+        <tr><td class="id">RF-H</td><td>6</td><td><code>/admin/resumen</code>, <code>/candidatos</code>, <code>/postulaciones</code></td><td><code>convocatorias.service.js</code>, <code>convocatorias.controller.js</code></td><td><code>convocatorias.test.js</code>, <code>scopes.test.js</code></td></tr>
+        <tr><td class="id">RF-I</td><td>7</td><td><code>/configuracion</code> (GET/PUT)</td><td><code>config.controller.js</code>, <code>config.model.js</code>, <code>ComoSeCalcula.jsx</code></td><td><code>api.test.js</code></td></tr>
+        <tr><td class="id">RF-J</td><td>5</td><td><code>/tecnologias</code>, <code>/catalogos</code></td><td><code>domain/catalogos.js</code>, <code>tecnologias.controller.js</code>, <code>lib/catalogos.js</code></td><td><code>api.test.js</code></td></tr>
+        <tr><td class="id">RF-K</td><td>4</td><td><code>/eventos</code>, <code>/health</code></td><td><code>personas.controller.js</code>, <code>app.js</code></td><td><code>api.test.js</code></td></tr>
+        <tr><td class="id">RF-L</td><td>9</td><td>—</td><td><code>App.jsx</code>, <code>components/*</code>, <code>index.css</code></td><td>Manual (build y lint)</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="card" id="autoevaluacion">
+  <h2 class="sec"><span class="num">06</span> Autoevaluación</h2>
+
+  <h3 class="sub">6.1 Método</h3>
+  <p>
+    La evaluación no se basa en la documentación previa sino en el <strong>código ejecutable</strong>: se leyó cada
+    ruta, controlador, servicio y modelo, se contrastó el esquema SQL y se recorrieron las pantallas. Cuando la
+    documentación y el código discrepaban, se tomó el código como fuente de verdad y la discrepancia se registró
+    como brecha. La verificación incluyó 14 pruebas unitarias re-ejecutadas, lint y build; las 70 pruebas de
+    integración se citan de la corrida documentada porque escriben en la base.
+  </p>
+
+  <div class="grid-3">
+    <div class="box"><h4><span class="swatch" style="background:#047857"></span>Cumple</h4><p>Implementado, accesible al actor indicado y verificable. Sin desviaciones relevantes para el alcance.</p></div>
+    <div class="box"><h4><span class="swatch" style="background:#b45309"></span>Parcial</h4><p>Funciona en el camino principal, pero tiene una desviación documentada, cobertura incompleta o falta de un control exigible.</p></div>
+    <div class="box"><h4><span class="swatch" style="background:#b91c1c"></span>No cumple</h4><p>No existe, está deshabilitado o contradice el requisito. Se indica la brecha y su prioridad.</p></div>
+  </div>
+  <p class="small muted">
+    Crédito: Cumple = 1 · Parcial = 0,5 · No cumple = 0 · N/A = excluido del denominador. Puntaje global =
+    60 % funcional + 40 % no funcional.
+  </p>
+
+  <h3 class="sub">6.2 Resultado funcional por módulo</h3>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Módulo</th><th style="width:52px">RF</th><th style="width:74px">Cumple</th><th style="width:74px">Parcial</th><th style="width:80px">No cumple</th><th style="width:74px">%</th><th>Lectura</th></tr></thead>
+      <tbody>
+        <tr><td>RF-A · Cuentas y sesión</td><td>10</td><td>9</td><td>1</td><td>0</td><td><strong>95,0</strong></td><td>Sólido; solo el rechazo de cuentas no usa el estado <code>rechazada</code>.</td></tr>
+        <tr><td>RF-B · Perfil y hoja de vida</td><td>9</td><td>8</td><td>1</td><td>0</td><td><strong>94,4</strong></td><td>CRUD completo; el criterio de “actualidad” del KPI no mide actividad real.</td></tr>
+        <tr><td>RF-C · Padrón y búsqueda</td><td>9</td><td>8</td><td>0</td><td>1</td><td><strong>88,9</strong></td><td>Búsqueda potente; el alcance del reclutador es incoherente entre listado y detalle.</td></tr>
+        <tr><td>RF-D · Convocatorias</td><td>14</td><td>12</td><td>2</td><td>0</td><td><strong>92,9</strong></td><td>Ciclo completo; el solo lectura no cubre el cambio de umbral.</td></tr>
+        <tr><td>RF-E · Lista viva y KPI</td><td>12</td><td>12</td><td>0</td><td>0</td><td><strong>100,0</strong></td><td>Núcleo diferencial, bien implementado y probado.</td></tr>
+        <tr><td>RF-F · Pipeline y cupos</td><td>11</td><td>11</td><td>0</td><td>0</td><td><strong>100,0</strong></td><td>Transacciones, bloqueo y cierre automático correctos.</td></tr>
+        <tr><td>RF-G · Experiencia del postulante</td><td>6</td><td>6</td><td>0</td><td>0</td><td><strong>100,0</strong></td><td>Transparencia total: KPI, umbral, posición y motivo.</td></tr>
+        <tr><td>RF-H · Panel y cola</td><td>6</td><td>6</td><td>0</td><td>0</td><td><strong>100,0</strong></td><td>Resumen por rol y cola con filtros.</td></tr>
+        <tr><td>RF-I · Configuración del KPI</td><td>7</td><td>6</td><td>0</td><td>1</td><td><strong>85,7</strong></td><td>Se valida y guarda, pero no se aplica al KPI de perfil.</td></tr>
+        <tr><td>RF-J · Catálogos</td><td>5</td><td>4</td><td>1</td><td>0</td><td><strong>90,0</strong></td><td>Dominio centralizado; queda una copia local de los modos de búsqueda.</td></tr>
+        <tr><td>RF-K · Bitácora y operación</td><td>4</td><td>3</td><td>1</td><td>0</td><td><strong>87,5</strong></td><td>API de eventos sin pantalla que la consuma.</td></tr>
+        <tr><td>RF-L · Interfaz y navegación</td><td>9</td><td>8</td><td>1</td><td>0</td><td><strong>94,4</strong></td><td>UX cuidada; accesibilidad sin auditoría formal.</td></tr>
+        <tr style="background:#e6f4f8"><td><strong>Total funcional</strong></td><td><strong>102</strong></td><td><strong>93</strong></td><td><strong>7</strong></td><td><strong>2</strong></td><td><strong>94,6</strong></td><td>El negocio funciona; las brechas son de control, no de flujo.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="bar brand" aria-hidden="true"><span style="width:94.1%"></span></div>
+
+  <h3 class="sub">6.3 Resultado no funcional por categoría</h3>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Categoría</th><th style="width:52px">RNF</th><th style="width:74px">Cumple</th><th style="width:74px">Parcial</th><th style="width:80px">No cumple</th><th style="width:74px">%</th><th>Brecha dominante</th></tr></thead>
+      <tbody>
+        <tr><td>Arquitectura y mantenibilidad</td><td>4</td><td>2</td><td>1</td><td>1</td><td><strong>62,5</strong></td><td>Sin documento de arquitectura; SQL fuera de los modelos.</td></tr>
+        <tr><td>Seguridad</td><td>15</td><td>6</td><td>4</td><td>5</td><td><strong>53,3</strong></td><td>CORS abierto, sin rate limiting, secreto con fallback, <code>.env</code> versionado.</td></tr>
+        <tr><td>Rendimiento y escalabilidad</td><td>5</td><td>3</td><td>1</td><td>1</td><td><strong>70,0</strong></td><td>Sin paginación; recálculo multiplicativo sin materializar.</td></tr>
+        <tr><td>Integridad y fiabilidad</td><td>4</td><td>4</td><td>0</td><td>0</td><td><strong>100,0</strong></td><td>—</td></tr>
+        <tr><td>Operación y despliegue</td><td>3</td><td>0</td><td>1</td><td>2</td><td><strong>16,7</strong></td><td>Sin CI, migraciones, Docker ni backups.</td></tr>
+        <tr><td>Usabilidad, accesibilidad y compatibilidad</td><td>5</td><td>4</td><td>1</td><td>0</td><td><strong>90,0</strong></td><td>Sin auditoría de accesibilidad.</td></tr>
+        <tr><td>Calidad y pruebas</td><td>6</td><td>2</td><td>1</td><td>3</td><td><strong>41,7</strong></td><td>Sin cobertura ni pruebas de frontend; tests no idempotentes.</td></tr>
+        <tr><td>Mantenibilidad, portabilidad y privacidad</td><td>4</td><td>1</td><td>2</td><td>1</td><td><strong>50,0</strong></td><td>Sin política de privacidad ni retención de datos.</td></tr>
+        <tr style="background:#e6f4f8"><td><strong>Total no funcional</strong></td><td><strong>46</strong></td><td><strong>22</strong></td><td><strong>11</strong></td><td><strong>13</strong></td><td><strong>59,8</strong></td><td>Deuda concentrada en seguridad y operación (1 N/A excluido).</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="bar part" aria-hidden="true"><span style="width:59.8%"></span></div>
+
+  <h3 class="sub">6.4 Puntaje global</h3>
+  <div class="kpis">
+    <div class="kpi brand"><div class="l">Funcional · peso 60 %</div><div class="n">94,6</div><div class="s">96,5 créditos sobre 102</div></div>
+    <div class="kpi part"><div class="l">No funcional · peso 40 %</div><div class="n">59,8</div><div class="s">27,5 créditos sobre 46</div></div>
+    <div class="kpi brand"><div class="l">Global ponderado</div><div class="n">80,7</div><div class="s">sobre 100</div></div>
+    <div class="kpi ok"><div class="l">Nivel</div><div class="n" style="font-size:20px">Cumple con observaciones</div><div class="s">Listo para demo y uso interno controlado</div></div>
+  </div>
+  <p>
+    El <strong>80,7/100</strong> no debe leerse como “el sistema está al 80 %”: mide cumplimiento del alcance
+    declarado. El núcleo funcional está prácticamente completo; lo que hunde el promedio es la deuda no funcional,
+    sobre todo seguridad y operación. Un sistema con este perfil es <em>demostrable y usable</em>, pero no
+    <em>publicable</em>.
+  </p>
+
+  <h3 class="sub">6.5 Qué no mide esta autoevaluación</h3>
+  <ul>
+    <li>Rendimiento bajo carga real (no hubo prueba de estrés ni perfilado con el padrón completo).</li>
+    <li>Seguridad ofensiva (no se ejecutó análisis de vulnerabilidades ni pentesting).</li>
+    <li>Usabilidad con usuarios reales (no hubo pruebas con postulantes ni reclutadores).</li>
+    <li>Accesibilidad con lectores de pantalla y navegación solo por teclado.</li>
+    <li>Exactitud estadística del KPI (no se contrastó contra decisiones de contratación reales).</li>
+  </ul>
+</section>
+
+<section class="card" id="brechas">
+  <h2 class="sec"><span class="num">07</span> Brechas y plan de mejora</h2>
+  <p>
+    Se priorizan por <strong>riesgo</strong>, no por esfuerzo. P1 = exposición de datos o posibilidad de toma de
+    control; debe cerrarse antes de cualquier despliegue accesible desde Internet. P2 = inconsistencia funcional o
+    deuda que afecta la confianza en el resultado. P3 = ingeniería y operación.
+  </p>
+
+  <h3 class="sub">P1 · Seguridad y privacidad (bloqueantes para producción)</h3>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th style="width:62px">ID</th><th>Brecha</th><th style="width:260px">Evidencia</th><th>Recomendación</th></tr></thead>
+      <tbody>
+        <tr><td class="id">G-01</td><td><strong>El pipeline global se expone a cualquier autenticado.</strong> <code>GET /api/candidatos</code> no declara rol y devuelve hasta 200 filas con nombre, correo y convocatoria; el panel del postulante las pinta como “candidatos en selección”, mostrando terceros.</td><td><code>routes/index.js</code> · <code>Conv.cola</code> · <code>Gestor.jsx</code></td><td>Exigir <code>staff</code> en la ruta y, para el postulante, un endpoint propio que solo devuelva sus filas.</td></tr>
+        <tr><td class="id">G-02</td><td><strong>El detalle de convocatoria revela candidatos a cualquier usuario.</strong> <code>GET /api/convocatorias/:id</code> solo valida autenticación; un postulante puede enumerar ids y leer el pipeline, incluidos snapshots de KPI.</td><td><code>routes/index.js</code> · <code>Conv.detalle</code></td><td>Restringir a staff y devolver al postulante solo su propia fila y los datos públicos de la convocatoria.</td></tr>
+        <tr><td class="id">G-03</td><td><strong>Alcance del reclutador incoherente.</strong> El listado y la búsqueda devuelven todo el padrón, pero el detalle responde <code>403</code> si la persona no está en su ámbito: el usuario ve filas que no puede abrir.</td><td><code>personas.controller.js</code> · <code>persona.model.js</code></td><td>Filtrar el listado por el mismo criterio del detalle, o abrir el padrón de forma explícita y documentada.</td></tr>
+        <tr><td class="id">G-04</td><td><strong>Secreto de sesión con valor por defecto.</strong> Si <code>JWT_SECRET</code> falta, se firma con <code>'dev'</code>: cualquiera puede emitir tokens válidos.</td><td><code>middlewares/auth.js</code></td><td>Fallar el arranque si la variable no está definida y rotar el secreto actual.</td></tr>
+        <tr><td class="id">G-05</td><td><strong>Perímetro HTTP sin controles.</strong> CORS acepta cualquier origen, no hay límite de intentos ni bloqueo de cuenta, y no se envían cabeceras de seguridad.</td><td><code>app.js</code> · <code>auth.controller.js</code></td><td>Lista blanca de orígenes, <code>express-rate-limit</code> con bloqueo progresivo, <code>helmet</code> y límite de tamaño de cuerpo.</td></tr>
+        <tr><td class="id">G-06</td><td><strong>Token accesible a JavaScript y credenciales versionadas.</strong> El JWT vive en <code>localStorage</code>, no hay CSP, y <code>backend/.env</code> está en el repositorio.</td><td><code>lib/api.js</code> · <code>backend/.env</code> · <code>index.html</code></td><td>Cookie <code>HttpOnly</code> + <code>SameSite</code>, CSP estricta, sacar <code>.env</code> del control de versiones y rotar credenciales.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="sub">P2 · Consistencia funcional (afectan la confianza en el resultado)</h3>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th style="width:62px">ID</th><th>Brecha</th><th style="width:260px">Evidencia</th><th>Recomendación</th></tr></thead>
+      <tbody>
+        <tr><td class="id">G-07</td><td><strong>El KPI de perfil ignora su configuración.</strong> Se reparten 20 puntos fijos por criterio y se usan umbrales 80/60 fijos; <code>peso_*</code>, <code>umbral_alto</code>, <code>umbral_medio</code> y <code>anios_referencia</code> se validan y guardan, pero no se leen. Además “actualidad” se cumple con solo tener un dato de contacto, no con actividad reciente.</td><td><code>services/kpi.js</code> · <code>configuracion_kpi</code></td><td>Leer la configuración en cada cálculo, aplicar los pesos y definir actualidad como empleo vigente o actualización dentro de 180 días.</td></tr>
+        <tr><td class="id">G-08</td><td><strong>No hay pantalla para editar la configuración KPI.</strong> El <code>PUT</code> existe, pero la única pantalla relacionada es de solo lectura.</td><td><code>ComoSeCalcula.jsx</code> · <code>config.controller.js</code></td><td>Formulario de administración con validación en vivo de suma 100 y coherencia de umbrales.</td></tr>
+        <tr><td class="id">G-09</td><td><strong>El umbral se puede cambiar en convocatorias cerradas o rechazadas.</strong> El endpoint de cupos bloquea; el de umbral no. La interfaz lo oculta, pero la API lo permite.</td><td><code>convocatorias.controller.js</code></td><td>Replicar la verificación de estado y responder <code>409</code>.</td></tr>
+        <tr><td class="id">G-10</td><td><strong>El estado de cuenta <code>rechazada</code> es inalcanzable.</strong> Rechazar elimina usuario y persona; el catálogo y el login contemplan un estado que ningún flujo asigna.</td><td><code>usuarios.controller.js</code> · <code>catalogos.js</code></td><td>Decidir: marcar <code>rechazada</code> y conservar rastro, o retirar el estado del catálogo.</td></tr>
+        <tr><td class="id">G-11</td><td><strong>La bitácora no se puede ver.</strong> <code>GET /api/eventos</code> existe, pero ninguna ruta del frontend la consume.</td><td><code>personas.controller.js</code> · <code>App.jsx</code></td><td>Pantalla de auditoría para el administrador con filtros por persona y fecha.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="sub">P3 · Ingeniería y operación (deuda planificable)</h3>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th style="width:62px">ID</th><th>Brecha</th><th style="width:260px">Evidencia</th><th>Recomendación</th></tr></thead>
+      <tbody>
+        <tr><td class="id">G-12</td><td><strong>Sin paginación y con recálculo multiplicativo.</strong> El padrón se devuelve completo y cada ranking recorre personas × convocatorias × requisitos.</td><td><code>personas.controller.js</code> · <code>services/candidatos.js</code></td><td>Paginar con cursor, medir latencia y, si hace falta, materializar puntajes por convocatoria.</td></tr>
+        <tr><td class="id">G-13</td><td><strong>Sin automatización de calidad ni despliegue.</strong> No hay CI, migraciones, Docker, linter de backend, pruebas de frontend ni cobertura.</td><td><code>package.json</code> · raíz del repositorio</td><td>Pipeline con lint + test + build, migraciones versionadas y contenedor reproducible.</td></tr>
+        <tr><td class="id">G-14</td><td><strong>Pruebas que ensucian la base.</strong> La suite reescribe el CV de un postulante y crea/borra registros; exige resembrar y no es idempotente.</td><td><code>backend/tests/*</code></td><td>Base efímera por corrida (contenedor) o transacciones con rollback por prueba.</td></tr>
+        <tr><td class="id">G-15</td><td><strong>Repositorio con artefactos y secretos.</strong> <code>node_modules</code> y <code>.env</code> están versionados.</td><td><code>git ls-files</code></td><td><code>.gitignore</code> en backend, limpiar el índice y usar gestor de secretos.</td></tr>
+        <tr><td class="id">G-16</td><td><strong>Contratos de API heterogéneos y alias duplicados.</strong> Unas respuestas son arreglos y otras <code>{ total, resultados }</code>; conviven <code>/candidatos</code> y <code>/postulaciones</code>, <code>/convocatorias</code> y <code>/vacantes</code>.</td><td><code>routes/index.js</code></td><td>Documento OpenAPI, versionado y una capa de compatibilidad con fecha de retiro.</td></tr>
+        <tr><td class="id">G-17</td><td><strong>Sin archivos ni comunicación saliente.</strong> No se suben CV o certificados (solo URLs) y no hay correo, verificación ni recuperación de contraseña.</td><td>Esquema y rutas de <code>/auth</code></td><td>Almacenamiento de objetos con validación de tipo/tamaño, y flujo de recuperación por correo.</td></tr>
+        <tr><td class="id">G-18</td><td><strong>Sin política de privacidad ni retención.</strong> No hay consentimiento, base legal, plazo de conservación ni borrado/anonimización del CV.</td><td>Esquema · interfaz de registro</td><td>Aviso de privacidad, consentimiento explícito, retención definida y endpoint de anonimización.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="card" id="conclusiones">
+  <h2 class="sec"><span class="num">08</span> Conclusiones</h2>
+
+  <h3 class="sub">8.1 Sobre el cumplimiento</h3>
+  <p>
+    El sistema <strong>cumple el 94,6 % de los requisitos funcionales</strong> y el <strong>59,8 % de los no
+    funcionales</strong>, para un <strong>80,7/100 ponderado</strong>. La asimetría es el hallazgo central: la
+    lógica de negocio que justifica el proyecto —padrón vivo, KPI contra requisitos, umbral visible, pipeline con
+    cupos y cierre automático— está completa y es la parte mejor construida. La deuda se acumula en los bordes:
+    autenticación, autorización por fila, privacidad, operación y configuración.
+  </p>
+  <p>
+    Es un resultado <strong>esperable y sano</strong> para un proyecto académico con foco en el dominio: es más
+    difícil y más valioso implementar bien un KPI explicable y un cierre de cupos transaccional que añadir
+    cabeceras de seguridad. El documento no lo trata como fracaso, pero tampoco lo absuelve: los seis hallazgos P1
+    son reales y deben nombrarse.
+  </p>
+
+  <h3 class="sub">8.2 Aptitud por escenario</h3>
+  <div class="tbl-wrap">
+    <table class="tbl compact">
+      <thead><tr><th>Escenario</th><th style="width:110px">Apto</th><th>Condición</th></tr></thead>
+      <tbody>
+        <tr><td>Demostración académica o presentación de avance</td><td><span class="badge b-ok">Sí</span></td><td>Con datos de semilla y el recorrido guiado por los módulos RF-E y RF-F.</td></tr>
+        <tr><td>Uso interno controlado (una consultora, red privada, usuarios conocidos)</td><td><span class="badge b-ok">Sí, con reservas</span></td><td>Cerrar G-01, G-02 y G-03; rotar el secreto; acordar respaldo manual.</td></tr>
+        <tr><td>Producción accesible desde Internet</td><td><span class="badge b-no">No</span></td><td>Requiere cerrar los seis P1, añadir HTTPS, rate limiting, CSP, recuperación de contraseña y política de datos.</td></tr>
+        <tr><td>Procesamiento de datos personales a gran escala</td><td><span class="badge b-no">No</span></td><td>Requiere consentimiento, retención, anonimización y auditoría de accesos.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="sub">8.3 Recomendación final</h3>
+  <p>
+    <strong>Conservar el núcleo y endurecer el perímetro.</strong> El orden de trabajo sugerido es:
+  </p>
+  <ol>
+    <li><strong>Sprint de seguridad (P1):</strong> corregir los tres desvíos de alcance, exigir el secreto por entorno, restringir CORS, añadir rate limiting y sacar <code>.env</code> del repositorio. Es trabajo acotado y de alto impacto.</li>
+    <li><strong>Sprint de coherencia (P2):</strong> conectar la configuración del KPI con el cálculo real, bloquear el umbral en convocatorias cerradas, resolver el estado <code>rechazada</code> y exponer la bitácora.</li>
+    <li><strong>Sprint de operación (P3):</strong> CI con lint, pruebas y build; base efímera para pruebas; paginación; migraciones; política de privacidad y retención.</li>
+  </ol>
+  <div class="callout good">
+    <strong>En una frase.</strong> Postulantes v2 es un sistema <em>funcionalmente convincente</em> y
+    <em>operativamente inmaduro</em>: demuestra bien la idea, pero todavía no está listo para recibir datos
+    personales de terceros en un entorno abierto.
+  </div>
+</section>
+
+<section class="card" id="anexos">
+  <h2 class="sec"><span class="num">09</span> Anexos</h2>
+
+  <h3 class="sub">A. Superficie de API</h3>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th style="width:70px">Método</th><th>Ruta</th><th style="width:150px">Acceso</th><th>Propósito</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge b-ok">GET</span></td><td><code>/api/health</code></td><td>Público</td><td>Estado del servicio.</td></tr>
+        <tr><td><span class="badge b-ok">GET</span></td><td><code>/api/tecnologias</code></td><td>Público</td><td>Catálogo de tecnologías y conteos.</td></tr>
+        <tr><td><span class="badge b-info">POST</span></td><td><code>/api/auth/registro</code></td><td>Público</td><td>Alta de postulante pendiente.</td></tr>
+        <tr><td><span class="badge b-info">POST</span></td><td><code>/api/auth/login</code></td><td>Público</td><td>Inicio de sesión y emisión de JWT.</td></tr>
+        <tr><td><span class="badge b-ok">GET</span></td><td><code>/api/catalogos</code></td><td>Autenticado</td><td>Catálogos de base y de dominio.</td></tr>
+        <tr><td><span class="badge b-ok">GET</span></td><td><code>/api/yo</code></td><td>Postulante</td><td>Perfil propio con CV y KPI.</td></tr>
+        <tr><td><span class="badge b-info">PUT</span></td><td><code>/api/yo</code></td><td>Postulante activo</td><td>Edición del perfil y reemplazo del CV.</td></tr>
+        <tr><td><span class="badge b-ok">GET</span></td><td><code>/api/personas</code></td><td>Staff</td><td>Búsqueda en el padrón con filtros.</td></tr>
+        <tr><td><span class="badge b-ok">GET</span></td><td><code>/api/personas/:id</code></td><td>Staff (con alcance)</td><td>Detalle de una persona.</td></tr>
+        <tr><td><span class="badge b-info">POST</span></td><td><code>/api/personas/upsert</code></td><td>Staff</td><td>Alta/actualización de persona sin cuenta.</td></tr>
+        <tr><td><span class="badge b-ok">GET</span></td><td><code>/api/eventos</code></td><td>Staff</td><td>Últimos 100 eventos de bitácora.</td></tr>
+        <tr><td><span class="badge b-ok">GET</span></td><td><code>/api/admin/usuarios</code></td><td>Admin</td><td>Cuentas filtradas por estado.</td></tr>
+        <tr><td><span class="badge b-info">POST</span></td><td><code>/api/admin/usuarios</code></td><td>Admin</td><td>Alta de staff.</td></tr>
+        <tr><td><span class="badge b-part">PATCH</span></td><td><code>/api/admin/usuarios/:id/aprobar</code></td><td>Admin</td><td>Aprobación de cuenta.</td></tr>
+        <tr><td><span class="badge b-part">PATCH</span></td><td><code>/api/admin/usuarios/:id/rechazar</code></td><td>Admin</td><td>Rechazo y borrado de cuenta.</td></tr>
+        <tr><td><span class="badge b-ok">GET</span></td><td><code>/api/configuracion</code></td><td>Admin</td><td>Configuración del KPI.</td></tr>
+        <tr><td><span class="badge b-info">PUT</span></td><td><code>/api/configuracion</code></td><td>Admin</td><td>Actualización validada del KPI.</td></tr>
+        <tr><td><span class="badge b-ok">GET</span></td><td><code>/api/admin/resumen</code></td><td>Staff</td><td>Indicadores del panel.</td></tr>
+        <tr><td><span class="badge b-ok">GET</span></td><td><code>/api/convocatorias</code></td><td>Autenticado</td><td>Listado con totales vivos.</td></tr>
+        <tr><td><span class="badge b-info">POST</span></td><td><code>/api/convocatorias</code></td><td>Staff</td><td>Creación con requisitos.</td></tr>
+        <tr><td><span class="badge b-ok">GET</span></td><td><code>/api/convocatorias/:id</code></td><td>Autenticado</td><td>Detalle con pipeline.</td></tr>
+        <tr><td><span class="badge b-part">PATCH</span></td><td><code>/api/convocatorias/:id/aprobar</code></td><td>Admin</td><td>Pendiente → abierta.</td></tr>
+        <tr><td><span class="badge b-part">PATCH</span></td><td><code>/api/convocatorias/:id/rechazar</code></td><td>Admin</td><td>Pendiente → rechazada.</td></tr>
+        <tr><td><span class="badge b-part">PATCH</span></td><td><code>/api/convocatorias/:id/cerrar</code></td><td>Staff dueño</td><td>Cierre manual.</td></tr>
+        <tr><td><span class="badge b-no">DELETE</span></td><td><code>/api/convocatorias/:id</code></td><td>Admin</td><td>Eliminación en cascada.</td></tr>
+        <tr><td><span class="badge b-part">PATCH</span></td><td><code>/api/convocatorias/:id/umbral</code></td><td>Staff dueño</td><td>Cambio de umbral de enlistado.</td></tr>
+        <tr><td><span class="badge b-part">PATCH</span></td><td><code>/api/convocatorias/:id/cupos</code></td><td>Staff dueño</td><td>Cambio de cupos con cierre inmediato.</td></tr>
+        <tr><td><span class="badge b-ok">GET</span></td><td><code>/api/convocatorias/:id/ranking</code></td><td>Staff dueño</td><td>Lista viva y excluidos.</td></tr>
+        <tr><td><span class="badge b-part">PATCH</span></td><td><code>/api/convocatorias/:id/candidatos/:persona_id/estado</code></td><td>Staff dueño</td><td>Toma y transición del pipeline.</td></tr>
+        <tr><td><span class="badge b-ok">GET</span></td><td><code>/api/mis-convocatorias</code></td><td>Autenticado</td><td>Encaje del postulante (o de una persona, si es staff).</td></tr>
+        <tr><td><span class="badge b-ok">GET</span></td><td><code>/api/candidatos</code></td><td>Autenticado</td><td>Cola de trabajo (alias <code>/api/postulaciones</code>).</td></tr>
+        <tr><td colspan="4" class="small muted">Alias heredados: cualquier ruta bajo <code>/api/vacantes</code> equivale a <code>/api/convocatorias</code>; <code>/api/postulaciones</code> es la cola del pipeline.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="sub">B. Catálogos y valores del dominio</h3>
+  <div class="grid-2">
+    <div class="box">
+      <h4>Estados de cuenta</h4>
+      <p><code>pendiente</code> · <code>activa</code> · <code>rechazada</code></p>
+      <h4 style="margin-top:12px">Estados de convocatoria</h4>
+      <p><code>pendiente</code> → <code>abierta</code> → <code>cerrada</code> · <code>rechazada</code></p>
+      <h4 style="margin-top:12px">Estados del candidato</h4>
+      <p><code>postulado</code> · <code>consulta</code> · <code>preseleccionado</code> · <code>descartado</code> · <code>contratado</code></p>
+    </div>
+    <div class="box">
+      <h4>Transiciones válidas</h4>
+      <p><code>postulado → consulta | descartado</code><br>
+      <code>consulta → preseleccionado | descartado</code><br>
+      <code>preseleccionado → contratado | descartado</code><br>
+      <code>descartado → consulta</code><br>
+      <code>contratado</code> es terminal.</p>
+      <h4 style="margin-top:12px">Disponibilidad</h4>
+      <p>Inmediata · En 15 días · En 1 mes · Medio tiempo · No disponible</p>
+    </div>
+    <div class="box">
+      <h4>Niveles de tecnología y factor</h4>
+      <p>Básico 0,10 · Intermedio 0,25 · Avanzado 0,50 · Experto 0,75 · y el nivel tope 1,00. El orden se usa para exigir un mínimo.</p>
+      <h4 style="margin-top:12px">Modos de búsqueda</h4>
+      <p><code>cualquiera</code> (al menos uno) · <code>todos</code> · <code>solo</code> (ningún otro)</p>
+    </div>
+    <div class="box">
+      <h4>Límites y valores por defecto</h4>
+      <p>Umbral: entero 0–100, por defecto <strong>25</strong>.<br>
+      Cupos: entero 1–999, por defecto <strong>1</strong>.<br>
+      Nivel mínimo de requisito: <code>basico</code>.<br>
+      Token: 8 h. Caché de padrón: 60 s. Caché de configuración: 30 s.<br>
+      Cola: 200 filas. Eventos: 100.</p>
+    </div>
+  </div>
+
+  <h3 class="sub">C. Fórmula del KPI de convocatoria</h3>
+  <div class="callout info">
+    <p style="margin:0 0 6px"><strong>Puntaje =</strong></p>
+    <p style="margin:0">
+      <code>min(100, 80 × [0,5 · cobertura + 0,5 · calidad] × factor_años + puntos_exp + puntos_disp)</code>
+    </p>
+    <p style="margin:8px 0 0;font-size:13px">
+      donde <code>cobertura = peso_cubierto / peso_total</code>, <code>calidad</code> combina el nivel mínimo, el
+      factor de nivel y los años de uso hasta el tope del requisito, <code>factor_años = min(mejor_año / años_mínimos, 1)</code>,
+      <code>puntos_exp</code> es el peso de experiencia afín (mitad si es genérica) y <code>puntos_disp</code> es 10
+      si la disponibilidad coincide o la convocatoria no exige ninguna.
+    </p>
+  </div>
+  <p class="small muted">
+    El KPI de perfil, en cambio, es binario: cinco criterios × 20 puntos. Se usa como desempate del ranking y como
+    indicador de completitud del CV, no como puntaje oficial de la convocatoria.
+  </p>
+
+  <h3 class="sub">D. Credenciales y datos de demostración</h3>
+  <div class="tbl-wrap">
+    <table class="tbl compact">
+      <thead><tr><th>Cuenta</th><th>Contraseña</th><th>Rol / estado</th></tr></thead>
+      <tbody>
+        <tr><td><code>admin@consultora.com</code></td><td><code>Admin123!</code></td><td>Administrador activo</td></tr>
+        <tr><td><code>reclutador1@consultora.com</code></td><td><code>Admin123!</code></td><td>Reclutador activo</td></tr>
+        <tr><td><code>reclutador2@consultora.com</code></td><td><code>Admin123!</code></td><td>Reclutador activo</td></tr>
+        <tr><td><code>postulante01@test.com</code> … <code>postulante13@test.com</code></td><td><code>Admin123!</code></td><td>Postulantes activos</td></tr>
+        <tr><td><code>postulante14@test.com</code></td><td><code>Admin123!</code></td><td>Postulante pendiente (no edita perfil)</td></tr>
+        <tr><td><code>postulante15@test.com</code> … <code>postulante21@test.com</code></td><td><code>Admin123!</code></td><td>Postulantes activos</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">
+    Semilla: 24 usuarios, 22 personas, 27 eventos, 40 experiencias, 33 formaciones, 54 habilidades,
+    8 convocatorias (14 requisitos) y 20 filas de pipeline. El padrón resultante son 21 personas.
+  </p>
+
+  <h3 class="sub">E. Comandos de operación</h3>
+  <div class="tbl-wrap">
+    <table class="tbl compact">
+      <thead><tr><th>Objetivo</th><th>Comando</th></tr></thead>
+      <tbody>
+        <tr><td>Instalar backend</td><td><code>cd backend; npm install</code></td></tr>
+        <tr><td>Instalar frontend</td><td><code>cd frontend; npm install</code></td></tr>
+        <tr><td>Levantar API</td><td><code>cd backend; npm start</code> → <code>http://localhost:3000</code></td></tr>
+        <tr><td>Levantar SPA</td><td><code>cd frontend; npm run dev</code></td></tr>
+        <tr><td>Pruebas</td><td><code>cd backend; npm test</code></td></tr>
+        <tr><td>Solo unitarias del KPI</td><td><code>cd backend; node --test tests/kpiConv.test.js</code></td></tr>
+        <tr><td>Lint</td><td><code>cd frontend; npm run lint</code></td></tr>
+        <tr><td>Build</td><td><code>cd frontend; npm run build</code></td></tr>
+        <tr><td>Recrear base (destructivo)</td><td><code>psql -U postgres -d sistemapostulantes -f backend/sql/final/esquema_final.sql</code> y luego <code>datos_final.sql</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="sub">F. Glosario</h3>
+  <div class="grid-2">
+    <div class="box"><h4>Padrón</h4><p>Conjunto de personas elegibles para ser enlista­das: sin cuenta o postulantes activos. Excluye staff y cuentas pendientes o rechazadas.</p></div>
+    <div class="box"><h4>Lista viva</h4><p>Ranking calculado en cada consulta para una convocatoria. No se persiste; refleja el CV actual.</p></div>
+    <div class="box"><h4>Umbral</h4><p>KPI mínimo para entrar en la lista de resultados. Quien no lo alcanza queda en <code>excluidos[]</code> con su motivo.</p></div>
+    <div class="box"><h4>Snapshot</h4><p>Valores de KPI y match congelados al tomar un candidato, para conservar la evidencia de la decisión.</p></div>
+    <div class="box"><h4>Pipeline</h4><p>Estados por los que pasa un candidato tomado: postulado, consulta, preseleccionado, descartado y contratado.</p></div>
+    <div class="box"><h4>Cierre automático</h4><p>Al contratar el último cupo, la convocatoria pasa a cerrada dentro de la misma transacción y queda de solo lectura.</p></div>
+    <div class="box"><h4>KPI de convocatoria</h4><p>Puntaje 0–100 contra los requisitos del puesto. Es el criterio de orden y de enlistado.</p></div>
+    <div class="box"><h4>KPI de perfil</h4><p>Indicador de completitud del CV (cinco criterios binarios). Solo desempata en el ranking.</p></div>
+  </div>
+
+  <div class="callout info" style="margin-top:20px">
+    <strong>Nota de alcance documental.</strong> Este informe describe el sistema tal como está implementado en el
+    repositorio a la fecha indicada. No reemplaza un contrato de requisitos ni una auditoría formal: es una
+    autoevaluación técnica con evidencia, pensada para decidir qué endurecer antes de exponer el sistema.
+  </div>
+</section>
+
+</main>
+</div>
+</div>
+</body>
+</html>
+
+</main>
+</div>
+</div>
+</body>
+</html>

@@ -1,10 +1,10 @@
 # AGENTS.md
 
 ## Repo map
-- Two independent apps, no root `package.json` or workspace tooling: `backend/` (Node + Express 5 + `pg`, raw SQL, CommonJS) and `frontend/` (React 19 + Vite 8 + Tailwind v4). Install and run scripts inside each app.
-- No live architecture doc (`ESTRUCTURA.md` is gone from the working tree). Trust `backend/sql/final/esquema_final.sql` for the schema and `backend/src/routes/index.js` for per-route permissions.
+- Two independent apps, no root `package.json` or workspace tooling: `backend/` (Node + Express 5 + `pg`, raw SQL, CommonJS) and `frontend/` (React 19 + Vite 8 + Tailwind v4). Install/run scripts inside each app.
+- No live architecture doc (`ESTRUCTURA.md` deleted). Trust `backend/sql/final/esquema_final.sql` for schema and `backend/src/routes/index.js` for per-route permissions.
 - `frontend/README.md` is stock Vite boilerplate — ignore it.
-- No CI, no git hooks, no `opencode.json`, no root scripts. Nothing auto-verifies a change; run the commands below yourself.
+- No CI, git hooks, `opencode.json`, or root scripts. Nothing auto-verifies changes — run commands yourself.
 
 ## Setup
 ```powershell
