@@ -174,6 +174,12 @@ async function registrarEvento(conn, personaId, disponibilidad) {
     [personaId, disponibilidad || null]);
 }
 
+// Al contratar, la persona sale del padron: 'Contratado' no es una disponibilidad
+// ofrecida, es la marca de que ya esta trabajando.
+async function marcarContratado(conn, personaId) {
+  await conn.query("UPDATE personas SET disponibilidad='Contratado' WHERE id=$1", [personaId]);
+}
+
 async function conteoParaKpi(id) {
   const { rows } = await pool.query(`
     SELECT
@@ -198,5 +204,5 @@ async function conteoParaKpi(id) {
 
 module.exports = {
   reemplazarHabilidades, reemplazarExperiencias, reemplazarFormaciones,
-  listar, detalle, porUsuario, registrarEvento, conteoParaKpi
+  listar, detalle, porUsuario, registrarEvento, conteoParaKpi, marcarContratado
 };

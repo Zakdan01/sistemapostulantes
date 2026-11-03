@@ -237,6 +237,11 @@ export function MiPerfil() {
                 {cats.disponibilidades.map((d) => <option key={d} value={d}>{d}</option>)}
               </select>
             </Campo>
+            {form.disponibilidad === 'Contratado' ? (
+              <p className="help mt-2">
+                Estás marcado como contratado: no apareces en ninguna lista de candidatos hasta que cambies tu disponibilidad.
+              </p>
+            ) : null}
           </Seccion>
 
           <Seccion

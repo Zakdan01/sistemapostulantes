@@ -72,7 +72,7 @@ CREATE TABLE personas (
   github VARCHAR(200),
   portafolio_url VARCHAR(200),
   disponibilidad VARCHAR(30) NOT NULL DEFAULT 'Inmediata'
-    CHECK (disponibilidad IN ('Inmediata','En 15 días','En 1 mes','Medio tiempo','No disponible')),
+    CHECK (disponibilidad IN ('Inmediata','En 15 días','En 1 mes','Medio tiempo','No disponible','Contratado')),
   creado_en TIMESTAMP DEFAULT now(),
   actualizado_en TIMESTAMP NOT NULL DEFAULT now()
 );
@@ -90,7 +90,7 @@ CREATE TABLE eventos_postulacion (
   fecha DATE NOT NULL,
   hora TIME NULL,
   disponibilidad VARCHAR(30) DEFAULT 'Inmediata'
-    CHECK (disponibilidad IN ('Inmediata','En 15 días','En 1 mes','Medio tiempo','No disponible')),
+    CHECK (disponibilidad IN ('Inmediata','En 15 días','En 1 mes','Medio tiempo','No disponible','Contratado')),
   creado_en TIMESTAMP DEFAULT now()
 );
 COMMENT ON TABLE eventos_postulacion IS 'Bitacora de actividad: cada actualizacion de perfil o toma de candidato. No copia el CV. La disponibilidad vive en personas.';
@@ -161,7 +161,7 @@ CREATE TABLE convocatorias (
   descripcion TEXT,
   anios_min DECIMAL(4,1) DEFAULT 0 CHECK (anios_min >= 0),
   disponibilidad VARCHAR(30) NULL
-    CHECK (disponibilidad IS NULL OR disponibilidad IN ('Inmediata','En 15 días','En 1 mes','Medio tiempo','No disponible')),
+    CHECK (disponibilidad IS NULL OR disponibilidad IN ('Inmediata','En 15 días','En 1 mes','Medio tiempo','No disponible','Contratado')),
   estado VARCHAR(20) DEFAULT 'pendiente' CHECK (estado IN ('pendiente','abierta','cerrada','rechazada')),
   kpi_minimo SMALLINT NOT NULL DEFAULT 25 CHECK (kpi_minimo BETWEEN 0 AND 100),
   cupos SMALLINT NOT NULL DEFAULT 1 CHECK (cupos > 0),

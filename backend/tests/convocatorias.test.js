@@ -177,7 +177,9 @@ test('ranking arma la lista sola: nadie postula y todos los que pasan el umbral 
   const r = await api(`/api/convocatorias/${id}/ranking`, { headers: auth(admin) });
   assert.equal(r.status, 200);
   assert.equal(r.body.total, r.body.total_patron, 'con umbral 0 entra todo el padron');
-  assert.ok(r.body.total_patron >= 20, 'el padron tiene a los postulantes del seed');
+  // Baseline limpio: 18 (los 3 contratados del seed ya no estan). Corre tras corre tras
+  // el suite va contratando gente, asi que el minimo tiene que ser holgado.
+  assert.ok(r.body.total_patron >= 10, 'el padron tiene a los postulantes del seed');
   assert.equal(r.body.excluidos.length, 0);
   assert.equal(r.body.umbral, 0);
   assert.ok(r.body.resultados.every((p) => typeof p.persona_id === 'number'));
@@ -584,6 +586,39 @@ test('cerrar la convocatoria la saca de mis-convocatorias', async () => {
   await api(`/api/convocatorias/${id}/cerrar`, { method: 'PATCH', headers: auth(admin) });
   const misDespues = await api('/api/mis-convocatorias', { headers: auth(postulante) });
   assert.ok(!misDespues.body.some((m) => m.id === id), 'la cerrada ya no aparece');
+  await api(`/api/convocatorias/${id}`, { method: 'DELETE', headers: auth(admin) });
+});
+
+test('contratado sale del padron hasta que cambia su disponibilidad', async () => {
+  const id = await crearYPublicar({ titulo: `Conv Contratado ${Date.now()}`, kpi_minimo: 0 });
+  const antes = await api(`/api/convocatorias/${convocatoriaId}/ranking`, { headers: auth(admin) });
+  const r0 = await api(`/api/convocatorias/${id}/ranking`, { headers: auth(admin) });
+  const quien = r0.body.resultados.find((p) => /^postulante\d+@test\.com$/.test(p.correo));
+  assert.ok(quien, 'hay un postulante del seed en la lista');
+
+  const contrato = await api(`/api/convocatorias/${id}/candidatos/${quien.persona_id}/estado`, {
+    method: 'PATCH', headers: auth(admin), body: JSON.stringify({ estado: 'contratado' })
+  });
+  assert.equal(contrato.status, 200, JSON.stringify(contrato.body));
+
+  const token = await login(quien.correo);
+  const yo = await api('/api/yo', { headers: auth(token) });
+  assert.equal(yo.body.disponibilidad, 'Contratado', 'contratar escribe la disponibilidad');
+
+  const despues = await api(`/api/convocatorias/${convocatoriaId}/ranking`, { headers: auth(admin) });
+  const visible = [...despues.body.resultados, ...despues.body.excluidos];
+  assert.ok(!visible.some((p) => p.persona_id === quien.persona_id), 'no aparece en ninguna otra convocatoria');
+  assert.equal(despues.body.total_patron, antes.body.total_patron - 1, 'sale del padron');
+
+  const vuelve = await api('/api/yo', {
+    method: 'PUT', headers: auth(token), body: JSON.stringify({ disponibilidad: 'En 1 mes' })
+  });
+  assert.equal(vuelve.status, 200);
+  assert.equal(vuelve.body.disponibilidad, 'En 1 mes');
+  const reactivado = await api(`/api/convocatorias/${convocatoriaId}/ranking`, { headers: auth(admin) });
+  assert.ok([...reactivado.body.resultados, ...reactivado.body.excluidos]
+    .some((p) => p.persona_id === quien.persona_id), 'vuelve al cambiar su disponibilidad');
+
   await api(`/api/convocatorias/${id}`, { method: 'DELETE', headers: auth(admin) });
 });
 

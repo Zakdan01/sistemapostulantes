@@ -7,6 +7,8 @@
 // Reglas:
 // - Padron: personas SIN cuenta o con usuario postulante en estado 'activa'.
 //   (excluye cuentas pendientes/rechazadas y al staff)
+// - Quien ya fue contratado (disponibilidad 'Contratado') sale del padron y no vuelve
+//   hasta que el mismo cambie su disponibilidad en su perfil.
 // - kpi_conv se calcula con el mismo servicio que usa el ranking historico
 //   (services/kpiConvocatoria.js) y el KPI de perfil con services/kpi.js.
 // - El padron se cachea unos segundos y se invalida cuando alguien toca su perfil,
@@ -20,10 +22,12 @@ const { KPI_MINIMO } = require('../domain/catalogos');
 
 const TTL_MS = 60 * 1000;
 let cache = { ts: 0, datos: null };
+let version = 0;
 
 // Invalida el padron cacheado. Llamar cuando cambia un perfil, una persona o una cuenta.
 function invalidarPadron() {
   cache = { ts: 0, datos: null };
+  version += 1;
 }
 
 async function cargarPadron() {
@@ -54,7 +58,8 @@ async function cargarPadron() {
                FROM habilidades_postulante hp
                LEFT JOIN catalogo_nivel_tecnologia nt ON nt.id=hp.nivel_id
                GROUP BY hp.persona_id) h ON h.persona_id=p.id
-    WHERE u.id IS NULL OR (u.rol = 'postulante' AND u.estado_cuenta = 'activa')
+    WHERE (u.id IS NULL OR (u.rol = 'postulante' AND u.estado_cuenta = 'activa'))
+      AND p.disponibilidad <> 'Contratado'
     ORDER BY p.id
   `);
 
@@ -120,7 +125,10 @@ async function cargarPadron() {
 
 async function padron() {
   if (cache.datos && Date.now() - cache.ts < TTL_MS) return cache.datos;
+  const v = version;
   const datos = await cargarPadron();
+  // Si invalidaron mientras cargabamos, este snapshot ya nacio viejo: no lo cachear.
+  if (v !== version) return datos;
   cache = { ts: Date.now(), datos };
   return datos;
 }
@@ -284,7 +292,9 @@ async function datosDePersona(personaId) {
 }
 
 // Vista del postulante: todas las convocatorias abiertas, con su kpi_conv, su posicion
-// y si califica. No excluye a nadie: si no califica sigue viendo la convocatoria (con el motivo).
+// y si califica. No excluye a nadie: si no califica sigue viendo la convocatoria (con el
+// motivo). Si esta contratado no tiene posicion: el padron lo excluye hasta que cambie su
+// disponibilidad, asi que 'califica' es false con ese motivo.
 async function listaParaPostulante(personaId) {
   const cfg = await Config.obtenerConfig();
   const yo = await datosDePersona(personaId);
@@ -316,7 +326,8 @@ async function listaParaPostulante(personaId) {
       cfg
     });
     const umbral = calc.umbral;
-    const califica = kc.kpi_conv >= umbral;
+    const contratado = yo.disponibilidad === 'Contratado';
+    const califica = !contratado && kc.kpi_conv >= umbral;
     const idx = calc.resultados.findIndex((r) => r.persona_id === Number(personaId));
     const mio = mioPorConv[c.id] || null;
     return {
@@ -334,7 +345,10 @@ async function listaParaPostulante(personaId) {
       califica,
       posicion: idx >= 0 ? idx + 1 : null,
       total_candidatos: calc.total,
-      motivo_exclusion: califica ? null : `KPI ${kc.kpi_conv} < umbral ${umbral}`,
+      motivo_exclusion: califica ? null
+        : contratado
+          ? 'Estás contratado: cambiá tu disponibilidad para volver al enlistado'
+          : `KPI ${kc.kpi_conv} < umbral ${umbral}`,
       estado_candidato: mio ? mio.estado : null,
       candidato_id: mio ? mio.candidato_id : null
     };

@@ -9,7 +9,7 @@ const { HttpError } = require('../utils/errors');
 const { puedeTransitar, transicionesPermitidas, ESTADOS_CANDIDATO } = require('../domain/catalogos');
 const { calcularKpi } = require('./kpi');
 const { calcularKpiConvocatoria } = require('./kpiConvocatoria');
-const { matchPct } = require('./candidatos');
+const { matchPct, invalidarPadron } = require('./candidatos');
 
 const normalizar = Convocatoria.normalizarCandidato;
 
@@ -30,6 +30,8 @@ function validarEstado(estado) {
 // - Contratar exige cupo libre y, al llenar el ultimo, la convocatoria se cierra
 //   en la MISMA transaccion. El SELECT ... FOR UPDATE serializa las contrataciones
 //   para que dos pedidos simultaneos no se pasen de los cupos.
+// - Contratar marca la disponibilidad de la persona como 'Contratado': sale del padron
+//   de todas las convocatorias hasta que ella misma la cambie.
 async function mover({ convocatoria, persona, estado }) {
   validarEstado(estado);
 
@@ -59,7 +61,7 @@ async function mover({ convocatoria, persona, estado }) {
   const previo = await Convocatoria.buscarCandidato(convocatoria.id, persona.id);
   if (!previo) snapshot = await calcularSnapshots();
 
-  return conTransaccion(async (conn) => {
+  const resultado = await conTransaccion(async (conn) => {
     const conv = await Convocatoria.bloquearConvocatoria(conn, convocatoria.id);
     if (!conv) throw HttpError.notFound('Convocatoria no encontrada');
     if (conv.estado === 'cerrada' || conv.estado === 'rechazada') {
@@ -87,6 +89,7 @@ async function mover({ convocatoria, persona, estado }) {
       const fila = await Convocatoria.actualizarEstadoCandidato(conn, actual.id, estado);
       let cierre = false;
       if (estado === 'contratado') {
+        await Persona.marcarContratado(conn, persona.id);
         contratados += 1;
         if (contratados >= cupos) {
           await Convocatoria.marcarCerrada(conn, conv.id);
@@ -118,6 +121,7 @@ async function mover({ convocatoria, persona, estado }) {
     await Persona.registrarEvento(conn, persona.id, persona.disponibilidad);
     let cierre = false;
     if (estado === 'contratado') {
+      await Persona.marcarContratado(conn, persona.id);
       contratados += 1;
       if (contratados >= cupos) {
         await Convocatoria.marcarCerrada(conn, conv.id);
@@ -131,6 +135,9 @@ async function mover({ convocatoria, persona, estado }) {
       cierre_automatico: cierre
     };
   });
+  // El padron cacheado todavia tiene a la persona: se refresca al contratar.
+  if (estado === 'contratado') invalidarPadron();
+  return resultado;
 }
 
 module.exports = { mover, validarEstado };

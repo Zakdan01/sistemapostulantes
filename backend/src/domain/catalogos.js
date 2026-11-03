@@ -36,7 +36,9 @@ const KPI_MINIMO = { POR_DEFECTO: 25, MIN: 0, MAX: 100 };
 const CUPOS = { POR_DEFECTO: 1, MIN: 1, MAX: 999 };
 
 // --- Catalogs de formulario ------------------------------------------------
-const DISPONIBILIDADES = ['Inmediata', 'En 15 días', 'En 1 mes', 'Medio tiempo', 'No disponible'];
+// 'Contratado' lo escribe el pipeline al contratar: el padron lo filtra y el postulante
+// vuelve a las listas cuando el mismo cambia su disponibilidad.
+const DISPONIBILIDADES = ['Inmediata', 'En 15 días', 'En 1 mes', 'Medio tiempo', 'No disponible', 'Contratado'];
 const MODOS_FILTRO = ['cualquiera', 'todos', 'solo'];
 const NIVELES_TECNOLOGIA = ['principiante', 'basico', 'intermedio', 'avanzado', 'experto'];
 

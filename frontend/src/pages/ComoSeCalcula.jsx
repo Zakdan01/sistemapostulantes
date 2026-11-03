@@ -119,12 +119,13 @@ export function ComoSeCalcula() {
   const pesoDeseableEjemplo = denominadorEjemplo ? (maxReq * multDe) / denominadorEjemplo : 0;
   const aniosEjemplo = [...new Set([0, Math.min(1, tope), Math.min(2, tope), tope])];
 
+  // Espejo de services/kpi.js: 5 chequeos binarios, 20 puntos cada uno.
   const pesosPerfil = [
-    ['Experiencia', aNumero(cfg.peso_experiencia), 'tiene alguna experiencia o años máximos ≥ referencia'],
-    ['Formación', aNumero(cfg.peso_formacion), 'tiene al menos una formación'],
-    ['Tecnologías', aNumero(cfg.peso_tecnologias), 'tiene al menos una habilidad'],
-    ['Nivel', aNumero(cfg.peso_nivel), 'tiene al menos una habilidad en intermedio o superior'],
-    ['Actualidad', aNumero(cfg.peso_actualidad), 'tiene una experiencia actual o actualizó su perfil en los últimos 180 días']
+    ['Experiencia', 20, 'tiene al menos una experiencia laboral'],
+    ['Formación', 20, 'tiene al menos una formación académica'],
+    ['Tecnologías', 20, 'tiene al menos una habilidad registrada'],
+    ['Disponibilidad', 20, 'declaró su disponibilidad'],
+    ['Contacto', 20, 'tiene al menos un dato de contacto (correo, teléfono, dirección, LinkedIn, GitHub o portafolio)']
   ];
 
   const reqsDemo = (demo && demo.convocatoria && demo.convocatoria.requisitos) || [];
@@ -330,12 +331,12 @@ multiplicador = ${fmt(multOb)} si es obligatorio, ${fmt(multDe)} si es deseable`
             <li className="flex justify-between gap-3 rounded-lg bg-slate-50 px-3 py-2 dark:bg-slate-900/50"><span>Si el KPI es igual o mayor al umbral</span><b>Entra en la lista</b></li>
             <li className="flex justify-between gap-3 rounded-lg bg-slate-50 px-3 py-2 dark:bg-slate-900/50"><span>Si es menor</span><b>Queda en excluidos</b></li>
           </ul>
-          <p className="help mt-3">Nadie queda oculto: el postulante también ve en «Mis convocatorias» en qué no califica y por qué.</p>
+          <p className="help mt-3">Nadie queda oculto: el postulante también ve en «Mis convocatorias» en qué no califica y por qué. La excepción es quien ya está contratado: deja de aparecer en todas las listas hasta que cambie su disponibilidad.</p>
         </Seccion>
 
-        <Seccion titulo="Perfil % (solo desempate)" icono={IconoDocumento}>
+        <Seccion titulo="Calificación del perfil (solo desempate)" icono={IconoDocumento}>
           <p className="text-sm">
-            El perfil es una medida general del CV. No suma al KPI de convocatoria: solo se usa si dos postulantes empatan en el puntaje de la convocatoria.
+            Mide cuán <b>completo</b> está el CV, no su calidad: son cinco casillas, 20 puntos cada una. No suma al KPI de convocatoria; solo desempata cuando dos postulantes empatan en el puntaje de la convocatoria.
           </p>
           <div className="tbl-wrap mt-3">
             <table className="min-w-full tbl">
@@ -350,7 +351,7 @@ multiplicador = ${fmt(multOb)} si es obligatorio, ${fmt(multDe)} si es deseable`
             </table>
           </div>
           <p className="help mt-3">
-            Clasificación: ≥{cfg.umbral_alto} Alto · ≥{cfg.umbral_medio} Medio · si no, Bajo. Referencia de años: {cfg.anios_referencia}. Los cinco pesos suman 100.
+            Clasificación fija: ≥80 Alto · ≥60 Medio · si no, Bajo.
           </p>
         </Seccion>
       </div>
@@ -366,7 +367,7 @@ multiplicador = ${fmt(multOb)} si es obligatorio, ${fmt(multDe)} si es deseable`
 
       <Seccion titulo="Ejemplo con una convocatoria real" icono={IconoUsuarios}>
         <p className="help">
-          Selecciona una convocatoria para ver sus requisitos y el cálculo recalculado de sus candidatos. La lista es viva: incluye a todo el padrón y separa a quienes pasan el umbral de los excluidos.
+          Selecciona una convocatoria para ver sus requisitos y el cálculo recalculado de sus candidatos. La lista es viva: incluye a todo el padrón disponible (los contratados quedan fuera) y separa a quienes pasan el umbral de los excluidos.
         </p>
 
         {convs.length === 0 ? (
