@@ -1,4 +1,7 @@
-const API = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+// Sin VITE_API_URL usa rutas relativas: el navegador llama a /api en el mismo
+// origen y Vite (o Express en producción) lo reenvía al backend. Así funciona
+// desde cualquier PC sin hardcodear una IP.
+const API = import.meta.env.VITE_API_URL || '';
 
 function authHeaders() {
   const token = localStorage.getItem('token');

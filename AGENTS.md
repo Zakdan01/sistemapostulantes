@@ -19,7 +19,7 @@ cd frontend; npm install
 ```
   `psql` is **not** on PATH on this machine (the service is `postgresql-x64-18`).
 - `esquema_final.sql` begins with `DROP ... CASCADE` — it wipes and recreates everything. `backend/sql/historial/` is historical evidence only; never execute it.
-- The frontend has **no** `.env` (only `.env.example`); `VITE_API_URL` defaults to `http://localhost:3000`. There is no Vite proxy, so keep that aligned with the backend port.
+- The frontend has **no** `.env` (only `.env.example`); `src/lib/api.js` falls back to `''`, so the browser calls `/api` on its own origin and `vite.config.js` proxies it to `http://localhost:3000`. Never hardcode a LAN IP: the backend (`server.js`) and Vite (plugin `avisarRed`) print the addresses other PCs must use, and `npm run dev` binds `0.0.0.0` (`server.host: true`).
 
 ## Commands
 ```powershell
