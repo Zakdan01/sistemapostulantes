@@ -3,7 +3,7 @@
 // los hardcodea, los pide aca.
 const Tecnologia = require('../models/tecnologia.model');
 const {
-  DISPONIBILIDADES, MODOS_FILTRO, ESTADOS_CANDIDATO, TRANSICIONES,
+  DISPONIBILIDADES, MODOS_FILTRO, ESTADOS_CANDIDATO, TRANSICIONES, TIPOS_CONVOCATORIA,
   KPI_MINIMO, CUPOS, PUNTOS_REQUISITOS, PUNTOS_DISPONIBILIDAD, PARTE_COBERTURA, nivelesTecnologia
 } = require('../domain/catalogos');
 
@@ -16,6 +16,7 @@ async function catalogos(req, res) {
   res.json({
     ...db,
     disponibilidades: DISPONIBILIDADES,
+    tipos_convocatoria: TIPOS_CONVOCATORIA,
     modos_filtro: MODOS_FILTRO,
     niveles_tecnologia: nivelesTecnologia(),
     kpi_minimo_por_defecto: KPI_MINIMO.POR_DEFECTO,

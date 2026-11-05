@@ -153,6 +153,10 @@ function calcularUno(convocatoria, personas, cfg, estados, umbral) {
   const resultados = [];
   const excluidos = [];
   for (const p of personas) {
+    const est = estados[p.id] || null;
+    // Ya contratado en ESTA convocatoria: vive en la seccion Contratados, no en el ranking.
+    // `estados` solo trae filas de esta convocatoria: contratado en otra no lo afecta.
+    if (est && est.estado === 'contratado') continue;
     const kc = calcularKpiConvocatoria({
       requisitos,
       habilidades: p.habilidades,
@@ -163,7 +167,6 @@ function calcularUno(convocatoria, personas, cfg, estados, umbral) {
       cfg
     });
     const { kpi, clasificacion, cumple } = calcularKpi(p.conteo, cfg, p);
-    const est = estados[p.id] || null;
     if (kc.kpi_conv >= umbral) {
       resultados.push({
         id: p.id,
@@ -327,14 +330,15 @@ async function listaParaPostulante(personaId) {
     });
     const umbral = calc.umbral;
     const contratado = yo.disponibilidad === 'Contratado';
-    const califica = !contratado && kc.kpi_conv >= umbral;
-    const idx = calc.resultados.findIndex((r) => r.persona_id === Number(personaId));
     const mio = mioPorConv[c.id] || null;
+    const contratadoAqui = !!mio && mio.estado === 'contratado';
+    const califica = !contratado && !contratadoAqui && kc.kpi_conv >= umbral;
+    const idx = calc.resultados.findIndex((r) => r.persona_id === Number(personaId));
     return {
       convocatoria_id: c.id,
       id: c.id,
       titulo: c.titulo,
-      descripcion: c.descripcion,
+      tipo: c.tipo,
       estado: c.estado,
       anios_min: c.anios_min,
       disponibilidad: c.disponibilidad,
@@ -346,9 +350,11 @@ async function listaParaPostulante(personaId) {
       posicion: idx >= 0 ? idx + 1 : null,
       total_candidatos: calc.total,
       motivo_exclusion: califica ? null
-        : contratado
-          ? 'Estás contratado: cambiá tu disponibilidad para volver al enlistado'
-          : `KPI ${kc.kpi_conv} < umbral ${umbral}`,
+        : contratadoAqui
+          ? 'Ya estás contratado en esta convocatoria'
+          : contratado
+            ? 'Estás contratado: cambiá tu disponibilidad para volver al enlistado'
+            : `KPI ${kc.kpi_conv} < umbral ${umbral}`,
       estado_candidato: mio ? mio.estado : null,
       candidato_id: mio ? mio.candidato_id : null
     };

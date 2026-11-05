@@ -44,6 +44,8 @@ function montarConvocatorias(prefijo) {
   r.post(p, autenticar, staff, asyncHandler(Conv.crear));
   r.get(p, autenticar, asyncHandler(Conv.listar));
   r.get(`${p}/:id`, autenticar, asyncHandler(Conv.detalle));
+  // Edicion de datos generales y requisitos (solo pendiente/abierta).
+  r.patch(`${p}/:id`, autenticar, staff, asyncHandler(Conv.actualizar));
   r.patch(`${p}/:id/cerrar`, autenticar, staff, asyncHandler(Conv.cerrar));
   r.patch(`${p}/:id/aprobar`, autenticar, admin, asyncHandler(Conv.aprobar));
   r.patch(`${p}/:id/rechazar`, autenticar, admin, asyncHandler(Conv.rechazar));

@@ -173,7 +173,8 @@ CREATE TABLE configuracion_kpi (
 CREATE TABLE convocatorias (
     id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     titulo VARCHAR(120) NOT NULL,
-    descripcion TEXT,
+    tipo VARCHAR(30) NOT NULL DEFAULT 'Pasantía'
+        CHECK (tipo IN ('Pasantía','Momentáneo','Mensual','De planta')),
     anios_min DECIMAL(4,1) DEFAULT 0 CHECK (anios_min >= 0),
     disponibilidad VARCHAR(30) NULL
         CHECK (disponibilidad IS NULL OR disponibilidad IN ('Inmediata','En 15 días','En 1 mes','Medio tiempo','No disponible','Contratado')),
@@ -185,6 +186,7 @@ CREATE TABLE convocatorias (
     actualizado_en TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 COMMENT ON COLUMN convocatorias.kpi_minimo IS 'Umbral de enlistado (0-100). Quien no lo supera aparece en excluidos[] con su motivo';
+COMMENT ON COLUMN convocatorias.tipo IS 'Tipo de convocatoria (catalogo cerrado): reemplaza la descripcion libre';
 COMMENT ON COLUMN convocatorias.cupos IS 'Vacantes (1-999). Al contratar el ultimo cupo la convocatoria se cierra sola';
 CREATE INDEX idx_convocatorias_estado ON convocatorias (estado);
 CREATE INDEX idx_convocatorias_creada_por ON convocatorias (creada_por);

@@ -10,14 +10,14 @@ const KPI_MINIMO_POR_DEFECTO = KPI_MINIMO.POR_DEFECTO;
 
 // ---- Convocatorias --------------------------------------------------------
 
-async function crear({ titulo, descripcion, anios_min, disponibilidad, kpi_minimo, cupos, requisitos, creada_por }) {
+async function crear({ titulo, tipo, anios_min, disponibilidad, kpi_minimo, cupos, requisitos, creada_por }) {
   // Todo en una transaccion: si un requisito es invalido (400) no queda una
   // convocatoria a medias sin requisitos.
   return conTransaccion(async (conn) => {
     const r = await conn.query(
-      `INSERT INTO convocatorias (titulo, descripcion, anios_min, disponibilidad, kpi_minimo, cupos, creada_por)
+      `INSERT INTO convocatorias (titulo, tipo, anios_min, disponibilidad, kpi_minimo, cupos, creada_por)
        VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`,
-      [titulo, descripcion || null, anios_min || 0, disponibilidad || null,
+      [titulo, tipo || null, anios_min || 0, disponibilidad || null,
         kpi_minimo === undefined || kpi_minimo === null ? KPI_MINIMO_POR_DEFECTO : Number(kpi_minimo),
         cupos === undefined || cupos === null ? CUPOS.POR_DEFECTO : Number(cupos),
         creada_por || null]
@@ -25,6 +25,19 @@ async function crear({ titulo, descripcion, anios_min, disponibilidad, kpi_minim
     const conv = r.rows[0];
     await reemplazarRequisitos(conv.id, requisitos || [], conn);
     return detalle(conv.id, conn);
+  });
+}
+
+// Edicion de los datos generales. Reemplaza los requisitos solo si vienen en el body.
+async function actualizar({ id, titulo, tipo, anios_min, disponibilidad, kpi_minimo, cupos, requisitos }) {
+  return conTransaccion(async (conn) => {
+    const r = await conn.query(
+      `UPDATE convocatorias SET titulo=$1, tipo=$2, anios_min=$3, disponibilidad=$4,
+         kpi_minimo=$5, cupos=$6, actualizado_en=now() WHERE id=$7 RETURNING id`,
+      [titulo, tipo, anios_min || 0, disponibilidad || null, Number(kpi_minimo), Number(cupos), id]);
+    if (!r.rows[0]) return null;
+    if (requisitos !== undefined) await reemplazarRequisitos(id, requisitos, conn);
+    return detalle(id, conn);
   });
 }
 
@@ -320,7 +333,7 @@ async function resumen(duenioId) {
 }
 
 module.exports = {
-  crear, listar, detalle, cerrar, eliminar, setUmbral, setCupos, aprobar, rechazar,
+  crear, actualizar, listar, detalle, cerrar, eliminar, setUmbral, setCupos, aprobar, rechazar,
   reemplazarRequisitos, requisitosDe, normalizarCandidato,
   buscarCandidato, bloquearConvocatoria, contarContratados, marcarCerrada,
   guardarCandidato, actualizarEstadoCandidato, cola, resumen,

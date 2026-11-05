@@ -226,7 +226,7 @@ export function Gestor() {
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="truncate font-semibold">{m.titulo}</p>
-                      {m.descripcion ? <p className="help mt-0.5 line-clamp-2">{m.descripcion}</p> : null}
+                      {m.tipo ? <p className="help mt-0.5 line-clamp-2">Tipo: {m.tipo}</p> : null}
                     </div>
                     <EstadoBadge estado={m.estado_candidato} />
                   </div>

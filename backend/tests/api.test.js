@@ -132,6 +132,7 @@ test('catalogos trae listas para formularios', async () => {
   assert.ok(r.body.tecnologias.length >= 12);
   assert.ok(r.body.niveles.length === 5);
   assert.ok(r.body.tipos_trabajo.length === 2);
+  assert.deepEqual(r.body.tipos_convocatoria, ['Pasantía', 'Momentáneo', 'Mensual', 'De planta']);
 });
 
 test('GET /yo devuelve el perfil propio del postulante', async () => {

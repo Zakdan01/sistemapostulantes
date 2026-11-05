@@ -119,7 +119,7 @@ export function MisConvocatorias() {
                     <h3 className="text-base font-bold">{f.titulo}</h3>
                     {f.posicion ? <Pill tono="violet">#{f.posicion} de {f.total_candidatos}</Pill> : null}
                   </div>
-                  {f.descripcion ? <p className="help mt-1">{f.descripcion}</p> : null}
+                  {f.tipo ? <p className="help mt-1">Tipo: {f.tipo}</p> : null}
                 </div>
                 <EstadoBadge estado={f.estado_candidato} />
               </div>
@@ -171,7 +171,7 @@ export function MisConvocatorias() {
                     <h3 className="text-base font-bold">{f.titulo}</h3>
                     <Pill tono="amber">Umbral {f.kpi_minimo}</Pill>
                   </div>
-                  {f.descripcion ? <p className="help mt-1">{f.descripcion}</p> : null}
+                  {f.tipo ? <p className="help mt-1">Tipo: {f.tipo}</p> : null}
                 </div>
                 <EstadoBadge estado={f.estado_candidato} />
               </div>

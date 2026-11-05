@@ -6,7 +6,7 @@ const Convocatorias = require('../services/convocatorias.service');
 const Pipeline = require('../services/pipeline');
 const { HttpError } = require('../utils/errors');
 const { DISPONIBILIDADES } = require('../utils/validar');
-const { ESTADOS_CONVOCATORIA, ESTADOS_CANDIDATO, KPI_MINIMO, CUPOS } = require('../domain/catalogos');
+const { ESTADOS_CONVOCATORIA, TIPOS_CONVOCATORIA, ESTADOS_CANDIDATO, KPI_MINIMO, CUPOS } = require('../domain/catalogos');
 
 // Reclutador: solo puede gestionar las convocatorias que el mismo creo.
 function exigirDueno(req, creadaPor) {
@@ -32,11 +32,15 @@ function validarCupos(valor) {
   return c;
 }
 
-async function crear(req, res) {
-  const { titulo, requisitos, disponibilidad, kpi_minimo, cupos } = req.body;
+// Validaciones comunes de alta y edicion. Los defaults los decide cada handler.
+function validarDatos(body) {
+  const { titulo, tipo, requisitos, disponibilidad } = body;
   if (!titulo || !String(titulo).trim()) throw HttpError.badRequest('titulo es requerido');
-  if (req.body.anios_min !== undefined
-    && (Number.isNaN(Number(req.body.anios_min)) || Number(req.body.anios_min) < 0)) {
+  if (tipo !== undefined && tipo !== null && !TIPOS_CONVOCATORIA.includes(tipo)) {
+    throw HttpError.badRequest('tipo inválido');
+  }
+  if (body.anios_min !== undefined
+    && (Number.isNaN(Number(body.anios_min)) || Number(body.anios_min) < 0)) {
     throw HttpError.badRequest('anios_min inválido');
   }
   if (disponibilidad !== undefined && disponibilidad !== null && !DISPONIBILIDADES.includes(disponibilidad)) {
@@ -45,9 +49,14 @@ async function crear(req, res) {
   if (requisitos !== undefined && !Array.isArray(requisitos)) {
     throw HttpError.badRequest('requisitos debe ser arreglo');
   }
+}
+
+async function crear(req, res) {
+  const { titulo, tipo, requisitos, disponibilidad, kpi_minimo, cupos } = req.body;
+  validarDatos(req.body);
   const v = await Convocatoria.crear({
     titulo: String(titulo).slice(0, 120),
-    descripcion: req.body.descripcion,
+    tipo: tipo || TIPOS_CONVOCATORIA[0],
     anios_min: req.body.anios_min === undefined ? 0 : Number(req.body.anios_min),
     disponibilidad: disponibilidad || null,
     kpi_minimo: kpi_minimo === undefined || kpi_minimo === null
@@ -58,6 +67,42 @@ async function crear(req, res) {
     creada_por: req.usuario.id
   });
   res.status(201).json(v);
+}
+
+// Edicion de los datos generales (y requisitos) mientras no este cerrada.
+async function actualizar(req, res) {
+  const id = Number(req.params.id);
+  const conv = await Convocatoria.detalle(id);
+  if (!conv) throw HttpError.notFound('Convocatoria no encontrada');
+  exigirDueno(req, conv.creada_por);
+  if (conv.estado === 'cerrada' || conv.estado === 'rechazada') {
+    throw HttpError.conflict('La convocatoria está cerrada: es solo lectura');
+  }
+  validarDatos(req.body);
+  const { titulo, tipo, requisitos, disponibilidad, kpi_minimo, cupos } = req.body;
+  const nuevosCupos = cupos === undefined || cupos === null ? Number(conv.cupos) : validarCupos(cupos);
+  const actualizada = await Convocatoria.actualizar({
+    id,
+    titulo: String(titulo).slice(0, 120),
+    tipo: tipo || conv.tipo,
+    anios_min: req.body.anios_min === undefined ? Number(conv.anios_min) : Number(req.body.anios_min),
+    disponibilidad: disponibilidad === undefined ? conv.disponibilidad : (disponibilidad || null),
+    kpi_minimo: kpi_minimo === undefined || kpi_minimo === null
+      ? Number(conv.kpi_minimo)
+      : validarKpiMinimo(kpi_minimo),
+    cupos: nuevosCupos,
+    requisitos
+  });
+  let estado = actualizada.estado;
+  let cierre = false;
+  if (Number(conv.contratados) >= nuevosCupos) {
+    const cerrada = await Convocatoria.cerrar(id);
+    if (cerrada) {
+      estado = cerrada.estado;
+      cierre = true;
+    }
+  }
+  res.json({ ...actualizada, estado, contratados: Number(conv.contratados), cierre_automatico: cierre });
 }
 
 async function listar(req, res) {
@@ -200,5 +245,5 @@ async function cola(req, res) {
 
 module.exports = {
   crear, listar, detalle, cerrar, eliminar, aprobar, rechazar, ranking,
-  umbral, cupos, estadoCandidato, misConvocatorias, resumen, cola
+  actualizar, umbral, cupos, estadoCandidato, misConvocatorias, resumen, cola
 };

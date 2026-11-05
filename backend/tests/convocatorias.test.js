@@ -55,12 +55,13 @@ test('crear convocatoria con requisitos', async () => {
     method: 'POST',
     headers: auth(admin),
     body: JSON.stringify({
-      titulo: TITULO, descripcion: 'Convocatoria de prueba', anios_min: 1,
+      titulo: TITULO, tipo: 'Momentáneo', anios_min: 1,
       requisitos: [{ nombre: 'javascript', obligatorio: true }, { nombre: 'react', obligatorio: false }]
     })
   });
   assert.equal(r.status, 201);
   assert.equal(r.body.titulo, TITULO);
+  assert.equal(r.body.tipo, 'Momentáneo');
   assert.equal(r.body.requisitos.length, 2);
   assert.equal(r.body.estado, 'pendiente');
   assert.equal(r.body.kpi_minimo, 25, 'kpi_minimo por defecto');
@@ -75,6 +76,55 @@ test('crear convocatoria con requisitos', async () => {
   assert.equal(cu.status, 200);
   assert.equal(cu.body.cupos, 5);
   assert.equal(cu.body.estado, 'abierta');
+});
+
+test('crear convocatoria rechaza un tipo fuera del catalogo', async () => {
+  const r = await api('/api/convocatorias', {
+    method: 'POST',
+    headers: auth(admin),
+    body: JSON.stringify({ titulo: `Conv Tipo Invalido ${Date.now()}`, tipo: 'Freelance' })
+  });
+  assert.equal(r.status, 400);
+});
+
+test('editar convocatoria abierta actualiza datos y requisitos', async () => {
+  const id = await crearYPublicar({
+    titulo: `Conv Editar ${Date.now()}`, tipo: 'Mensual',
+    requisitos: [{ nombre: 'java', obligatorio: true }]
+  });
+  const ajena = await api(`/api/convocatorias/${id}`, {
+    method: 'PATCH', headers: auth(rec2), body: JSON.stringify({ titulo: 'Hack' })
+  });
+  assert.equal(ajena.status, 403, 'solo el dueño o admin edita');
+
+  const r = await api(`/api/convocatorias/${id}`, {
+    method: 'PATCH', headers: auth(admin),
+    body: JSON.stringify({
+      titulo: 'Editada', tipo: 'De planta', anios_min: 2, disponibilidad: 'En 1 mes',
+      kpi_minimo: 40, cupos: 3, requisitos: [{ nombre: 'python', obligatorio: false }]
+    })
+  });
+  assert.equal(r.status, 200, JSON.stringify(r.body));
+  assert.equal(r.body.titulo, 'Editada');
+  assert.equal(r.body.tipo, 'De planta');
+  assert.equal(Number(r.body.anios_min), 2);
+  assert.equal(r.body.disponibilidad, 'En 1 mes');
+  assert.equal(r.body.kpi_minimo, 40);
+  assert.equal(r.body.cupos, 3);
+  assert.equal(r.body.requisitos.length, 1);
+  assert.equal(r.body.requisitos[0].nombre, 'python');
+  assert.equal(r.body.requisitos[0].obligatorio, false);
+  await api(`/api/convocatorias/${id}`, { method: 'DELETE', headers: auth(admin) });
+});
+
+test('editar convocatoria cerrada da 409', async () => {
+  const id = await crearYPublicar({ titulo: `Conv Cerrada Edit ${Date.now()}` });
+  await api(`/api/convocatorias/${id}/cerrar`, { method: 'PATCH', headers: auth(admin) });
+  const r = await api(`/api/convocatorias/${id}`, {
+    method: 'PATCH', headers: auth(admin), body: JSON.stringify({ titulo: 'No' })
+  });
+  assert.equal(r.status, 409);
+  await api(`/api/convocatorias/${id}`, { method: 'DELETE', headers: auth(admin) });
 });
 
 test('alias viejo /vacantes sigue funcionando', async () => {
@@ -601,6 +651,17 @@ test('contratado sale del padron hasta que cambia su disponibilidad', async () =
   });
   assert.equal(contrato.status, 200, JSON.stringify(contrato.body));
 
+  const rContratado = await api(`/api/convocatorias/${id}/ranking`, { headers: auth(admin) });
+  assert.ok(rContratado.body.contratados_detalle.some((p) => p.persona_id === quien.persona_id),
+    'el contratado aparece en la seccion Contratados de su convocatoria');
+  assert.equal(rContratado.body.contratados, 1);
+  assert.ok(![...rContratado.body.resultados, ...rContratado.body.excluidos]
+    .some((p) => p.persona_id === quien.persona_id), 'no esta en el ranking de su convocatoria');
+
+  const otra = await api(`/api/convocatorias/${convocatoriaId}/ranking`, { headers: auth(admin) });
+  assert.ok(!otra.body.contratados_detalle.some((p) => p.persona_id === quien.persona_id),
+    'no aparece como contratado en OTRA convocatoria');
+
   const token = await login(quien.correo);
   const yo = await api('/api/yo', { headers: auth(token) });
   assert.equal(yo.body.disponibilidad, 'Contratado', 'contratar escribe la disponibilidad');
@@ -615,6 +676,28 @@ test('contratado sale del padron hasta que cambia su disponibilidad', async () =
   });
   assert.equal(vuelve.status, 200);
   assert.equal(vuelve.body.disponibilidad, 'En 1 mes');
+
+  const sigueContratado = await api(`/api/convocatorias/${id}/ranking`, { headers: auth(admin) });
+  assert.ok(sigueContratado.body.contratados_detalle.some((p) => p.persona_id === quien.persona_id),
+    'sigue en Contratados aunque cambie su disponibilidad');
+  assert.ok(![...sigueContratado.body.resultados, ...sigueContratado.body.excluidos]
+    .some((p) => p.persona_id === quien.persona_id), 'no se duplica en el ranking de su convocatoria');
+
+  const otraDespues = await api(`/api/convocatorias/${convocatoriaId}/ranking`, { headers: auth(admin) });
+  assert.ok([...otraDespues.body.resultados, ...otraDespues.body.excluidos]
+    .some((p) => p.persona_id === quien.persona_id), 'vuelve al ranking de las demas convocatorias');
+  assert.ok(!otraDespues.body.contratados_detalle.some((p) => p.persona_id === quien.persona_id),
+    'no se marca contratado en otra convocatoria');
+
+  const mis = await api('/api/mis-convocatorias', { headers: auth(token) });
+  const suya = mis.body.find((m) => m.id === id);
+  assert.ok(suya, 'sigue viendo la convocatoria donde fue contratado');
+  assert.equal(suya.califica, false);
+  assert.equal(suya.posicion, null);
+  assert.match(suya.motivo_exclusion, /contratado/i);
+  const otraVista = mis.body.find((m) => m.id === convocatoriaId);
+  if (otraVista) assert.notEqual(otraVista.motivo_exclusion, 'Ya estás contratado en esta convocatoria');
+
   const reactivado = await api(`/api/convocatorias/${convocatoriaId}/ranking`, { headers: auth(admin) });
   assert.ok([...reactivado.body.resultados, ...reactivado.body.excluidos]
     .some((p) => p.persona_id === quien.persona_id), 'vuelve al cambiar su disponibilidad');

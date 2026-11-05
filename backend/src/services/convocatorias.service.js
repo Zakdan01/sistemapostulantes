@@ -84,7 +84,8 @@ async function ranking(id) {
     disponibles: Math.max(cupos - contratados, 0),
     completa: contratados >= cupos,
     resultados: viva.resultados,
-    excluidos: viva.excluidos
+    excluidos: viva.excluidos,
+    contratados_detalle: conv.candidatos.filter((c) => c.estado === 'contratado')
   };
 }
 

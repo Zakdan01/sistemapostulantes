@@ -233,7 +233,7 @@ export function Ranking() {
               <Pill tono="slate">{r.convocatoria.creada_por_correo || 'sin dueño'}</Pill>
             </div>
             <p className="text-sm text-slate-600 dark:text-slate-300">
-              {r.convocatoria.descripcion || 'Sin descripción cargada.'}
+              Tipo: <b>{r.convocatoria.tipo}</b>
             </p>
             {verDetalle ? (
               r.convocatoria.requisitos && r.convocatoria.requisitos.length ? (
@@ -426,6 +426,39 @@ export function Ranking() {
                 })}
               </tbody>
             </table>
+          </div>
+        )}
+      </Seccion>
+
+      <Seccion
+        titulo={`Contratados (${(r.contratados_detalle || []).length})`}
+        icono={IconoUsuarios}
+        extra={<Pill tono="green">cerrados en esta convocatoria</Pill>}
+      >
+        {(r.contratados_detalle || []).length === 0 ? (
+          <p className="help">Todavía no hay candidatos contratados en esta convocatoria.</p>
+        ) : (
+          <div className="grid gap-2 md:grid-cols-2">
+            {r.contratados_detalle.map((p) => (
+              <div key={p.persona_id} className="flex items-center gap-3 rounded-xl border border-slate-200 p-3 dark:border-slate-800">
+                <Avatar nombre={`${p.nombres} ${p.apellidos}`} tamano="sm" />
+                <div className="min-w-0 flex-1">
+                  <button
+                    type="button"
+                    className="link truncate text-left font-semibold"
+                    onClick={() => nav(`/personas/${p.persona_id}`)}
+                  >
+                    {p.nombres} {p.apellidos}
+                  </button>
+                  <p className="help truncate">{p.correo}</p>
+                </div>
+                <div className="flex shrink-0 flex-wrap justify-end gap-1.5">
+                  <Pill tono="green" punto>contratado</Pill>
+                  <Pill tono="slate">KPI al tomar {p.kpi_al_tomar ?? '—'}</Pill>
+                  <Pill tono="slate">perfil {p.kpi_perfil ?? '—'}%</Pill>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </Seccion>

@@ -736,22 +736,22 @@ INSERT INTO habilidades_postulante (persona_id, tecnologia_id, nivel_id, anios_u
 
 -- ===== CONVOCATORIAS (los 4 estados) =====
 -- kpi_minimo = umbral de enlistado. cupos = vacantes: al llenarse se cierra sola.
-INSERT INTO convocatorias (titulo, descripcion, anios_min, disponibilidad, estado, kpi_minimo, cupos, creada_por) VALUES
-  ('Desarrollador Junior','APIs Node + Postgres, frontend React básico',1,'Inmediata','abierta',20,3,(SELECT id FROM usuarios WHERE correo='admin@consultora.com')),
-  ('Desarrollador Semi-senior','NodeJS avanzado, diseño de BD y code review',3,'Inmediata','abierta',30,2,(SELECT id FROM usuarios WHERE correo='admin@consultora.com')),
-  ('Analista de Datos','SQL + Python, modelado de datos y tableros',2,NULL,'abierta',30,2,(SELECT id FROM usuarios WHERE correo='admin@consultora.com')),
-  ('Soporte Técnico N2','Mesa de ayuda, redes y backups (proceso cerrado)',1,NULL,'cerrada',20,2,(SELECT id FROM usuarios WHERE correo='admin@consultora.com')),
-  ('Arquitecto de Software','Java avanzado, Docker y diseño de arquitectura',5,'Inmediata','pendiente',45,1,(SELECT id FROM usuarios WHERE correo='admin@consultora.com')),
-  ('QA Manual','Casos de prueba, SQL y reportes de bugs',1,'Inmediata','abierta',25,2,(SELECT id FROM usuarios WHERE correo='reclutador1@consultora.com')),
-  ('Diseño UI','Prototipos en Figma y design system',1,'Medio tiempo','abierta',25,1,(SELECT id FROM usuarios WHERE correo='reclutador1@consultora.com')),
-  ('Soporte TI','Mesa de ayuda y control de versiones',1,'Medio tiempo','abierta',20,2,(SELECT id FROM usuarios WHERE correo='reclutador1@consultora.com')),
-  ('Analista de Datos Junior','SQL intermedio y Python básico',1,'Inmediata','pendiente',30,1,(SELECT id FROM usuarios WHERE correo='reclutador1@consultora.com')),
-  ('Administrativo Jr','Perfil administrativo con planillas y reportes',0,'Medio tiempo','rechazada',40,1,(SELECT id FROM usuarios WHERE correo='reclutador1@consultora.com')),
-  ('DevOps Junior','CI/CD, Docker y monitoreo',1,'Inmediata','abierta',25,2,(SELECT id FROM usuarios WHERE correo='reclutador2@consultora.com')),
-  ('Pasantía Administrativa','Apoyo administrativo (proceso cerrado)',0,'Medio tiempo','cerrada',20,1,(SELECT id FROM usuarios WHERE correo='reclutador2@consultora.com')),
-  ('Desarrollador Mobile','Android con Kotlin',1,'Inmediata','pendiente',30,1,(SELECT id FROM usuarios WHERE correo='reclutador2@consultora.com')),
-  ('Marketing Digital','Piezas gráficas y campañas en redes',1,'Inmediata','abierta',20,2,(SELECT id FROM usuarios WHERE correo='reclutador3@consultora.com')),
-  ('Atención al Cliente','Atención presencial y soporte básico (cerrado)',0,'Medio tiempo','cerrada',20,1,(SELECT id FROM usuarios WHERE correo='reclutador3@consultora.com'));
+INSERT INTO convocatorias (titulo, tipo, anios_min, disponibilidad, estado, kpi_minimo, cupos, creada_por) VALUES
+  ('Desarrollador Junior','Momentáneo',1,'Inmediata','abierta',20,3,(SELECT id FROM usuarios WHERE correo='admin@consultora.com')),
+  ('Desarrollador Semi-senior','De planta',3,'Inmediata','abierta',30,2,(SELECT id FROM usuarios WHERE correo='admin@consultora.com')),
+  ('Analista de Datos','Mensual',2,NULL,'abierta',30,2,(SELECT id FROM usuarios WHERE correo='admin@consultora.com')),
+  ('Soporte Técnico N2','Mensual',1,NULL,'cerrada',20,2,(SELECT id FROM usuarios WHERE correo='admin@consultora.com')),
+  ('Arquitecto de Software','De planta',5,'Inmediata','pendiente',45,1,(SELECT id FROM usuarios WHERE correo='admin@consultora.com')),
+  ('QA Manual','Momentáneo',1,'Inmediata','abierta',25,2,(SELECT id FROM usuarios WHERE correo='reclutador1@consultora.com')),
+  ('Diseño UI','Pasantía',1,'Medio tiempo','abierta',25,1,(SELECT id FROM usuarios WHERE correo='reclutador1@consultora.com')),
+  ('Soporte TI','Mensual',1,'Medio tiempo','abierta',20,2,(SELECT id FROM usuarios WHERE correo='reclutador1@consultora.com')),
+  ('Analista de Datos Junior','Pasantía',1,'Inmediata','pendiente',30,1,(SELECT id FROM usuarios WHERE correo='reclutador1@consultora.com')),
+  ('Administrativo Jr','Pasantía',0,'Medio tiempo','rechazada',40,1,(SELECT id FROM usuarios WHERE correo='reclutador1@consultora.com')),
+  ('DevOps Junior','Momentáneo',1,'Inmediata','abierta',25,2,(SELECT id FROM usuarios WHERE correo='reclutador2@consultora.com')),
+  ('Pasantía Administrativa','Pasantía',0,'Medio tiempo','cerrada',20,1,(SELECT id FROM usuarios WHERE correo='reclutador2@consultora.com')),
+  ('Desarrollador Mobile','De planta',1,'Inmediata','pendiente',30,1,(SELECT id FROM usuarios WHERE correo='reclutador2@consultora.com')),
+  ('Marketing Digital','Mensual',1,'Inmediata','abierta',20,2,(SELECT id FROM usuarios WHERE correo='reclutador3@consultora.com')),
+  ('Atención al Cliente','Momentáneo',0,'Medio tiempo','cerrada',20,1,(SELECT id FROM usuarios WHERE correo='reclutador3@consultora.com'));
 
 -- ===== REQUISITOS (nivel_minimo; NULL = sin minimo) =====
 INSERT INTO convocatorias_requisitos (convocatoria_id, tecnologia_id, obligatorio, nivel_minimo) VALUES

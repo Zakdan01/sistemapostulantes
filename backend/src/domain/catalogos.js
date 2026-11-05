@@ -11,6 +11,8 @@ const ESTADOS_CUENTA = ['activa', 'pendiente', 'rechazada'];
 
 // --- Convocatorias ---------------------------------------------------------
 const ESTADOS_CONVOCATORIA = ['pendiente', 'abierta', 'cerrada', 'rechazada'];
+// Tipo de convocatoria: reemplaza la descripcion libre. Es un catalogo cerrado.
+const TIPOS_CONVOCATORIA = ['Pasantía', 'Momentáneo', 'Mensual', 'De planta'];
 
 // --- Pipeline de candidatos ------------------------------------------------
 // Estados por los que pasa un candidato que el staff ya tomo de la lista viva.
@@ -88,7 +90,7 @@ function nivelesTecnologia() {
 }
 
 module.exports = {
-  ROLES, ESTADOS_CUENTA, ESTADOS_CONVOCATORIA, ESTADOS_CANDIDATO, TRANSICIONES,
+  ROLES, ESTADOS_CUENTA, ESTADOS_CONVOCATORIA, TIPOS_CONVOCATORIA, ESTADOS_CANDIDATO, TRANSICIONES,
   KPI_MINIMO, CUPOS, DISPONIBILIDADES, MODOS_FILTRO, NIVELES_TECNOLOGIA, NIVEL_FACTOR, NIVEL_ORDEN,
   PUNTOS_REQUISITOS, PUNTOS_DISPONIBILIDAD, PARTE_COBERTURA,
   CLAVES_CONFIG_KPI, PESOS_PERFIL,

@@ -23,6 +23,8 @@ const ETIQ_CAT = {
   otro: 'Otras'
 };
 
+const formVacio = () => ({ titulo: '', tipo: '', anios_min: 1, disponibilidad: '', kpi_minimo: '', cupos: '', reqs: {} });
+
 function EstadoPill({ estado }) {
   const tono = estado === 'abierta' ? 'green' : estado === 'pendiente' ? 'amber' : estado === 'cerrada' ? 'slate' : 'red';
   return <Pill tono={tono} punto>{estado}</Pill>;
@@ -54,20 +56,24 @@ export function Convocatorias() {
   const kpiRango = cats.kpi_minimo_rango || {};
   const nivelPorDefecto = niveles.includes('basico') ? 'basico' : (niveles[0] || '');
   const dispPorDefecto = (cats.disponibilidades || [])[0] || '';
+  const tipos = cats.tipos_convocatoria || [];
+  const tipoPorDefecto = tipos[0] || '';
   const [lista, setLista] = useState([]);
   const [filtro, setFiltro] = useState('todas');
   const [busqueda, setBusqueda] = useState('');
   const [mostrarForm, setMostrarForm] = useState(false);
+  const [editando, setEditando] = useState(null);
   const [err, setErr] = useState('');
   const [ok, setOk] = useState('');
   const [cargandoLista, setCargandoLista] = useState(true);
-  const [form, setForm] = useState({ titulo: '', descripcion: '', anios_min: 1, disponibilidad: '', kpi_minimo: '', cupos: '', reqs: {} });
+  const [form, setForm] = useState(formVacio);
   const [otra, setOtra] = useState({ nombre: '', categoria: 'lenguaje', nivel_minimo: '' });
   const [cargando, setCargando] = useState(false);
   const toast = useToast();
 
   // `''` significa "todavia no elegi": se muestra y se envia el default del catalogo.
   const dispElegida = form.disponibilidad || dispPorDefecto;
+  const tipoElegido = form.tipo || tipoPorDefecto;
   const kpiElegido = form.kpi_minimo === '' || form.kpi_minimo === undefined ? (kpiDefecto ?? '') : form.kpi_minimo;
   const cuposDefecto = cats.cupos_por_defecto ?? 1;
   const cuposRango = cats.cupos_rango || {};
@@ -122,7 +128,39 @@ export function Convocatorias() {
     setOtra({ nombre: '', categoria: 'lenguaje', nivel_minimo: nivelPorDefecto });
   }
 
-  async function crear(e) {
+  function cerrarForm() {
+    setMostrarForm(false);
+    setEditando(null);
+    setForm(formVacio());
+  }
+
+  async function editar(v) {
+    setErr(''); setOk('');
+    try {
+      const d = await api(`/api/convocatorias/${v.id}`);
+      const reqs = {};
+      for (const r of d.requisitos || []) {
+        reqs[r.nombre] = {
+          obligatorio: r.obligatorio,
+          categoria: catDe(r.nombre),
+          nivel_minimo: r.nivel_minimo || nivelPorDefecto
+        };
+      }
+      setForm({
+        titulo: d.titulo,
+        tipo: d.tipo || '',
+        anios_min: d.anios_min,
+        disponibilidad: d.disponibilidad || '',
+        kpi_minimo: d.kpi_minimo,
+        cupos: d.cupos,
+        reqs
+      });
+      setEditando(d);
+      setMostrarForm(true);
+    } catch (ex) { setErr(ex.message); toast(ex.message, false); }
+  }
+
+  async function guardar(e) {
     e.preventDefault();
     setErr(''); setOk('');
     setCargando(true);
@@ -133,27 +171,27 @@ export function Convocatorias() {
         categoria: r.categoria,
         nivel_minimo: r.nivel_minimo || nivelPorDefecto
       }));
-      await api('/api/convocatorias', {
-        method: 'POST',
-        body: JSON.stringify({
-          titulo: form.titulo,
-          descripcion: form.descripcion,
-          anios_min: Number(form.anios_min),
-          disponibilidad: dispElegida || null,
-          kpi_minimo: Number(kpiElegido),
-          cupos: Number(cuposElegidos),
-          requisitos
-        })
+      const body = JSON.stringify({
+        titulo: form.titulo,
+        tipo: tipoElegido,
+        anios_min: Number(form.anios_min),
+        disponibilidad: dispElegida || null,
+        kpi_minimo: Number(kpiElegido),
+        cupos: Number(cuposElegidos),
+        requisitos
       });
+      if (editando) await api(`/api/convocatorias/${editando.id}`, { method: 'PATCH', body });
+      else await api('/api/convocatorias', { method: 'POST', body });
       const nuevas = Object.keys(form.reqs).filter((k) => !(cats.detalle_tecnologias || []).some((x) => x.nombre === k));
-      const msg = nuevas.length
-        ? `Convocatoria creada. Nuevas en catálogo: ${nuevas.join(', ')}`
-        : 'Convocatoria creada. Queda pendiente de aprobación.';
+      const msg = editando
+        ? 'Convocatoria actualizada.'
+        : nuevas.length
+          ? `Convocatoria creada. Nuevas en catálogo: ${nuevas.join(', ')}`
+          : 'Convocatoria creada. Queda pendiente de aprobación.';
       setOk(msg);
       toast(msg);
       invalidarCatalogos(); // puede haber tecnologias nuevas
-      setForm({ titulo: '', descripcion: '', anios_min: 1, disponibilidad: '', kpi_minimo: '', cupos: '', reqs: {} });
-      setMostrarForm(false);
+      cerrarForm();
       cargar();
     } catch (ex) { setErr(ex.message); toast(ex.message, false); }
     finally { setCargando(false); }
@@ -182,7 +220,7 @@ export function Convocatorias() {
         <Boton
           variante={mostrarForm ? 'secondary' : 'primary'}
           icono={mostrarForm ? IconoX : IconoMas}
-          onClick={() => setMostrarForm(!mostrarForm)}
+          onClick={() => (mostrarForm ? cerrarForm() : setMostrarForm(true))}
         >
           {mostrarForm ? 'Cerrar formulario' : 'Nueva convocatoria'}
         </Boton>
@@ -192,13 +230,15 @@ export function Convocatorias() {
       {ok ? <Aviso tono="ok">{ok}</Aviso> : null}
 
       {mostrarForm ? (
-        <form onSubmit={crear} className="card overflow-hidden">
+        <form onSubmit={guardar} className="card overflow-hidden">
           <div className="flex items-center justify-between gap-3 border-b border-slate-100 bg-slate-50/70 px-5 py-4 dark:border-slate-800 dark:bg-slate-900/40">
             <div>
-              <h2 className="section-title">Nueva convocatoria</h2>
-              <p className="help mt-0.5">Completa los datos, elige los requisitos y publica.</p>
+              <h2 className="section-title">{editando ? 'Editar convocatoria' : 'Nueva convocatoria'}</h2>
+              <p className="help mt-0.5">
+                {editando ? 'Actualiza los datos. Los requisitos se reemplazan y la lista se recalcula.' : 'Completa los datos, elige los requisitos y publica.'}
+              </p>
             </div>
-            <Boton variante="ghost" tamano="sm" icono={IconoX} onClick={() => setMostrarForm(false)}>Cancelar</Boton>
+            <Boton variante="ghost" tamano="sm" icono={IconoX} onClick={cerrarForm}>Cancelar</Boton>
           </div>
 
           <div className="space-y-6 p-5">
@@ -227,13 +267,14 @@ export function Convocatorias() {
                     onChange={(e) => setForm({ ...form, anios_min: e.target.value })}
                   />
                 </Campo>
-                <Campo etiqueta="Descripción" className="sm:col-span-2 lg:col-span-3">
-                  <textarea
-                    className="input min-h-[4.5rem] resize-y"
-                    placeholder="Responsabilidades, modalidad, equipo…"
-                    value={form.descripcion}
-                    onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
-                  />
+                <Campo etiqueta="Tipo">
+                  <select
+                    className="input"
+                    value={tipoElegido}
+                    onChange={(e) => setForm({ ...form, tipo: e.target.value })}
+                  >
+                    {tipos.map((t) => <option key={t}>{t}</option>)}
+                  </select>
                 </Campo>
                 <Campo etiqueta="Disponibilidad">
                   <select className="input" value={dispElegida} onChange={(e) => setForm({ ...form, disponibilidad: e.target.value })}>
@@ -367,9 +408,9 @@ export function Convocatorias() {
           </div>
 
           <div className="flex flex-wrap items-center justify-end gap-2 border-t border-slate-100 bg-slate-50/70 px-5 py-4 dark:border-slate-800 dark:bg-slate-900/40">
-            <Boton variante="ghost" onClick={() => setMostrarForm(false)}>Cancelar</Boton>
-            <Boton type="submit" variante="primary" cargando={cargando} icono={IconoMas}>
-              {cargando ? 'Creando…' : 'Crear convocatoria'}
+            <Boton variante="ghost" onClick={cerrarForm}>Cancelar</Boton>
+            <Boton type="submit" variante="primary" cargando={cargando} icono={editando ? undefined : IconoMas}>
+              {cargando ? (editando ? 'Guardando…' : 'Creando…') : (editando ? 'Guardar cambios' : 'Crear convocatoria')}
             </Boton>
           </div>
         </form>
@@ -442,11 +483,11 @@ export function Convocatorias() {
                     <EstadoPill estado={v.estado} />
                     {v.completa ? <Pill tono="cyan">cupos completos</Pill> : null}
                   </div>
-                  {v.descripcion ? <p className="help mt-1 line-clamp-2">{v.descripcion}</p> : null}
                 </div>
               </div>
 
               <div className="flex flex-wrap gap-1.5">
+                <Pill tono="slate">{v.tipo}</Pill>
                 <Pill tono="slate">{v.total_candidatos} candidatos</Pill>
                 <Pill tono="violet">{v.total_postulados} en selección</Pill>
                 <Pill tono="cyan">umbral {v.kpi_minimo}</Pill>
@@ -469,9 +510,14 @@ export function Convocatorias() {
                 ) : (
                   <span className="help">KPI mínimo de enlistado: {v.kpi_minimo}</span>
                 )}
-                <Boton variante="secondary" tamano="sm" onClick={() => nav(`/convocatorias/${v.id}`)}>
-                  Ver candidatos
-                </Boton>
+                <div className="flex flex-wrap items-center gap-2">
+                  {v.estado === 'pendiente' || v.estado === 'abierta' ? (
+                    <Boton variante="ghost" tamano="sm" onClick={() => editar(v)}>Editar</Boton>
+                  ) : null}
+                  <Boton variante="secondary" tamano="sm" onClick={() => nav(`/convocatorias/${v.id}`)}>
+                    Ver candidatos
+                  </Boton>
+                </div>
               </div>
             </article>
           ))}
