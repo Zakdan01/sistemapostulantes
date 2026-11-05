@@ -19,6 +19,8 @@ const admin = soloRol('admin');
 r.post('/auth/registro', asyncHandler(Auth.registro));
 r.post('/auth/login', asyncHandler(Auth.login));
 r.get('/tecnologias', asyncHandler(Tec.listar));
+// Landing publica: catalogo de convocatorias abiertas, sin sesion.
+r.get('/publico/convocatorias', asyncHandler(Conv.publicas));
 
 // ---- Catalogos (el frontend NO hardcodea estados ni factores) ---------------
 r.get('/catalogos', autenticar, asyncHandler(Tec.catalogos));

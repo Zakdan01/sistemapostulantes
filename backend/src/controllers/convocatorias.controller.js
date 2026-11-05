@@ -113,6 +113,11 @@ async function listar(req, res) {
   res.json(await Convocatorias.listar(estado, duenioId));
 }
 
+// Publico (sin token): catalogo de convocatorias abiertas para la landing.
+async function publicas(req, res) {
+  res.json(await Convocatorias.publicas());
+}
+
 async function detalle(req, res) {
   const v = await Convocatorias.detalle(Number(req.params.id));
   if (!v) throw HttpError.notFound('Convocatoria no encontrada');
@@ -244,6 +249,6 @@ async function cola(req, res) {
 }
 
 module.exports = {
-  crear, listar, detalle, cerrar, eliminar, aprobar, rechazar, ranking,
+  crear, listar, publicas, detalle, cerrar, eliminar, aprobar, rechazar, ranking,
   actualizar, umbral, cupos, estadoCandidato, misConvocatorias, resumen, cola
 };

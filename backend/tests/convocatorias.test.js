@@ -87,6 +87,23 @@ test('crear convocatoria rechaza un tipo fuera del catalogo', async () => {
   assert.equal(r.status, 400);
 });
 
+test('landing publica: solo abiertas, sin sesion y sin datos internos', async () => {
+  const r = await api('/api/publico/convocatorias'); // sin Authorization
+  assert.equal(r.status, 200);
+  assert.ok(Array.isArray(r.body) && r.body.length >= 1, 'el seed tiene abiertas');
+  const todas = await api('/api/convocatorias', { headers: auth(admin) });
+  const abiertas = new Set(todas.body.filter((c) => c.estado === 'abierta').map((c) => c.id));
+  for (const c of r.body) {
+    assert.ok(abiertas.has(c.id), 'solo se publican convocatorias abiertas');
+    assert.ok(c.titulo, 'titulo');
+    assert.ok(Array.isArray(c.requisitos), 'requisitos');
+    assert.equal(typeof c.vacantes, 'number', 'vacantes');
+    for (const campo of ['kpi_minimo', 'creada_por', 'creada_por_correo', 'total_candidatos', 'contratados']) {
+      assert.equal(c[campo], undefined, `no debe exponer ${campo}`);
+    }
+  }
+});
+
 test('editar convocatoria abierta actualiza datos y requisitos', async () => {
   const id = await crearYPublicar({
     titulo: `Conv Editar ${Date.now()}`, tipo: 'Mensual',

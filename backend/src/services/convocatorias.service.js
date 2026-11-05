@@ -44,6 +44,24 @@ async function listar(estado, duenioId) {
   });
 }
 
+// Catalogo publico (sin sesion): solo abiertas y solo datos publicables (nada de
+// kpi_minimo, correos ni conteos internos). Lee directo del modelo: no calcula KPI.
+async function publicas() {
+  const filas = await Convocatoria.listar('abierta');
+  const mapa = await Convocatoria.requisitosDe(filas.map((c) => c.id));
+  return filas.map((c) => ({
+    id: c.id,
+    titulo: c.titulo,
+    tipo: c.tipo,
+    anios_min: Number(c.anios_min),
+    disponibilidad: c.disponibilidad,
+    cupos: Number(c.cupos),
+    // Vacantes libres: lo unico del pipeline que se publica (sirve para el aviso).
+    vacantes: Math.max(Number(c.cupos) - Number(c.contratados), 0),
+    requisitos: (mapa[c.id] || []).map((r) => (r.obligatorio ? r.nombre : `${r.nombre} (deseable)`))
+  }));
+}
+
 // Detalle de la convocatoria con la lista viva resumida (total + patron).
 async function detalle(id) {
   const conv = await Convocatoria.detalle(id);
@@ -118,4 +136,4 @@ async function resumen(duenioId) {
   return { ...contadores, candidatos: { total: candidatos } };
 }
 
-module.exports = { listar, detalle, ranking, resumen, misConvocatorias, conRequisitos };
+module.exports = { listar, publicas, detalle, ranking, resumen, misConvocatorias, conRequisitos };

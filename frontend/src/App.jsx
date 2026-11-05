@@ -19,6 +19,7 @@ import { MisConvocatorias } from './pages/MisConvocatorias';
 import { MiPerfil } from './pages/MiPerfil';
 import { Gestor } from './pages/Gestor';
 import { ComoSeCalcula } from './pages/ComoSeCalcula';
+import { Bienvenida } from './pages/Bienvenida';
 import { sesion, salir } from './lib/api';
 import { ToastProvider } from './components/Toast';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -211,7 +212,8 @@ function Paginas() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Registro />} />
-        <Route path="/" element={<Protegida><Gestor /></Protegida>} />
+        {/* Sin sesion, "/" es la landing publica; con sesion, el gestor. */}
+        <Route path="/" element={sesion().token ? <Protegida><Gestor /></Protegida> : <Bienvenida />} />
         <Route path="/buscar" element={<Protegida roles={['admin', 'reclutador']}><Buscar /></Protegida>} />
         <Route path="/personas/:id" element={<Protegida roles={['admin', 'reclutador']}><Detalle /></Protegida>} />
         <Route path="/convocatorias" element={<Protegida roles={['admin', 'reclutador']}><Convocatorias /></Protegida>} />
