@@ -514,7 +514,7 @@ export function Convocatorias() {
                   {v.estado === 'pendiente' || v.estado === 'abierta' ? (
                     <Boton variante="ghost" tamano="sm" onClick={() => editar(v)}>Editar</Boton>
                   ) : null}
-                  <Boton variante="secondary" tamano="sm" onClick={() => nav(`/convocatorias/${v.id}`)}>
+                  <Boton variante="secondary" tamano="sm" onClick={() => nav(`/interno/convocatorias/${v.id}`)}>
                     Ver candidatos
                   </Boton>
                 </div>

@@ -17,9 +17,14 @@ import { Convocatorias } from './pages/Convocatorias';
 import { Ranking } from './pages/Ranking';
 import { MisConvocatorias } from './pages/MisConvocatorias';
 import { MiPerfil } from './pages/MiPerfil';
+import { MiPanel } from './pages/MiPanel';
 import { Gestor } from './pages/Gestor';
 import { ComoSeCalcula } from './pages/ComoSeCalcula';
-import { Bienvenida } from './pages/Bienvenida';
+import { Inicio } from './pages/Inicio';
+import { ConvocatoriasPublicas } from './pages/ConvocatoriasPublicas';
+import { Empresas } from './pages/Empresas';
+import { Contacto } from './pages/Contacto';
+import { Publico } from './components/Publico';
 import { sesion, salir } from './lib/api';
 import { ToastProvider } from './components/Toast';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -30,6 +35,7 @@ import {
   IconoMaletin,
   IconoChispa,
   IconoUsuario,
+  IconoEnlace,
   IconoSalir,
   IconoSol,
   IconoLuna,
@@ -37,6 +43,8 @@ import {
   IconoCerrar
 } from './components/Iconos';
 
+// Una sola app, dos puertas: el sitio publico (visitantes y postulantes) y el
+// sistema interno bajo /interno (admin y reclutador).
 function useTema() {
   const [tema, setTema] = useState(() => localStorage.getItem('tema') || 'dark');
   if (tema === 'dark') document.documentElement.classList.add('dark');
@@ -44,14 +52,24 @@ function useTema() {
   return [tema, (t) => { localStorage.setItem('tema', t); setTema(t); }];
 }
 
+// Rutas que viven en el sitio publico (sin sidebar aunque haya sesion).
+function esRutaPublica(path) {
+  return ['/', '/login', '/registro', '/empresas', '/contacto', '/interno/login'].includes(path)
+    || path.startsWith('/convocatorias');
+}
+
+function casaDe(rol) {
+  return rol === 'postulante' ? '/mi-panel' : '/interno';
+}
+
 function Protegida({ children, roles }) {
   const s = sesion();
-  if (!s.token) return <Navigate to="/login" replace />;
-  if (roles && !roles.includes(s.rol)) {
-    return <Navigate to="/" replace />;
+  if (!s.token) {
+    return <Navigate to={window.location.pathname.startsWith('/interno') ? '/interno/login' : '/login'} replace />;
   }
-  if (s.estado === 'pendiente' && !['/', '/mi-perfil'].includes(window.location.pathname)) {
-    return <Navigate to="/" replace />;
+  if (roles && !roles.includes(s.rol)) return <Navigate to={casaDe(s.rol)} replace />;
+  if (s.estado === 'pendiente' && !['/mi-panel', '/mi-perfil'].includes(window.location.pathname)) {
+    return <Navigate to="/mi-panel" replace />;
   }
   return children;
 }
@@ -63,31 +81,34 @@ const ROLES = {
 };
 
 function enlacesDe(rol, estado) {
-  const gestor = { to: '/', etiqueta: 'Gestor', icono: IconoPanel, end: true };
+  const inicio = rol === 'postulante'
+    ? { to: '/mi-panel', etiqueta: 'Mi panel', icono: IconoPanel, end: true }
+    : { to: '/interno', etiqueta: 'Gestor', icono: IconoPanel, end: true };
+  const sitio = { to: '/', etiqueta: 'Sitio público', icono: IconoEnlace, end: true };
   if (rol === 'admin') {
     return [
-      gestor,
-      { to: '/buscar', etiqueta: 'Búsqueda', icono: IconoBuscar },
-      { to: '/convocatorias', etiqueta: 'Convocatorias', icono: IconoMaletin },
-      { to: '/como-se-calcula', etiqueta: 'Cómo se calcula', icono: IconoChispa }
+      inicio,
+      { to: '/interno/buscar', etiqueta: 'Búsqueda', icono: IconoBuscar },
+      { to: '/interno/convocatorias', etiqueta: 'Convocatorias', icono: IconoMaletin },
+      { to: '/interno/como-se-calcula', etiqueta: 'Cómo se calcula', icono: IconoChispa },
+      sitio
     ];
   }
   if (rol === 'reclutador') {
     return [
-      gestor,
-      { to: '/buscar', etiqueta: 'Búsqueda', icono: IconoBuscar },
-      { to: '/convocatorias', etiqueta: 'Convocatorias', icono: IconoMaletin }
+      inicio,
+      { to: '/interno/buscar', etiqueta: 'Búsqueda', icono: IconoBuscar },
+      { to: '/interno/convocatorias', etiqueta: 'Convocatorias', icono: IconoMaletin },
+      sitio
     ];
   }
-  if (rol === 'postulante') {
-    const enlaces = [gestor];
-    if (estado !== 'pendiente') {
-      enlaces.push({ to: '/mis-convocatorias', etiqueta: 'Mis convocatorias', icono: IconoMaletin });
-    }
-    enlaces.push({ to: '/mi-perfil', etiqueta: 'Mi perfil', icono: IconoUsuario });
-    return enlaces;
+  const enlaces = [inicio];
+  if (estado !== 'pendiente') {
+    enlaces.push({ to: '/mis-convocatorias', etiqueta: 'Mis convocatorias', icono: IconoMaletin });
   }
-  return [gestor];
+  enlaces.push({ to: '/mi-perfil', etiqueta: 'Mi perfil', icono: IconoUsuario });
+  enlaces.push(sitio);
+  return enlaces;
 }
 
 function Sidebar({ abierto, onCerrar, tema, onTema }) {
@@ -97,7 +118,7 @@ function Sidebar({ abierto, onCerrar, tema, onTema }) {
   return (
     <aside className={`side-panel ${abierto ? 'side-open' : ''}`} aria-label="Menú principal">
       <div className="flex items-center gap-2.5 px-1 py-1">
-        <Link to="/" onClick={onCerrar} className="flex min-w-0 items-center gap-2.5" aria-label="Ir al gestor">
+        <Link to={casaDe(s.rol)} onClick={onCerrar} className="flex min-w-0 items-center gap-2.5" aria-label="Ir al panel">
           <span className="brand-mark">P</span>
           <span className="min-w-0">
             <span className="brand-title block truncate">Postulantes</span>
@@ -162,7 +183,7 @@ function Sidebar({ abierto, onCerrar, tema, onTema }) {
   );
 }
 
-function Topbar({ onAbrir, tema, onTema }) {
+function Topbar({ onAbrir, tema, onTema, casa }) {
   return (
     <header className="topbar lg:hidden">
       <button
@@ -173,7 +194,7 @@ function Topbar({ onAbrir, tema, onTema }) {
       >
         <IconoMenu className="h-5 w-5" />
       </button>
-      <Link to="/" className="flex items-center gap-2 font-bold" aria-label="Ir al gestor">
+      <Link to={casa} className="flex items-center gap-2 font-bold" aria-label="Ir al panel">
         <span className="brand-mark h-8 w-8 rounded-lg text-sm">P</span>
         <span className="text-sm">Postulantes</span>
       </Link>
@@ -205,25 +226,38 @@ function TemaFlotante({ tema, onTema }) {
 
 // Las rutas van dentro de un ErrorBoundary con key por ruta: si una pagina falla al
 // renderizar se ve el mensaje (no la pantalla en blanco) y se resetea al navegar.
-function Paginas() {
+function Paginas({ tema, onTema }) {
   const loc = useLocation();
   return (
     <ErrorBoundary key={loc.pathname}>
       <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/registro" element={<Registro />} />
-        {/* Sin sesion, "/" es la landing publica; con sesion, el gestor. */}
-        <Route path="/" element={sesion().token ? <Protegida><Gestor /></Protegida> : <Bienvenida />} />
-        <Route path="/buscar" element={<Protegida roles={['admin', 'reclutador']}><Buscar /></Protegida>} />
-        <Route path="/personas/:id" element={<Protegida roles={['admin', 'reclutador']}><Detalle /></Protegida>} />
-        <Route path="/convocatorias" element={<Protegida roles={['admin', 'reclutador']}><Convocatorias /></Protegida>} />
-        <Route path="/convocatorias/:id" element={<Protegida roles={['admin', 'reclutador']}><Ranking /></Protegida>} />
-        <Route path="/como-se-calcula" element={<Protegida roles={['admin']}><ComoSeCalcula /></Protegida>} />
-        <Route path="/mi-perfil" element={<Protegida roles={['postulante']}><MiPerfil /></Protegida>} />
+        {/* Sitio publico */}
+        <Route element={<Publico tema={tema} onTema={onTema} />}>
+          <Route path="/" element={<Inicio />} />
+          <Route path="/convocatorias" element={<ConvocatoriasPublicas />} />
+          <Route path="/empresas" element={<Empresas />} />
+          <Route path="/contacto" element={<Contacto />} />
+          <Route path="/login" element={<Login portal="publico" />} />
+          <Route path="/registro" element={<Registro />} />
+        </Route>
+
+        {/* Panel del postulante */}
+        <Route path="/mi-panel" element={<Protegida roles={['postulante']}><MiPanel /></Protegida>} />
         <Route path="/mis-convocatorias" element={<Protegida roles={['postulante']}><MisConvocatorias /></Protegida>} />
+        <Route path="/mi-perfil" element={<Protegida roles={['postulante']}><MiPerfil /></Protegida>} />
+
+        {/* Sistema interno */}
+        <Route path="/interno/login" element={<Login portal="interno" />} />
+        <Route path="/interno" element={<Protegida roles={['admin', 'reclutador']}><Gestor /></Protegida>} />
+        <Route path="/interno/buscar" element={<Protegida roles={['admin', 'reclutador']}><Buscar /></Protegida>} />
+        <Route path="/interno/personas/:id" element={<Protegida roles={['admin', 'reclutador']}><Detalle /></Protegida>} />
+        <Route path="/interno/convocatorias" element={<Protegida roles={['admin', 'reclutador']}><Convocatorias /></Protegida>} />
+        <Route path="/interno/convocatorias/:id" element={<Protegida roles={['admin', 'reclutador']}><Ranking /></Protegida>} />
+        <Route path="/interno/como-se-calcula" element={<Protegida roles={['admin']}><ComoSeCalcula /></Protegida>} />
+
         <Route path="/vacantes" element={<Navigate to="/convocatorias" replace />} />
         <Route path="/vacantes/:id" element={<Navigate to="/convocatorias" replace />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </ErrorBoundary>
   );
@@ -235,9 +269,8 @@ function Shell() {
   const [abierto, setAbierto] = useState(false);
   const [tema, setTema] = useTema();
   const alternarTema = () => setTema(tema === 'dark' ? 'light' : 'dark');
-  const autenticado = Boolean(s.token);
-  const esAuth = loc.pathname === '/login' || loc.pathname === '/registro';
-  const conSidebar = autenticado && !esAuth;
+  const publica = esRutaPublica(loc.pathname);
+  const conSidebar = Boolean(s.token) && !publica;
 
   return (
     <div className="min-h-screen">
@@ -255,11 +288,11 @@ function Shell() {
 
       <div className={conSidebar ? 'lg:pl-72' : ''}>
         {conSidebar && (
-          <Topbar onAbrir={() => setAbierto(true)} tema={tema} onTema={alternarTema} />
+          <Topbar onAbrir={() => setAbierto(true)} tema={tema} onTema={alternarTema} casa={casaDe(s.rol)} />
         )}
-        {!conSidebar && <TemaFlotante tema={tema} onTema={alternarTema} />}
+        {!conSidebar && !publica && <TemaFlotante tema={tema} onTema={alternarTema} />}
         <main className={conSidebar ? 'mx-auto w-full max-w-6xl px-4 pb-12 pt-5 sm:px-6 lg:px-8 lg:pt-8' : ''}>
-          <Paginas />
+          <Paginas tema={tema} onTema={alternarTema} />
         </main>
       </div>
     </div>

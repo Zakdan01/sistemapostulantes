@@ -16,15 +16,25 @@ function avisarRed() {
           .flatMap(([nombre, lista]) => (lista || []).map((i) => ({ ...i, nombre })))
           .filter((i) => (i.family === 'IPv4' || i.family === 4) && !i.internal)
 
+        // Las dos puertas del sitio, para copiar y pegar.
+        const accesos = (base) => {
+          console.log(`    Postulantes       ${base}/`)
+          console.log(`    Sistema interno   ${base}/interno/login`)
+        }
+
+        console.log('')
+        console.log('  Accesos rápidos (este equipo):')
+        accesos(`http://localhost:${puerto}`)
         console.log('')
         if (!ips.length) {
           console.log('  Sin red local: conectate a una Wi-Fi para que otras PC entren.')
           console.log('')
           return
         }
-        console.log('  Otras PC en la misma red se conectan a:')
+        console.log('  Otras PC en la misma red:')
         for (const { address, nombre } of ips) {
-          console.log(`  http://${address}:${puerto}   (${nombre})`)
+          console.log(`  ${nombre}`)
+          accesos(`http://${address}:${puerto}`)
         }
         console.log('')
       }

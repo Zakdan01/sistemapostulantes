@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api, sesion } from '../lib/api';
 import { TablaKPI } from '../components/TablaKPI';
-import { EstadoBadge } from '../components/EstadoCandidato';
 import { useAccion } from '../hooks/useAccion';
 import {
   Avatar,
@@ -29,12 +28,12 @@ import {
   IconoX
 } from '../components/Iconos';
 
-// Gestor por rol:
+// Gestor interno (solo staff):
 // - admin: resumen + cuentas por aprobar + convocatorias por aprobar + todo.
 // - reclutador: resumen propio + sus convocatorias + candidatos de su proceso de selección.
-// - postulante: tablero de selección + en que convocatorias califica.
+// El panel del postulante vive aparte (pages/MiPanel.jsx).
 // Las acciones de selección (contactar/preseleccionar/contratar/descartar) NO se hacen aca:
-// viven en el ranking de cada convocatoria (pages/Ranking.jsx, /convocatorias/:id).
+// viven en el ranking de cada convocatoria (pages/Ranking.jsx, /interno/convocatorias/:id).
 
 function EstadoConv({ estado }) {
   const tono = estado === 'abierta'
@@ -52,33 +51,16 @@ export function Gestor() {
   const s = sesion();
   const rol = s.rol;
   const esAdmin = rol === 'admin';
-  const esPostulante = rol === 'postulante';
   const [resumen, setResumen] = useState(null);
   const [porAprobar, setPorAprobar] = useState([]);
   const [convocatorias, setConvocatorias] = useState([]);
   const [postulantes, setPostulantes] = useState([]);
-  const [tablero, setTablero] = useState([]);
-  const [mis, setMis] = useState([]);
   const [cuentas, setCuentas] = useState([]);
-  const [yoId, setYoId] = useState(null);
   const [err, setErr] = useState('');
-  const [cargado, setCargado] = useState(false);
   const [confirmar, setConfirmar] = useState(null);
   const { ocupado, error: errorAccion, ejecutar } = useAccion();
 
   const cargar = useCallback(() => {
-    if (esPostulante) {
-      Promise.all([api('/api/candidatos'), api('/api/mis-convocatorias'), api('/api/yo')])
-        .then(([t, m, y]) => {
-          setErr('');
-          setTablero(t);
-          setMis(m);
-          setYoId(y.id);
-        })
-        .catch((ex) => setErr(ex.message))
-        .finally(() => setCargado(true));
-      return;
-    }
     const llamadas = [
       api('/api/admin/resumen'),
       api('/api/convocatorias?estado=pendiente'),
@@ -112,8 +94,8 @@ export function Gestor() {
         }
         setPostulantes([...vistos.values()]);
       }
-    }).catch((ex) => setErr(ex.message)).finally(() => setCargado(true));
-  }, [esAdmin, esPostulante]);
+    }).catch((ex) => setErr(ex.message));
+  }, [esAdmin]);
 
   useEffect(() => { cargar(); }, [cargar]);
 
@@ -153,147 +135,6 @@ export function Gestor() {
     }, { exito: (r) => `Cuenta ${r.rol} creada y activa: ${r.correo}` });
   }
 
-  // ---------------- Vista del postulante ----------------
-  if (esPostulante) {
-    const porConv = {};
-    for (const t of tablero) {
-      (porConv[t.convocatoria_titulo] = porConv[t.convocatoria_titulo] || []).push(t);
-    }
-    const califican = mis.filter((m) => m.califica);
-    const conPosicion = mis.filter((m) => m.califica && m.posicion);
-    const mejorPosicion = conPosicion.length
-      ? conPosicion.reduce((mejor, m) => (m.posicion < mejor.posicion ? m : mejor), conPosicion[0])
-      : null;
-
-    if (!cargado) {
-      return (
-        <div className="space-y-5">
-          <div className="space-y-2"><div className="skeleton h-8 w-64" /><div className="skeleton h-4 w-96 max-w-full" /></div>
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            {[0, 1, 2, 3].map((i) => <div key={i} className="skeleton h-28" />)}
-          </div>
-          <div className="skeleton h-48" />
-        </div>
-      );
-    }
-
-    return (
-      <div className="space-y-5">
-        <PageHeader
-          titulo="Mi panel"
-          subtitulo="Tu perfil te enlista solo en las convocatorias donde cumples el umbral. No hay que postular."
-          icono={IconoObjetivo}
-        >
-          <Boton variante="primary" onClick={() => nav('/mis-convocatorias')}>Ver mis convocatorias</Boton>
-          <Boton variante="secondary" onClick={() => nav('/mi-perfil')}>Completar mi perfil</Boton>
-        </PageHeader>
-
-        {err ? <Aviso tono="error" titulo="No se pudo cargar el panel">{err}</Aviso> : null}
-        {errorAccion ? <Aviso tono="error">{errorAccion}</Aviso> : null}
-        {s.estado === 'pendiente' ? (
-          <Aviso tono="warn" titulo="Tu cuenta está pendiente de aprobación">
-            Puedes ver y completar tu perfil, pero entrarás al padrón de candidatos cuando el admin te apruebe.
-          </Aviso>
-        ) : null}
-
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <StatCard valor={mis.length} etiqueta="Convocatorias abiertas" icono={IconoMaletin} tono="cyan" />
-          <StatCard valor={califican.length} etiqueta="Donde cumples el umbral" icono={IconoObjetivo} tono="emerald" />
-          <StatCard valor={tablero.length} etiqueta="Candidaturas en selección" icono={IconoUsuarios} tono="violet" />
-          <StatCard
-            valor={mejorPosicion ? `#${mejorPosicion.posicion}` : '—'}
-            etiqueta="Tu mejor posición"
-            icono={IconoTrofeo}
-            tono="amber"
-            hint={mejorPosicion ? mejorPosicion.titulo : 'Todavía sin posición'}
-          />
-        </div>
-
-        <Seccion
-          titulo={`Convocatorias donde califico (${califican.length} de ${mis.length})`}
-          icono={IconoGrafico}
-        >
-          {mis.length === 0 ? (
-            <EmptyState
-              icono={IconoMaletin}
-              titulo="No hay convocatorias abiertas"
-              texto="Cuando el equipo publique una convocatoria, vas a verla acá automáticamente."
-            />
-          ) : (
-            <div className="grid gap-3 md:grid-cols-2">
-              {mis.map((m) => (
-                <div key={m.id} className="card card-hover space-y-3 p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="truncate font-semibold">{m.titulo}</p>
-                      {m.tipo ? <p className="help mt-0.5 line-clamp-2">Tipo: {m.tipo}</p> : null}
-                    </div>
-                    <EstadoBadge estado={m.estado_candidato} />
-                  </div>
-                  <Progress
-                    valor={m.kpi_conv}
-                    max={m.kpi_minimo || 100}
-                    tono={m.califica ? 'emerald' : 'amber'}
-                    etiqueta={`KPI ${m.kpi_conv} / umbral ${m.kpi_minimo}`}
-                  />
-                  <div className="flex flex-wrap items-center gap-2">
-                    {m.califica && m.posicion ? (
-                      <Pill tono="violet">Posición {m.posicion} de {m.total_candidatos}</Pill>
-                    ) : (
-                      <Pill tono="slate">{m.total_candidatos} candidatos</Pill>
-                    )}
-                    {!m.califica && m.motivo_exclusion ? (
-                      <span className="help">{m.motivo_exclusion}</span>
-                    ) : null}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </Seccion>
-
-        <Seccion titulo={`Candidatos en selección (${tablero.length})`} icono={IconoUsuarios}>
-          {tablero.length === 0 ? (
-            <EmptyState
-              icono={IconoUsuarios}
-              titulo="Todavía no estás en un proceso"
-              texto="En cuanto tu perfil supere el umbral de una convocatoria, el equipo podrá tomarte como candidato."
-            />
-          ) : (
-            <div className="space-y-3">
-              {Object.entries(porConv).map(([titulo, lista]) => (
-                <div key={titulo} className="rounded-xl border border-slate-200 p-3 dark:border-slate-800">
-                  <p className="mb-2 text-sm font-semibold">{titulo} <span className="help">({lista.length})</span></p>
-                  <div className="space-y-1.5">
-                    {lista.map((p) => (
-                      <div key={p.id} className="flex items-center gap-2.5">
-                        <Avatar nombre={`${p.nombres} ${p.apellidos}`} tamano="xs" />
-                        <p className={`min-w-0 flex-1 truncate text-sm ${p.persona_id === yoId ? 'font-bold text-brand-700 dark:text-brand-300' : ''}`}>
-                          {p.nombres} {p.apellidos}{p.persona_id === yoId ? ' (tú)' : ''}
-                        </p>
-                        <EstadoBadge estado={p.estado} />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </Seccion>
-
-        <DialogoConfirmar
-          abierto={Boolean(confirmar)}
-          titulo={confirmar?.titulo}
-          texto={confirmar?.texto}
-          confirmar={confirmar?.confirmar}
-          tono={confirmar?.tono}
-          onConfirmar={confirmarAccion}
-          onCancelar={() => setConfirmar(null)}
-        />
-      </div>
-    );
-  }
-
   // ---------------- Vista del staff (admin / reclutador) ----------------
   const tarjetas = resumen ? [
     { etiqueta: 'Convocatorias abiertas', valor: resumen.abiertas, icono: IconoMaletin, tono: 'cyan' },
@@ -327,10 +168,10 @@ export function Gestor() {
         subtitulo="Resumen de convocatorias, cuentas y candidatos del sistema."
         icono={IconoGrafico}
       >
-        <Boton variante="primary" onClick={() => nav('/convocatorias')} icono={IconoMaletin}>
+        <Boton variante="primary" onClick={() => nav('/interno/convocatorias')} icono={IconoMaletin}>
           Ir a convocatorias
         </Boton>
-        {esAdmin ? <Boton variante="secondary" onClick={() => nav('/buscar')} icono={IconoUsuarios}>Buscar candidatos</Boton> : null}
+        {esAdmin ? <Boton variante="secondary" onClick={() => nav('/interno/buscar')} icono={IconoUsuarios}>Buscar candidatos</Boton> : null}
       </PageHeader>
 
       {err ? <Aviso tono="error" titulo="No se pudo cargar el panel">{err}</Aviso> : null}
@@ -488,7 +329,7 @@ export function Gestor() {
             titulo="Todavía no hay convocatorias"
             texto="Crea la primera convocatoria y publica los requisitos."
           >
-            <Boton variante="primary" onClick={() => nav('/convocatorias')}>Crear convocatoria</Boton>
+            <Boton variante="primary" onClick={() => nav('/interno/convocatorias')}>Crear convocatoria</Boton>
           </EmptyState>
         ) : (
           <div className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -511,7 +352,7 @@ export function Gestor() {
                     etiqueta={`${c.contratados}/${c.cupos} cupos`}
                   />
                 </div>
-                <Boton variante="secondary" tamano="sm" onClick={() => nav(`/convocatorias/${c.id}`)}>
+                <Boton variante="secondary" tamano="sm" onClick={() => nav(`/interno/convocatorias/${c.id}`)}>
                   Ver candidatos
                 </Boton>
               </div>
@@ -524,7 +365,7 @@ export function Gestor() {
         titulo={`${rol === 'reclutador' ? 'Postulantes en mi proceso de selección' : 'Todos los postulantes'} (${postulantes.length})`}
         icono={IconoUsuarios}
       >
-        <TablaKPI filas={postulantes} onVer={(f) => nav(`/personas/${f.id}`)} />
+        <TablaKPI filas={postulantes} onVer={(f) => nav(`/interno/personas/${f.id}`)} />
       </Seccion>
 
       <DialogoConfirmar

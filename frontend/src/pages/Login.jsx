@@ -12,10 +12,10 @@ import {
   IconoUsuarios
 } from '../components/Iconos';
 
-const DEMOS = [
+const DEMOS_PUBLICO = [{ correo: 'postulante01@test.com', etiqueta: 'Postulante' }];
+const DEMOS_INTERNO = [
   { correo: 'admin@consultora.com', etiqueta: 'Admin' },
-  { correo: 'reclutador1@consultora.com', etiqueta: 'Reclutador' },
-  { correo: 'postulante01@test.com', etiqueta: 'Postulante' }
+  { correo: 'reclutador1@consultora.com', etiqueta: 'Reclutador' }
 ];
 
 const BENEFICIOS = [
@@ -24,10 +24,17 @@ const BENEFICIOS = [
   { icono: IconoUsuarios, titulo: 'Todo en un lugar', texto: 'Staff y postulantes ven el mismo proceso, con estados claros y sin sorpresas.' }
 ];
 
-export function Login() {
+// Dos accesos, un solo login: el publico es solo para postulantes; el interno
+// (/interno/login) admite cualquier rol y manda a cada uno a su panel.
+export function Login({ portal = 'interno' }) {
+  const esPublico = portal === 'publico';
   const nav = useNavigate();
   const toast = useToast();
-  const [form, setForm] = useState({ correo: 'admin@consultora.com', password: 'Admin123!' });
+  const demos = esPublico ? DEMOS_PUBLICO : DEMOS_INTERNO;
+  const [form, setForm] = useState({
+    correo: esPublico ? 'postulante01@test.com' : 'admin@consultora.com',
+    password: 'Admin123!'
+  });
   const [ver, setVer] = useState(false);
   const [cargando, setCargando] = useState(false);
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
@@ -37,9 +44,13 @@ export function Login() {
     setCargando(true);
     try {
       const r = await api('/api/auth/login', { method: 'POST', body: JSON.stringify(form) });
+      if (esPublico && r.rol !== 'postulante') {
+        toast('Esa cuenta es del equipo interno. Entrá por el acceso del equipo.', false);
+        return;
+      }
       guardarSesion({ token: r.token, rol: r.rol, correo: form.correo, estado_cuenta: r.estado_cuenta });
       toast(r.estado_cuenta === 'pendiente' ? 'Entraste con cuenta pendiente de aprobación.' : 'Sesión iniciada.');
-      nav('/');
+      nav(r.rol === 'postulante' ? '/mi-panel' : '/interno');
     } catch (ex) {
       toast(ex.message, false);
     } finally {
@@ -91,7 +102,9 @@ export function Login() {
               <IconoCheck className="h-4 w-4 text-emerald-300" />
               <p className="text-xs font-semibold text-white">Cuentas de demostración</p>
             </div>
-            <p className="mt-1 text-xs text-cyan-100/80">Admin, reclutador y postulante · contraseña <b className="text-white">Admin123!</b></p>
+            <p className="mt-1 text-xs text-cyan-100/80">
+              {esPublico ? 'Postulante de prueba' : 'Admin y reclutador'} · contraseña <b className="text-white">Admin123!</b>
+            </p>
           </div>
         </aside>
 
@@ -106,10 +119,14 @@ export function Login() {
 
           <div className="flex items-center gap-2">
             <Pill tono="cyan">Acceso</Pill>
-            <span className="help">Sistema de selección</span>
+            <span className="help">{esPublico ? 'Postulantes' : 'Equipo interno'}</span>
           </div>
-          <h1 className="page-title mt-3">Entrar</h1>
-          <p className="help mt-1">Accedé con tu cuenta para gestionar convocatorias o revisar tu perfil.</p>
+          <h1 className="page-title mt-3">{esPublico ? 'Ingresá a tu panel' : 'Acceso del equipo'}</h1>
+          <p className="help mt-1">
+            {esPublico
+              ? 'Con tu cuenta de postulante ves en qué convocatorias calificás y tu posición.'
+              : 'Admins y reclutadores gestionan convocatorias y candidatos. Un postulante es redirigido a su panel.'}
+          </p>
 
           <form onSubmit={enviar} className="mt-5 space-y-4">
             <Campo etiqueta="Correo electrónico">
@@ -158,7 +175,7 @@ export function Login() {
               <Pill tono="slate">Admin123!</Pill>
             </div>
             <div className="mt-2 flex flex-wrap gap-1.5">
-              {DEMOS.map((d) => (
+              {demos.map((d) => (
                 <button
                   key={d.correo}
                   type="button"
@@ -171,9 +188,17 @@ export function Login() {
             </div>
           </div>
 
-          <p className="help mt-5">
-            ¿Sin cuenta? <Link className="link" to="/registro">Inscribirme como postulante</Link>
-          </p>
+          {esPublico ? (
+            <p className="help mt-5">
+              ¿Sin cuenta? <Link className="link" to="/registro">Inscribirme como postulante</Link>
+            </p>
+          ) : (
+            <p className="help mt-5">
+              <Link className="link" to="/">Volver al sitio público</Link>
+              {' · '}
+              ¿Sos postulante? <Link className="link" to="/login">Entrá por acá</Link>
+            </p>
+          )}
         </div>
       </div>
     </div>

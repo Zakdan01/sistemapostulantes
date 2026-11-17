@@ -164,7 +164,7 @@ export function Buscar() {
       {cargando ? (
         <SkeletonTabla filas={6} />
       ) : (
-        <TablaKPI filas={filas} onVer={(f) => nav(`/personas/${f.id}`)} />
+        <TablaKPI filas={filas} onVer={(f) => nav(`/interno/personas/${f.id}`)} />
       )}
 
       {!cargando && !err && filas.length > 0 ? (

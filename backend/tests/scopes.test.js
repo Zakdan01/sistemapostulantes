@@ -87,6 +87,15 @@ test('reclutador no aprueba convocatorias 403', async () => {
   assert.equal(r.status, 403);
 });
 
+test('postulante solo ve sus propias filas en la cola', async () => {
+  const t = await login('postulante10@test.com');
+  const yo = await api('/api/yo', { headers: { Authorization: `Bearer ${t}` } });
+  const c = await api('/api/candidatos', { headers: { Authorization: `Bearer ${t}` } });
+  assert.equal(c.status, 200);
+  assert.ok(c.body.length >= 1, 'postulante10 esta en el pipeline');
+  assert.ok(c.body.every((x) => x.persona_id === yo.body.id));
+});
+
 test('PUT /yo actualiza mi perfil', async () => {
   const t = await login('postulante02@test.com');
   const r = await api('/api/yo', {

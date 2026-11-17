@@ -241,10 +241,18 @@ async function resumen(req, res) {
 async function cola(req, res) {
   const { estado, convocatoria_id } = req.query;
   if (estado && !ESTADOS_CANDIDATO.includes(String(estado))) throw HttpError.badRequest('estado inválido');
+  // El postulante solo ve sus propias filas del pipeline; el staff, la cola completa (o la suya).
+  let personaId;
+  if (req.usuario.rol === 'postulante') {
+    const persona = await Persona.porUsuario(req.usuario.id);
+    if (!persona) return res.json([]);
+    personaId = persona.id;
+  }
   res.json(await Convocatoria.cola({
     estado: estado ? String(estado) : undefined,
     convocatoria_id: convocatoria_id ? Number(convocatoria_id) : undefined,
-    duenioId: req.usuario.rol === 'reclutador' ? req.usuario.id : undefined
+    duenioId: req.usuario.rol === 'reclutador' ? req.usuario.id : undefined,
+    personaId
   }));
 }
 

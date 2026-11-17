@@ -102,7 +102,7 @@ export function Ranking() {
     return (
       <div className="space-y-4">
         <PageHeader titulo="Candidatos" icono={IconoUsuarios}>
-          <Boton variante="ghost" icono={IconoFlechaIzq} onClick={() => nav('/convocatorias')}>Volver</Boton>
+          <Boton variante="ghost" icono={IconoFlechaIzq} onClick={() => nav('/interno/convocatorias')}>Volver</Boton>
         </PageHeader>
         <Aviso tono="error" titulo="No se pudo cargar la convocatoria">{error}</Aviso>
         <Boton variante="primary" onClick={cargar}>Reintentar</Boton>
@@ -208,7 +208,7 @@ export function Ranking() {
         subtitulo={`Lista automática: el sistema enlista a todo el padrón y muestra a quienes pasan el umbral, ordenados por KPI de convocatoria.`}
         icono={IconoUsuarios}
       >
-        <Boton variante="ghost" icono={IconoFlechaIzq} onClick={() => nav('/convocatorias')}>Volver</Boton>
+        <Boton variante="ghost" icono={IconoFlechaIzq} onClick={() => nav('/interno/convocatorias')}>Volver</Boton>
         <Pill tono={tonoEstado} punto>{estadoConv}</Pill>
       </PageHeader>
 
@@ -391,7 +391,7 @@ export function Ranking() {
                           <button
                             type="button"
                             className="link truncate text-left"
-                            onClick={() => nav(`/personas/${p.persona_id}`)}
+                            onClick={() => nav(`/interno/personas/${p.persona_id}`)}
                           >
                             {p.nombres} {p.apellidos}
                           </button>
@@ -446,7 +446,7 @@ export function Ranking() {
                   <button
                     type="button"
                     className="link truncate text-left font-semibold"
-                    onClick={() => nav(`/personas/${p.persona_id}`)}
+                    onClick={() => nav(`/interno/personas/${p.persona_id}`)}
                   >
                     {p.nombres} {p.apellidos}
                   </button>

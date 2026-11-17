@@ -275,7 +275,7 @@ async function actualizarEstadoCandidato(conn, id, estado) {
 }
 
 // Cola del pipeline (alias /api/candidatos y /api/postulaciones).
-async function cola({ estado, convocatoria_id, duenioId }) {
+async function cola({ estado, convocatoria_id, duenioId, personaId }) {
   const conds = [];
   const params = [];
   if (estado) {
@@ -289,6 +289,10 @@ async function cola({ estado, convocatoria_id, duenioId }) {
   if (duenioId) {
     params.push(duenioId);
     conds.push(`pc.convocatoria_id IN (SELECT id FROM convocatorias WHERE creada_por=$${params.length})`);
+  }
+  if (personaId) {
+    params.push(personaId);
+    conds.push(`pc.persona_id=$${params.length}`);
   }
   const where = conds.length ? `WHERE ${conds.join(' AND ')}` : '';
   const { rows } = await pool.query(
