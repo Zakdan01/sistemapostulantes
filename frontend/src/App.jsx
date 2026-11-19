@@ -8,7 +8,7 @@ import {
   useNavigate,
   useLocation
 } from 'react-router-dom';
-import { useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 import { Login } from './pages/Login';
 import { Registro } from './pages/Registro';
 import { Buscar } from './pages/Buscar';
@@ -24,7 +24,7 @@ import { Inicio } from './pages/Inicio';
 import { ConvocatoriasPublicas } from './pages/ConvocatoriasPublicas';
 import { Empresas } from './pages/Empresas';
 import { Contacto } from './pages/Contacto';
-import { Publico } from './components/Publico';
+import { PublicoCorporativo } from './components/PublicoCorporativo';
 import { sesion, salir } from './lib/api';
 import { ToastProvider } from './components/Toast';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -47,8 +47,10 @@ import {
 // sistema interno bajo /interno (admin y reclutador).
 function useTema() {
   const [tema, setTema] = useState(() => localStorage.getItem('tema') || 'dark');
-  if (tema === 'dark') document.documentElement.classList.add('dark');
-  else document.documentElement.classList.remove('dark');
+  useLayoutEffect(() => {
+    document.documentElement.classList.toggle('dark', tema === 'dark');
+    document.documentElement.dataset.theme = tema;
+  }, [tema]);
   return [tema, (t) => { localStorage.setItem('tema', t); setTema(t); }];
 }
 
@@ -232,7 +234,7 @@ function Paginas({ tema, onTema }) {
     <ErrorBoundary key={loc.pathname}>
       <Routes>
         {/* Sitio publico */}
-        <Route element={<Publico tema={tema} onTema={onTema} />}>
+        <Route element={<PublicoCorporativo tema={tema} onTema={onTema} />}>
           <Route path="/" element={<Inicio />} />
           <Route path="/convocatorias" element={<ConvocatoriasPublicas />} />
           <Route path="/empresas" element={<Empresas />} />

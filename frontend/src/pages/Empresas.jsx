@@ -1,102 +1,84 @@
 import { Link } from 'react-router-dom';
-import { Pill } from '../components/ui';
-import { IlustracionEmpresas } from '../components/Ilustraciones';
-import { IconoCheck, IconoChispa, IconoObjetivo, IconoUsuarios } from '../components/Iconos';
-
-const BENEFICIOS = [
-  {
-    icono: IconoUsuarios,
-    titulo: 'Lista viva, no un buzón',
-    texto: 'Cada convocatoria arma sola el padrón de candidatos disponibles y lo ordena por encaje.'
-  },
-  {
-    icono: IconoChispa,
-    titulo: 'Puntaje explicado',
-    texto: 'El KPI dice por qué alguien está arriba: cobertura de requisitos, nivel, años y disponibilidad.'
-  },
-  {
-    icono: IconoObjetivo,
-    titulo: 'Pipeline con cupos',
-    texto: 'Tomar, contactar, preseleccionar y contratar con transiciones claras. Al llenar los cupos, cierra sola.'
-  }
-];
+import { Icono } from '../components/IconosCorporativos';
 
 const PASOS = [
-  'Nos contás el perfil que buscás y los requisitos del puesto.',
-  'Cargamos la convocatoria con su umbral de enlistado y la publicamos.',
-  'Recibís el ranking explicado y avanzás con el pipeline hasta la contratación.'
+  { numero: '01', titulo: 'Recibimos', texto: 'Nos contás el puesto y el perfil que buscás, por correo o directamente en la plataforma.' },
+  { numero: '02', titulo: 'Registramos', texto: 'Cargamos la convocatoria con requisitos, cupos, disponibilidad y umbral de enlistado.' },
+  { numero: '03', titulo: 'Enlistamos', texto: 'El sistema ordena a los candidatos disponibles por afinidad con tus requisitos.' },
+  { numero: '04', titulo: 'Acompañamos', texto: 'Seguimos cada etapa hasta la contratación y cerramos al cubrir los cupos.' }
 ];
 
 export function Empresas() {
   return (
-    <div className="mx-auto max-w-6xl px-4 pb-16 pt-10 sm:px-6 lg:pt-16">
-      <section className="grid items-center gap-8 lg:grid-cols-[1.1fr_0.9fr]">
-        <div>
-          <Pill tono="violet">Para empresas</Pill>
-          <h1 className="page-title mt-4 lg:text-5xl">Publicá tu convocatoria y recibí el ranking listo.</h1>
-          <p className="help mt-4 max-w-xl text-base">
-            Cargamos tu búsqueda en el sistema y los postulantes con perfil completo entran solos en la lista,
-            ordenados por encaje con tus requisitos. Vos solo decidís a quién contactar.
-          </p>
-          <div className="mt-6 flex flex-wrap gap-2">
-            <Link className="btn btn-primary px-5 py-3 text-base" to="/contacto">
-              Quiero publicar una convocatoria
-            </Link>
-            <Link className="btn btn-secondary px-5 py-3 text-base" to="/interno/login">Acceso del equipo</Link>
-          </div>
-          <p className="help mt-3">
-            El alta y la publicación las hace el equipo de selección: no hay autoservicio todavía.
-          </p>
-        </div>
-
-        <div className="space-y-4">
-          <IlustracionEmpresas />
-          <div className="card p-5">
-            <p className="section-title">Qué incluye</p>
-            <ul className="mt-4 space-y-4">
-              {BENEFICIOS.map((b) => (
-                <li key={b.titulo} className="flex gap-3">
-                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-accent-500/10 text-accent-600 dark:text-accent-400">
-                    <b.icono className="h-4 w-4" />
-                  </span>
-                  <div>
-                    <p className="text-sm font-semibold">{b.titulo}</p>
-                    <p className="help mt-0.5">{b.texto}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </section>
-
-      <section className="mt-14">
-        <p className="section-title">Cómo se publica</p>
-        <div className="mt-4 grid gap-3 md:grid-cols-3">
-          {PASOS.map((texto, i) => (
-            <div key={texto} className="card p-4">
-              <span className="pill pill-cyan">Paso {i + 1}</span>
-              <p className="mt-3 text-sm">{texto}</p>
+    <>
+      <section className="section">
+        <div className="container">
+          <div className="section-head reveal">
+            <span className="eyebrow eyebrow-soft">Para empresas</span>
+            <h1>Publicá y cubrí con confianza</h1>
+            <p>Definí el perfil, los cupos y el umbral. Nosotros registramos a los postulantes y armamos la lista ordenada por afinidad con tu convocatoria.</p>
+            <div className="hero-actions">
+              <Link className="btn btn-primary" to="/contacto">Enviar una convocatoria <Icono nombre="arrow" /></Link>
+              <Link className="btn btn-secondary" to="/interno/login">Acceso del equipo</Link>
             </div>
-          ))}
+          </div>
+
+          <div className="split">
+            <article className="split-card split-empresas reveal">
+              <span className="eyebrow eyebrow-soft">Para empresas</span>
+              <h2>Publicá y cubrí con confianza</h2>
+              <p>Definí el perfil, los cupos y el umbral. Nosotros registramos a los postulantes y armamos la lista ordenada por afinidad con tu convocatoria.</p>
+              <ul className="check-list">
+                <li><Icono nombre="check" /> Requisitos por tecnología y nivel</li>
+                <li><Icono nombre="check" /> Control de cupos y cierre automático</li>
+                <li><Icono nombre="check" /> Bitácora de cada movimiento</li>
+              </ul>
+              <Link className="btn btn-primary" to="/contacto">Ir a la plataforma <Icono nombre="arrow" /></Link>
+            </article>
+            <article className="split-card split-postulantes reveal">
+              <span className="eyebrow eyebrow-soft">Para postulantes</span>
+              <h2>Tu perfil trabaja por vos</h2>
+              <p>Completá tu perfil una sola vez. El sistema te incluye automáticamente en las convocatorias donde cumplís el umbral y te muestra tu posición.</p>
+              <ul className="check-list">
+                <li><Icono nombre="check" /> Sin formularios por cada puesto</li>
+                <li><Icono nombre="check" /> KPI y motivo de exclusión visibles</li>
+                <li><Icono nombre="check" /> Seguimiento de tu estado</li>
+              </ul>
+              <Link className="btn btn-accent" to="/registro">Registrarme <Icono nombre="arrow" /></Link>
+            </article>
+          </div>
         </div>
       </section>
 
-      <section className="card mt-12 flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-center">
-        <div className="min-w-0 flex-1">
-          <p className="section-title flex items-center gap-2">
-            <IconoCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-            ¿Querés sumar un puesto?
-          </p>
-          <p className="help mt-1 max-w-xl">
-            Escribinos con el perfil que necesitás y coordinamos la publicación de la convocatoria.
-            También podés acercarte a nuestra oficina.
-          </p>
+      <section className="section section-alt">
+        <div className="container">
+          <div className="section-head reveal">
+            <span className="eyebrow eyebrow-soft">Cómo trabajamos</span>
+            <h2>Cuatro pasos, cero fricción</h2>
+            <p>Un flujo corto y predecible para empresas y postulantes.</p>
+          </div>
+          <ol className="timeline">
+            {PASOS.map((p) => (
+              <li className="reveal" key={p.numero}>
+                <span className="paso">{p.numero}</span>
+                <div><h3>{p.titulo}</h3><p>{p.texto}</p></div>
+              </li>
+            ))}
+          </ol>
         </div>
-        <Link className="btn btn-primary px-5 py-3 text-base" to="/contacto">
-          Contactar al equipo
-        </Link>
       </section>
-    </div>
+
+      <section className="section">
+        <div className="container">
+          <div className="section-cta reveal">
+            <span>¿Querés sumar un puesto? Escribinos con el perfil que necesitás y coordinamos la publicación de la convocatoria.</span>
+            <div className="cta-acciones">
+              <Link className="btn btn-secondary btn-sm" to="/convocatorias">Ver convocatorias abiertas</Link>
+              <Link className="btn btn-primary btn-sm" to="/contacto">Contactar al equipo <Icono nombre="arrow" /></Link>
+            </div>
+          </div>
+        </div>
+      </section>
+    </>
   );
 }

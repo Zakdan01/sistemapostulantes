@@ -2,6 +2,7 @@
 
 ## Repo map
 - Two independent apps, no root `package.json` or workspace tooling: `backend/` (Node + Express 5 + `pg`, raw SQL, CommonJS) and `frontend/` (React 19 + Vite 8 + Tailwind v4). Install/run scripts inside each app.
+- Third deliverable, currently **untracked** in git: `Silver parasoul inc/` is a static corporate site (HTML/CSS/vanilla JS, its own `README.md`) that only links out to the system. Serve with `python -m http.server 8080`; no npm, no shared code with the SPA. Don't confuse it with `frontend/`.
 - No live architecture doc (`ESTRUCTURA.md` deleted). Trust `backend/sql/final/esquema_final.sql` for schema and `backend/src/routes/index.js` for per-route permissions. The root `.docx`/`.html`/`.png` are academic deliverables, not code docs.
 - `frontend/README.md` is stock Vite boilerplate — ignore it.
 - The backend does **not** serve the SPA (no `express.static`): in dev the browser goes through Vite, and `frontend/dist/` is only build output.

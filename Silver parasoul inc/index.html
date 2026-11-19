@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Consultora de Convocatorias: recibimos y registramos convocatorias y postulantes, y gestionamos la selección con criterios objetivos.">
+  <meta name="theme-color" content="#0e7490">
+  <title>Consultora de Convocatorias · Registro y selección de postulantes</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230e7490'/%3E%3Ctext x='32' y='43' font-family='Segoe UI,Arial' font-size='30' font-weight='700' text-anchor='middle' fill='white'%3ECC%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css?v=6">
+</head>
+<body>
+  <a class="skip-link" href="#main">Saltar al contenido principal</a>
+
+  <!-- Sprite de iconos reutilizables -->
+  <svg class="svg-sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="i-briefcase" viewBox="0 0 24 24"><path d="M3 7.5A2.5 2.5 0 0 1 5.5 5H9l1.2-1.6a1 1 0 0 1 .8-.4h2a1 1 0 0 1 .8.4L15 5h3.5A2.5 2.5 0 0 1 21 7.5v10A2.5 2.5 0 0 1 18.5 20h-13A2.5 2.5 0 0 1 3 17.5v-10Z"/><path d="M3 10h18M9 12.5h6"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 19v-1.5a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4V19"/><circle cx="9.5" cy="7.5" r="3.5"/><path d="M21 19v-1.5a4 4 0 0 0-3-3.87M16.5 4.2a3.5 3.5 0 0 1 0 6.6"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+    <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.4"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-external" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9"/><path d="M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 7v5h-5"/><path d="M4 17v-5h5"/><path d="M6.3 9A7 7 0 0 1 18.5 7.6L20 9M4 15l1.5 1.4A7 7 0 0 0 17.7 15"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V21h-4v-.1A1.7 1.7 0 0 0 9 19.34a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.63 15a1.7 1.7 0 0 0-1.56-1.03H3v-4h.1A1.7 1.7 0 0 0 4.66 9a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.63a1.7 1.7 0 0 0 1.03-1.56V3h4v.1A1.7 1.7 0 0 0 15 4.66a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.37 9c.1.42.5.7.93.7H21v4h-.1a1.7 1.7 0 0 0-1.5 1.3Z"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+    <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 7 8.5 6 8.5-6"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="m12 3 1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3ZM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8L19 16Z"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></symbol>
+  </svg>
+
+  <header class="site-header" id="siteHeader">
+    <div class="container nav-wrap">
+      <a class="brand" href="#inicio" aria-label="Consultora de Convocatorias, inicio">
+        <span class="brand-mark">CC</span>
+        <span class="brand-copy">
+          <strong>Consultora de Convocatorias</strong>
+          <small>Registro y selección de talento</small>
+        </span>
+      </a>
+
+      <nav class="nav" id="navPrincipal" aria-label="Navegación principal">
+        <a href="#servicios">Servicios</a>
+        <a href="#proceso">Cómo trabajamos</a>
+        <a href="#convocatorias">Convocatorias</a>
+        <a href="#plataforma">Plataforma</a>
+        <a href="#contacto">Contacto</a>
+        <a class="nav-cta-movil" href="http://localhost:5173/login" target="_blank" rel="noopener noreferrer" data-ruta="/login">Ingresar</a>
+      </nav>
+
+      <div class="nav-actions">
+        <button class="icon-btn" id="temaBtn" type="button" aria-label="Cambiar a modo oscuro" title="Cambiar tema">
+          <svg class="ico"><use href="#i-moon"></use></svg>
+        </button>
+        <a class="btn btn-primary btn-sm nav-cta" href="http://localhost:5173/login" target="_blank" rel="noopener noreferrer" data-ruta="/login">
+          <svg class="ico"><use href="#i-lock"></use></svg>
+          Ingresar a la plataforma
+        </a>
+        <button class="icon-btn menu-btn" id="menuBtn" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="navPrincipal">
+          <svg class="ico"><use href="#i-menu"></use></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- HERO -->
+    <section class="hero" id="inicio">
+      <div class="hero-scene" aria-hidden="true"></div>
+      <div class="hero-grid-bg" aria-hidden="true"></div>
+      <div class="container hero-inner">
+        <div class="hero-copy reveal">
+          <span class="eyebrow"><svg class="ico"><use href="#i-spark"></use></svg> Selección con criterios claros</span>
+          <h1>Conectamos talento con <span class="grad-text">oportunidades reales</span>.</h1>
+          <p class="lead">
+            En <strong>nuestra consultora</strong> recibimos y registramos convocatorias y postulantes.
+            Organizamos cada proceso en una sola plataforma: requisitos, perfiles, umbrales y seguimiento,
+            sin hojas de cálculo ni correos perdidos.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#convocatorias">Ver convocatorias <svg class="ico"><use href="#i-arrow"></use></svg></a>
+            <a class="btn btn-secondary" href="#contacto">Enviar una convocatoria</a>
+          </div>
+          <div class="hero-stats" aria-label="Cifras de la operación">
+            <div class="mini-stat"><b data-conteo="15">15</b><span>Convocatorias registradas</span></div>
+            <div class="mini-stat"><b data-conteo="50">50</b><span>Candidatos activos</span></div>
+            <div class="mini-stat"><b data-conteo="3">3</b><span>Perfiles de acceso</span></div>
+          </div>
+        </div>
+
+        <div class="hero-visual reveal" aria-hidden="true">
+          <div class="mock-card">
+            <div class="mock-head">
+              <span class="mock-dots"><i></i><i></i><i></i></span>
+              <span class="mock-title">Panel de convocatorias</span>
+              <span class="mock-live">● en vivo</span>
+            </div>
+            <div class="mock-body">
+              <div class="mock-kpis">
+                <div><b>08</b><span>Abiertas</span></div>
+                <div><b>39</b><span>En selección</span></div>
+                <div><b>05</b><span>Contratados</span></div>
+              </div>
+              <div class="mock-row mock-row-head"><span>Puesto</span><span>Cupos</span><span>KPI</span></div>
+              <div class="mock-row"><span><i class="dot dot-cyan"></i> Desarrollador Junior</span><span>0 / 3</span><span><i class="barra" style="--w:78%"></i></span></div>
+              <div class="mock-row"><span><i class="dot dot-violet"></i> Analista de Datos</span><span>1 / 2</span><span><i class="barra" style="--w:62%"></i></span></div>
+              <div class="mock-row"><span><i class="dot dot-emerald"></i> Diseño UI</span><span>1 / 1</span><span><i class="barra" style="--w:94%"></i></span></div>
+              <div class="mock-tags">
+                <span>python ★</span><span>postgres ★</span><span>react ○</span><span>+ 12 requisitos</span>
+              </div>
+            </div>
+          </div>
+          <div class="float-chip float-chip-a"><svg class="ico"><use href="#i-users"></use></svg> Perfil registrado</div>
+          <div class="float-chip float-chip-b"><svg class="ico"><use href="#i-check"></use></svg> Umbral superado</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SERVICIOS -->
+    <section class="section" id="servicios">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow eyebrow-soft">Lo que hacemos</span>
+          <h2>Un solo lugar para recibir, registrar y decidir</h2>
+          <p>Diseñamos el proceso para que cada convocatoria tenga trazabilidad desde el primer correo hasta el cierre.</p>
+        </div>
+        <div class="cards-3">
+          <article class="card reveal">
+            <span class="card-icon icon-cyan"><svg class="ico"><use href="#i-briefcase"></use></svg></span>
+            <h3>Recepción de convocatorias</h3>
+            <p>Cargamos el puesto, el tipo de contrato, los cupos, los años de experiencia y los requisitos tecnológicos con su nivel mínimo.</p>
+            <span class="card-foot">Todo queda pendiente de aprobación antes de publicarse.</span>
+          </article>
+          <article class="card reveal">
+            <span class="card-icon icon-violet"><svg class="ico"><use href="#i-users"></use></svg></span>
+            <h3>Registro de postulantes</h3>
+            <p>El postulante crea su perfil con experiencia, formación, habilidades y disponibilidad. Cada cuenta es revisada por nuestro equipo.</p>
+            <span class="card-foot">Un correo, un perfil, cero duplicados.</span>
+          </article>
+          <article class="card reveal">
+            <span class="card-icon icon-emerald"><svg class="ico"><use href="#i-target"></use></svg></span>
+            <h3>Enlistado inteligente</h3>
+            <p>Al publicar, el sistema arma la lista de candidatos disponibles y la ordena por un KPI de convocatoria calculado con reglas transparentes.</p>
+            <span class="card-foot">Quien no supera el umbral aparece con su motivo.</span>
+          </article>
+          <article class="card reveal">
+            <span class="card-icon icon-amber"><svg class="ico"><use href="#i-chart"></use></svg></span>
+            <h3>Pipeline de selección</h3>
+            <p>Tomamos candidatos, registramos contactos, preseleccionamos y contratamos con transiciones controladas y cupos bajo control.</p>
+            <span class="card-foot">El cierre es automático al cubrir la última vacante.</span>
+          </article>
+          <article class="card reveal">
+            <span class="card-icon icon-rose"><svg class="ico"><use href="#i-check"></use></svg></span>
+            <h3>Auditoría y bitácora</h3>
+            <p>Cada movimiento del proceso queda registrado. Los snapshots del KPI se congelan al tomar a un candidato para comparar después.</p>
+            <span class="card-foot">Trazabilidad real para auditorías internas.</span>
+          </article>
+          <article class="card reveal">
+            <span class="card-icon icon-slate"><svg class="ico"><use href="#i-clock"></use></svg></span>
+            <h3>Estados y permisos</h3>
+            <p>Administrador, reclutador y postulante ven exactamente lo que necesitan. Cada rol trabaja sobre su propio alcance.</p>
+            <span class="card-foot">Acceso simple, información protegida.</span>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROCESO -->
+    <section class="section section-alt" id="proceso">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow eyebrow-soft">Cómo trabajamos</span>
+          <h2>Cuatro pasos, cero fricción</h2>
+          <p>Un flujo corto y predecible para empresas y postulantes.</p>
+        </div>
+        <ol class="timeline">
+          <li class="reveal"><span class="paso">01</span><div><h3>Recibimos</h3><p>Nos escribís con el puesto y el perfil que buscás. También podés cargarlo directamente en la plataforma.</p></div></li>
+          <li class="reveal"><span class="paso">02</span><div><h3>Registramos</h3><p>Convertimos tu pedido en una convocatoria con requisitos, cupos, disponibilidad y umbral de enlistado.</p></div></li>
+          <li class="reveal"><span class="paso">03</span><div><h3>Enlistamos</h3><p>El sistema cruza los perfiles disponibles con los requisitos y ordena a los candidatos por KPI.</p></div></li>
+          <li class="reveal"><span class="paso">04</span><div><h3>Acompañamos</h3><p>Seguimos cada etapa hasta la contratación y cerramos la convocatoria al cubrir los cupos.</p></div></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- CONVOCATORIAS -->
+    <section class="section" id="convocatorias">
+      <div class="container">
+        <div class="section-head section-head-row reveal">
+          <div>
+            <span class="eyebrow eyebrow-soft">Oportunidades</span>
+            <h2>Convocatorias registradas</h2>
+            <p>Vista previa de los procesos que gestionamos. <span id="estadoDatos" class="estado-datos muestra">Datos de muestra · las convocatorias reales están en la plataforma</span></p>
+          </div>
+          <a class="btn btn-ghost btn-sm" href="http://localhost:5173/convocatorias" target="_blank" rel="noopener noreferrer" data-ruta="/convocatorias">
+            <svg class="ico"><use href="#i-external"></use></svg> Ver en la plataforma
+          </a>
+        </div>
+        <div class="cards-convocatorias" id="listaConvocatorias" aria-live="polite">
+          <!-- Se completa desde app.js con datos de muestra -->
+        </div>
+        <div class="section-cta reveal">
+          <span>¿Buscás una oportunidad? Completá tu perfil y entrás automáticamente en las listas donde cumplas el umbral.</span>
+          <div class="cta-acciones">
+            <a class="btn btn-secondary btn-sm" href="http://localhost:5173/convocatorias" target="_blank" rel="noopener noreferrer" data-ruta="/convocatorias">Ver convocatorias reales en la plataforma</a>
+            <a class="btn btn-primary btn-sm" href="http://localhost:5173/registro" target="_blank" rel="noopener noreferrer" data-ruta="/registro">Crear mi perfil <svg class="ico"><use href="#i-arrow"></use></svg></a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PLATAFORMA (ACCESO ENLAZADO AL SISTEMA) -->
+    <section class="section section-plataforma" id="plataforma">
+      <div class="container">
+        <div class="section-head section-head-row reveal">
+          <div>
+            <span class="eyebrow eyebrow-soft">Acceso al sistema</span>
+            <h2>Nuestra plataforma de gestión</h2>
+            <p>Accedé al sistema de convocatorias y postulantes: cuentas, perfiles, convocatorias y selección. Los accesos se abren en una pestaña nueva, sin salir de esta web.</p>
+          </div>
+          <span class="pill-acceso"><svg class="ico"><use href="#i-external"></use></svg> Acceso directo</span>
+        </div>
+
+        <div class="plataforma-bar reveal">
+          <div class="rutas-rapidas" role="group" aria-label="Atajos de la plataforma">
+            <a class="ruta-btn activa" href="http://localhost:5173/login" target="_blank" rel="noopener noreferrer" data-ruta="/login">Ingresar</a>
+            <a class="ruta-btn" href="http://localhost:5173/registro" target="_blank" rel="noopener noreferrer" data-ruta="/registro">Registro</a>
+            <a class="ruta-btn" href="http://localhost:5173/convocatorias" target="_blank" rel="noopener noreferrer" data-ruta="/convocatorias">Convocatorias</a>
+            <a class="ruta-btn" href="http://localhost:5173/mis-convocatorias" target="_blank" rel="noopener noreferrer" data-ruta="/mis-convocatorias">Mis convocatorias</a>
+          </div>
+          <div class="bar-acciones">
+            <form class="url-form" id="urlForm" autocomplete="off">
+              <label class="sr-only" for="urlSistema">Dirección del sistema</label>
+              <svg class="ico url-ico"><use href="#i-settings"></use></svg>
+              <input id="urlSistema" name="urlSistema" type="text" spellcheck="false" placeholder="http://localhost:5173" aria-describedby="urlAyuda">
+              <button class="btn btn-secondary btn-xs" type="submit">Aplicar</button>
+            </form>
+          </div>
+        </div>
+        <p class="help-plataforma" id="urlAyuda">Por defecto usa <code>http://localhost:5173</code>. Si el sistema corre en otra PC, pegá la dirección de red que muestra Vite (por ejemplo <code>http://192.168.1.20:5173</code>) y apretá Aplicar: todos los accesos se actualizan.</p>
+
+        <div class="acceso-card reveal">
+          <div class="acceso-principal">
+            <span class="acceso-icono"><svg class="ico"><use href="#i-lock"></use></svg></span>
+            <div class="acceso-copy">
+              <h3>¿Ya tenés cuenta?</h3>
+              <p>Ingresá con tu usuario de administrador, reclutador o postulante y seguí tus convocatorias desde la plataforma.</p>
+            </div>
+            <a class="btn btn-primary" href="http://localhost:5173/login" target="_blank" rel="noopener noreferrer" data-ruta="/login">
+              Ir al login <svg class="ico"><use href="#i-external"></use></svg>
+            </a>
+          </div>
+          <div class="acceso-secundario">
+            <a class="acceso-link" href="http://localhost:5173/registro" target="_blank" rel="noopener noreferrer" data-ruta="/registro"><span>Crear perfil de postulante</span><svg class="ico"><use href="#i-arrow"></use></svg></a>
+            <a class="acceso-link" href="http://localhost:5173/convocatorias" target="_blank" rel="noopener noreferrer" data-ruta="/convocatorias"><span>Explorar convocatorias</span><svg class="ico"><use href="#i-arrow"></use></svg></a>
+            <a class="acceso-link" href="http://localhost:5173/mis-convocatorias" target="_blank" rel="noopener noreferrer" data-ruta="/mis-convocatorias"><span>Ver mis convocatorias</span><svg class="ico"><use href="#i-arrow"></use></svg></a>
+          </div>
+        </div>
+        <p class="help-plataforma">Credenciales de demostración del sistema: <code>admin@consultora.com</code> · <code>reclutador1@consultora.com</code> · <code>postulante01@test.com</code> — contraseña <code>Admin123!</code></p>
+      </div>
+    </section>
+
+    <!-- SOLUCIONES -->
+    <section class="section" id="soluciones">
+      <div class="container">
+        <div class="split">
+          <article class="split-card split-empresas reveal">
+            <span class="eyebrow eyebrow-soft">Para empresas</span>
+            <h2>Publicá y cubrí con confianza</h2>
+            <p>Definí el perfil, los cupos y el umbral. Nosotros registramos a los postulantes y armamos la lista ordenada por afinidad con tu convocatoria.</p>
+            <ul class="check-list">
+              <li><svg class="ico"><use href="#i-check"></use></svg> Requisitos por tecnología y nivel</li>
+              <li><svg class="ico"><use href="#i-check"></use></svg> Control de cupos y cierre automático</li>
+              <li><svg class="ico"><use href="#i-check"></use></svg> Bitácora de cada movimiento</li>
+            </ul>
+            <a class="btn btn-primary" href="http://localhost:5173/login" target="_blank" rel="noopener noreferrer" data-ruta="/login">Ir a la plataforma <svg class="ico"><use href="#i-arrow"></use></svg></a>
+          </article>
+          <article class="split-card split-postulantes reveal">
+            <span class="eyebrow eyebrow-soft">Para postulantes</span>
+            <h2>Tu perfil trabaja por vos</h2>
+            <p>Completá tu perfil una sola vez. El sistema te incluye automáticamente en las convocatorias donde cumplís el umbral y te muestra tu posición.</p>
+            <ul class="check-list">
+              <li><svg class="ico"><use href="#i-check"></use></svg> Sin formularios por cada puesto</li>
+              <li><svg class="ico"><use href="#i-check"></use></svg> KPI y motivo de exclusión visibles</li>
+              <li><svg class="ico"><use href="#i-check"></use></svg> Seguimiento de tu estado</li>
+            </ul>
+            <a class="btn btn-accent" href="http://localhost:5173/registro" target="_blank" rel="noopener noreferrer" data-ruta="/registro">Registrarme <svg class="ico"><use href="#i-arrow"></use></svg></a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACTO -->
+    <section class="section section-contacto" id="contacto">
+      <div class="container contacto-grid">
+        <div class="contacto-copy reveal">
+          <span class="eyebrow eyebrow-soft">Contacto</span>
+          <h2>Contanos qué necesitás cubrir</h2>
+          <p>Enviamos tu pedido por correo con todos los datos y lo registramos en la plataforma para arrancar el proceso.</p>
+          <div class="contacto-datos">
+            <div><svg class="ico"><use href="#i-mail"></use></svg><span><b>Correo</b> convocatorias@consultora.com</span></div>
+            <div><svg class="ico"><use href="#i-pin"></use></svg><span><b>Atención</b> Remoto · Latin America</span></div>
+            <div><svg class="ico"><use href="#i-clock"></use></svg><span><b>Horario</b> Lun a Vie · 09:00 a 18:00</span></div>
+          </div>
+        </div>
+        <form class="form-card reveal" id="formConvocatoria">
+          <h3>Enviar una convocatoria</h3>
+          <div class="form-row">
+            <label>Tu nombre <input class="input" name="nombre" required placeholder="Nombre y apellido" autocomplete="name"></label>
+            <label>Empresa <input class="input" name="empresa" required placeholder="Nombre de la empresa" autocomplete="organization"></label>
+          </div>
+          <div class="form-row">
+            <label>Correo <input class="input" name="correo" type="email" required placeholder="nombre@empresa.com" autocomplete="email"></label>
+            <label>Puesto <input class="input" name="puesto" required placeholder="Ej. Desarrollador Junior"></label>
+          </div>
+          <label>Tipo de convocatoria
+            <select class="input" name="tipo">
+              <option>Pasantía</option><option>Momentáneo</option><option>Mensual</option><option>De planta</option>
+            </select>
+          </label>
+          <label>Detalle del perfil <textarea class="input" name="detalle" rows="4" placeholder="Tecnologías, años de experiencia, disponibilidad, cupos…" required></textarea></label>
+          <button class="btn btn-primary btn-full" type="submit">Preparar envío <svg class="ico"><use href="#i-arrow"></use></svg></button>
+          <p class="form-aviso">Se abre tu aplicación de correo con el mensaje listo. No enviamos datos a servidores de terceros.</p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div>
+        <a class="brand brand-footer" href="#inicio">
+          <span class="brand-mark">CC</span>
+          <span class="brand-copy"><strong>Consultora de Convocatorias</strong><small>Registro y selección de talento</small></span>
+        </a>
+        <p>Recibimos y registramos convocatorias y postulantes. Selección con criterios claros, trazabilidad real.</p>
+      </div>
+      <div>
+        <h4>Navegación</h4>
+        <a href="#servicios">Servicios</a><a href="#proceso">Cómo trabajamos</a><a href="#convocatorias">Convocatorias</a><a href="#plataforma">Plataforma</a>
+      </div>
+      <div>
+        <h4>Accesos</h4>
+        <a href="http://localhost:5173/login" target="_blank" rel="noopener noreferrer" data-ruta="/login">Administración</a>
+        <a href="http://localhost:5173/registro" target="_blank" rel="noopener noreferrer" data-ruta="/registro">Registro de postulante</a>
+        <a href="#contacto">Contacto</a>
+      </div>
+      <div>
+        <h4>Plataforma</h4>
+        <p>Sistema de convocatorias y postulantes enlazado desde esta página.</p>
+        <a class="btn btn-secondary btn-sm" href="http://localhost:5173/login" target="_blank" rel="noopener noreferrer" data-ruta="/login"><svg class="ico"><use href="#i-external"></use></svg> Abrir sistema</a>
+      </div>
+    </div>
+    <div class="container footer-bottom"><span>© <span id="anio"></span> Consultora de Convocatorias. Todos los derechos reservados.</span><span>Hecho para conectar talento y oportunidades.</span></div>
+  </footer>
+
+  <!-- Modal de confirmação del formulario de contacto -->
+  <div class="modal" id="modalEnvio" hidden>
+    <div class="modal-backdrop" data-cerrar-modal></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitulo">
+      <button class="icon-btn modal-close" type="button" data-cerrar-modal aria-label="Cerrar"><svg class="ico"><use href="#i-close"></use></svg></button>
+      <span class="card-icon icon-emerald"><svg class="ico"><use href="#i-mail"></use></svg></span>
+      <h3 id="modalTitulo">Tu mensaje está listo</h3>
+      <p>Revisá el resumen y abrí tu correo para enviarlo a <b>convocatorias@consultora.com</b>.</p>
+      <pre id="modalResumen"></pre>
+      <div class="modal-acciones">
+        <button class="btn btn-primary" id="abrirCorreoBtn" type="button">Abrir correo <svg class="ico"><use href="#i-external"></use></svg></button>
+        <button class="btn btn-secondary" id="copiarBtn" type="button"><svg class="ico"><use href="#i-copy"></use></svg> Copiar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <script src="app.js?v=6"></script>
+</body>
+</html>
