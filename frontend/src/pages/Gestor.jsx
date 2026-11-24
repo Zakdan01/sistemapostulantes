@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api, sesion } from '../lib/api';
+import { useToast } from '../lib/toast';
+import { useEventoRealtime } from '../lib/realtime';
 import { TablaKPI } from '../components/TablaKPI';
 import { useAccion } from '../hooks/useAccion';
 import {
@@ -59,6 +61,50 @@ export function Gestor() {
   const [err, setErr] = useState('');
   const [confirmar, setConfirmar] = useState(null);
   const { ocupado, error: errorAccion, ejecutar } = useAccion();
+  const toast = useToast();
+
+  // Escuchar eventos en tiempo real
+  useEventoRealtime('POSTULANTE_REGISTRADO', (datos) => {
+    if (!esAdmin) return;
+    setCuentas((prev) => {
+      if (prev.some((c) => c.id === datos.id)) return prev;
+      return [{ id: datos.id, correo: datos.correo, rol: datos.rol, estado_cuenta: datos.estado_cuenta }, ...prev];
+    });
+    toast(`Nuevo postulante registrado: ${datos.correo} esperando aprobación`);
+    api('/api/admin/resumen').then((r) => setResumen(r)).catch(() => {});
+  });
+
+  useEventoRealtime('CUENTA_ACTUALIZADA', (datos) => {
+    if (!esAdmin) return;
+    setCuentas((prev) => prev.filter((c) => c.id !== datos.id));
+    api('/api/admin/resumen').then((r) => setResumen(r)).catch(() => {});
+  });
+
+  useEventoRealtime('CUENTA_ELIMINADA', (datos) => {
+    if (!esAdmin) return;
+    setCuentas((prev) => prev.filter((c) => c.id !== datos.id));
+    api('/api/admin/resumen').then((r) => setResumen(r)).catch(() => {});
+  });
+
+  useEventoRealtime('CONVOCATORIA_CREADA', (conv) => {
+    if (conv.estado === 'pendiente') {
+      setPorAprobar((prev) => [conv, ...prev.filter((c) => c.id !== conv.id)]);
+      if (esAdmin) toast(`Nueva convocatoria pendiente: "${conv.titulo}"`);
+    }
+    setConvocatorias((prev) => [conv, ...prev.filter((c) => c.id !== conv.id)]);
+    api('/api/admin/resumen').then((r) => setResumen(r)).catch(() => {});
+  });
+
+  useEventoRealtime('CONVOCATORIA_APROBADA', (conv) => {
+    setPorAprobar((prev) => prev.filter((c) => c.id !== conv.id));
+    setConvocatorias((prev) => prev.map((c) => (c.id === conv.id ? { ...c, estado: 'abierta' } : c)));
+    api('/api/admin/resumen').then((r) => setResumen(r)).catch(() => {});
+  });
+
+  useEventoRealtime('CONVOCATORIA_CERRADA', (conv) => {
+    setConvocatorias((prev) => prev.map((c) => (c.id === conv.id ? { ...c, estado: 'cerrada' } : c)));
+    api('/api/admin/resumen').then((r) => setResumen(r)).catch(() => {});
+  });
 
   const cargar = useCallback(() => {
     const llamadas = [

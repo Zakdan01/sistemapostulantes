@@ -29,6 +29,30 @@ export function Registro() {
 
   async function enviar(e) {
     e.preventDefault();
+    const textoLetras = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]+$/;
+    const passAlfanum = /^(?=.*[a-zA-Z])(?=.*\d).{8,}$/;
+    const telRegex = /^[+0-9\s()-]{6,30}$/;
+
+    if (!passAlfanum.test(form.password)) {
+      toast('La contraseña debe tener mínimo 8 caracteres y contener letras y números.', false);
+      return;
+    }
+    if (!textoLetras.test(form.nombres.trim())) {
+      toast('Nombres solo debe contener letras.', false);
+      return;
+    }
+    if (form.apellidos.trim() && !textoLetras.test(form.apellidos.trim())) {
+      toast('Apellidos solo debe contener letras.', false);
+      return;
+    }
+    if (form.telefono.trim()) {
+      const digitos = form.telefono.replace(/\D/g, '');
+      if (digitos.length < 6 || !telRegex.test(form.telefono.trim())) {
+        toast('El teléfono debe contener al menos 6 dígitos numéricos.', false);
+        return;
+      }
+    }
+
     setCargando(true);
     try {
       const r = await api('/api/auth/registro', { method: 'POST', body: JSON.stringify(form) });
@@ -117,7 +141,7 @@ export function Registro() {
               />
             </Campo>
 
-            <Campo etiqueta="Contraseña *" ayuda="Mínimo 8 caracteres." className="sm:col-span-2">
+            <Campo etiqueta="Contraseña *" ayuda="Mínimo 8 caracteres, con letras y números." className="sm:col-span-2">
               <div className="relative">
                 <input
                   className="input pr-24"
@@ -125,9 +149,11 @@ export function Registro() {
                   autoComplete="new-password"
                   required
                   minLength={8}
+                  pattern="(?=.*[A-Za-z])(?=.*\d).{8,}"
+                  title="Mínimo 8 caracteres, debe incluir al menos una letra y un número"
                   value={form.password}
                   onChange={set('password')}
-                  placeholder="Creá una contraseña"
+                  placeholder="Creá una contraseña alfanumérica"
                 />
                 <button
                   type="button"
@@ -141,14 +167,40 @@ export function Registro() {
               </div>
             </Campo>
 
-            <Campo etiqueta="Nombres *">
-              <input className="input" autoComplete="given-name" required value={form.nombres} onChange={set('nombres')} />
+            <Campo etiqueta="Nombres *" ayuda="Solo letras.">
+              <input
+                className="input"
+                autoComplete="given-name"
+                required
+                pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]+"
+                title="Solo letras y espacios"
+                value={form.nombres}
+                onChange={set('nombres')}
+                placeholder="Tus nombres"
+              />
             </Campo>
-            <Campo etiqueta="Apellidos">
-              <input className="input" autoComplete="family-name" value={form.apellidos} onChange={set('apellidos')} />
+            <Campo etiqueta="Apellidos" ayuda="Solo letras.">
+              <input
+                className="input"
+                autoComplete="family-name"
+                pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]*"
+                title="Solo letras y espacios"
+                value={form.apellidos}
+                onChange={set('apellidos')}
+                placeholder="Tus apellidos"
+              />
             </Campo>
-            <Campo etiqueta="Teléfono">
-              <input className="input" type="tel" autoComplete="tel" value={form.telefono} onChange={set('telefono')} />
+            <Campo etiqueta="Teléfono" ayuda="Solo números.">
+              <input
+                className="input"
+                type="tel"
+                autoComplete="tel"
+                pattern="[+0-9\s()-]{6,30}"
+                title="Número de teléfono válido (mínimo 6 dígitos)"
+                value={form.telefono}
+                onChange={set('telefono')}
+                placeholder="Ej. +591 70000000"
+              />
             </Campo>
             <Campo etiqueta="Dirección">
               <input className="input" autoComplete="street-address" value={form.direccion} onChange={set('direccion')} />

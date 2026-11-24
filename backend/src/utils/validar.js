@@ -2,6 +2,10 @@ const { HttpError } = require('./errors');
 const { DISPONIBILIDADES, MODOS_FILTRO, NIVEL_ORDEN } = require('../domain/catalogos');
 
 const CORREO_RE = /^\S+@\S+\.\S+$/;
+const TEXTO_LETRAS_RE = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]+$/;
+const PASSWORD_ALFANUM_RE = /^(?=.*[a-zA-Z])(?=.*\d).{8,}$/;
+const TELEFONO_RE = /^[+0-9\s()-]{6,30}$/;
+
 // Alias legado: el nombre "MODOS" se usaba antes de centralizar los catalogos.
 const MODOS = MODOS_FILTRO;
 
@@ -18,12 +22,43 @@ function exigirCorreo(correo) {
   return c;
 }
 
+function exigirPassword(pass) {
+  const p = String(pass || '');
+  if (p.length < 8) throw HttpError.badRequest('password mínimo 8 caracteres');
+  if (!PASSWORD_ALFANUM_RE.test(p)) {
+    throw HttpError.badRequest('password debe contener letras y números');
+  }
+  return p;
+}
+
+function validarTextoLetras(valor, campo) {
+  const v = String(valor || '').trim();
+  if (!v) return '';
+  if (!TEXTO_LETRAS_RE.test(v)) {
+    throw HttpError.badRequest(`${campo} solo debe contener letras`);
+  }
+  return v;
+}
+
+function validarTelefono(tel) {
+  if (tel === undefined || tel === null) return null;
+  const s = String(tel).trim();
+  if (!s) return null;
+  const digitos = s.replace(/\D/g, '');
+  if (digitos.length < 6 || !TELEFONO_RE.test(s)) {
+    throw HttpError.badRequest('teléfono debe contener al menos 6 números válidos');
+  }
+  return s.slice(0, 30);
+}
+
 function datosPersona(body, completo) {
   const d = {};
   d.nombres = String(body.nombres || '').trim();
   d.apellidos = String(body.apellidos || '').trim();
   if (completo && !d.nombres) throw HttpError.badRequest('nombres es requerido');
-  d.telefono = body.telefono ? String(body.telefono).slice(0, 30) : null;
+  if (d.nombres) validarTextoLetras(d.nombres, 'nombres');
+  if (d.apellidos) validarTextoLetras(d.apellidos, 'apellidos');
+  d.telefono = validarTelefono(body.telefono);
   d.direccion = body.direccion ? String(body.direccion).slice(0, 200) : null;
   d.linkedin = body.linkedin ? String(body.linkedin).slice(0, 200) : null;
   d.github = body.github ? String(body.github).slice(0, 200) : null;
@@ -111,6 +146,6 @@ function parsearFiltros(query) {
 
 module.exports = {
   CORREO_RE, DISPONIBILIDADES, MODOS, NIVEL_ORDEN,
-  normCorreo, normTec, exigirCorreo,
+  normCorreo, normTec, exigirCorreo, exigirPassword, validarTextoLetras, validarTelefono,
   datosPersona, listaHabilidades, listaExperiencias, listaFormaciones, parsearFiltros
 };

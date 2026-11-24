@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { api, sesion } from '../lib/api';
 import { useToast } from '../lib/toast';
-import { useCatalogos } from '../lib/catalogos';
+import { useCatalogos, invalidarCatalogos } from '../lib/catalogos';
 import {
   AnilloKPI,
   Aviso,
@@ -26,10 +26,19 @@ import {
 
 // Mi perfil: el postulante completa su CV (contacto + habilidades + experiencias + formaciones).
 // Los catalogos (niveles, disponibilidades, instituciones) vienen del backend.
+const ETIQ_CAT_HAB = {
+  lenguajes: 'Lenguajes',
+  frameworks: 'Frameworks',
+  bases_datos: 'Base de datos',
+  devops: 'DevOps / Infra',
+  otro: 'Otras'
+};
+
 export function MiPerfil() {
   const catalogos = useCatalogos();
   const cats = useMemo(() => ({
     tecnologias: (catalogos && catalogos.tecnologias) || [],
+    categorias: (catalogos && catalogos.categorias) || ['lenguajes', 'frameworks', 'bases_datos', 'devops', 'otro'],
     tipos_trabajo: (catalogos && catalogos.tipos_trabajo) || [],
     niveles: ((catalogos && catalogos.niveles_tecnologia) || []).map((n) => n.nombre),
     instituciones: (catalogos && catalogos.instituciones) || [],
@@ -39,6 +48,8 @@ export function MiPerfil() {
   const [form, setForm] = useState({ nombres: '', apellidos: '', telefono: '', direccion: '', linkedin: '', github: '', portafolio_url: '', disponibilidad: '' });
   const [habs, setHabs] = useState([]);
   const [hab, setHab] = useState({ nombre: '', nivel: '', anios_uso: 1 });
+  const [mostrarModalOtra, setMostrarModalOtra] = useState(false);
+  const [otraHab, setOtraHab] = useState({ nombre: '', categoria: 'lenguajes', nivel: '', anios_uso: 1 });
   const [exps, setExps] = useState([]);
   const [exp, setExp] = useState({ empresa: '', cargo: '', descripcion: '', tipo_trabajo: '', fecha_inicio: '', fecha_fin: '', es_actual: false });
   const [forms, setForms] = useState([]);
@@ -49,8 +60,14 @@ export function MiPerfil() {
   const [cargando, setCargando] = useState(false);
   const [cargandoDatos, setCargandoDatos] = useState(true);
   const toast = useToast();
-  const s = sesion();
+  const [s, setS] = useState(sesion);
   const pendiente = s.estado === 'pendiente';
+
+  useEffect(() => {
+    const onSesion = () => setS(sesion());
+    window.addEventListener('sesion-cambiada', onSesion);
+    return () => window.removeEventListener('sesion-cambiada', onSesion);
+  }, []);
 
   const volcar = useCallback((p) => {
     setForm({
@@ -90,6 +107,34 @@ export function MiPerfil() {
   async function guardar() {
     if (pendiente) return;
     setErr(''); setMsg('');
+
+    const textoLetras = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]+$/;
+    const telRegex = /^[+0-9\s()-]{6,30}$/;
+
+    if (!form.nombres.trim()) {
+      setErr('Nombres es requerido');
+      toast('Nombres es requerido', false);
+      return;
+    }
+    if (!textoLetras.test(form.nombres.trim())) {
+      setErr('Nombres solo debe contener letras');
+      toast('Nombres solo debe contener letras', false);
+      return;
+    }
+    if (form.apellidos.trim() && !textoLetras.test(form.apellidos.trim())) {
+      setErr('Apellidos solo debe contener letras');
+      toast('Apellidos solo debe contener letras', false);
+      return;
+    }
+    if (form.telefono.trim()) {
+      const digitos = form.telefono.replace(/\D/g, '');
+      if (digitos.length < 6 || !telRegex.test(form.telefono.trim())) {
+        setErr('Teléfono debe contener al menos 6 números válidos');
+        toast('Teléfono debe contener al menos 6 números válidos', false);
+        return;
+      }
+    }
+
     setCargando(true);
     try {
       const cuerpo = {
@@ -104,6 +149,7 @@ export function MiPerfil() {
         }))
       };
       const r = await api('/api/yo', { method: 'PUT', body: JSON.stringify(cuerpo) });
+      invalidarCatalogos();
       volcar(r);
       setMsg(`Perfil guardado. Perfil ${r.kpi}% (${r.clasificacion})`);
       toast(`Perfil guardado. Perfil ${r.kpi}% (${r.clasificacion})`);
@@ -116,8 +162,41 @@ export function MiPerfil() {
   function agregarHab() {
     const nombre = hab.nombre.trim().toLowerCase();
     if (!nombre) return;
+    if (habs.some((h) => h.nombre.toLowerCase() === nombre)) {
+      setErr(`La tecnología "${nombre}" ya está agregada en tu lista de habilidades.`);
+      toast(`La tecnología "${nombre}" ya está agregada.`, false);
+      return;
+    }
     setHabs((prev) => [...prev, { ...hab, nombre, nivel: hab.nivel || nivelPorDefecto, anios_uso: Number(hab.anios_uso) || 0 }]);
     setHab({ nombre: '', nivel: '', anios_uso: 1 });
+    setErr('');
+  }
+
+  function agregarOtraHab(e) {
+    if (e) e.preventDefault();
+    const nombre = otraHab.nombre.trim().toLowerCase();
+    if (!nombre) {
+      setErr('El nombre de la tecnología es requerido');
+      toast('El nombre de la tecnología es requerido', false);
+      return;
+    }
+    if (habs.some((h) => h.nombre.toLowerCase() === nombre)) {
+      setErr(`La tecnología "${nombre}" ya está en tu lista de habilidades.`);
+      toast(`La tecnología "${nombre}" ya está agregada.`, false);
+      return;
+    }
+    setHabs((prev) => [
+      ...prev,
+      {
+        nombre,
+        categoria: otraHab.categoria || 'otro',
+        nivel: otraHab.nivel || nivelPorDefecto,
+        anios_uso: Number(otraHab.anios_uso) || 1
+      }
+    ]);
+    toast(`Tecnología "${nombre}" agregada a tus habilidades.`);
+    setOtraHab({ nombre: '', categoria: 'lenguajes', nivel: nivelPorDefecto, anios_uso: 1 });
+    setMostrarModalOtra(false);
     setErr('');
   }
 
@@ -197,14 +276,40 @@ export function MiPerfil() {
         <div className="space-y-5">
           <Seccion titulo="Datos personales" icono={IconoUsuario}>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Campo etiqueta="Nombres *">
-                <input className="input" autoComplete="given-name" value={form.nombres} onChange={setF('nombres')} />
+              <Campo etiqueta="Nombres *" ayuda="Solo letras.">
+                <input
+                  className="input"
+                  autoComplete="given-name"
+                  required
+                  pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]+"
+                  title="Solo letras y espacios"
+                  value={form.nombres}
+                  onChange={setF('nombres')}
+                  placeholder="Tus nombres"
+                />
               </Campo>
-              <Campo etiqueta="Apellidos">
-                <input className="input" autoComplete="family-name" value={form.apellidos} onChange={setF('apellidos')} />
+              <Campo etiqueta="Apellidos" ayuda="Solo letras.">
+                <input
+                  className="input"
+                  autoComplete="family-name"
+                  pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]*"
+                  title="Solo letras y espacios"
+                  value={form.apellidos}
+                  onChange={setF('apellidos')}
+                  placeholder="Tus apellidos"
+                />
               </Campo>
-              <Campo etiqueta="Teléfono">
-                <input className="input" autoComplete="tel" value={form.telefono} onChange={setF('telefono')} />
+              <Campo etiqueta="Teléfono" ayuda="Solo números.">
+                <input
+                  className="input"
+                  type="tel"
+                  autoComplete="tel"
+                  pattern="[+0-9\s()-]{6,30}"
+                  title="Número de teléfono válido (mínimo 6 números)"
+                  value={form.telefono}
+                  onChange={setF('telefono')}
+                  placeholder="Ej. +591 70000000"
+                />
               </Campo>
               <Campo etiqueta="Dirección">
                 <input className="input" autoComplete="street-address" value={form.direccion} onChange={setF('direccion')} />
@@ -247,19 +352,50 @@ export function MiPerfil() {
           <Seccion
             titulo="Habilidades"
             icono={IconoDocumento}
-            extra={<Pill tono={habs.length ? 'cyan' : 'slate'}>{habs.length}</Pill>}
+            extra={
+              <div className="flex items-center gap-2">
+                <Pill tono={habs.length ? 'cyan' : 'slate'}>{habs.length}</Pill>
+                <Boton
+                  variante="ghost"
+                  tamano="sm"
+                  icono={IconoMas}
+                  onClick={() => setMostrarModalOtra(true)}
+                  title="Agregar otra tecnología fuera de la lista"
+                >
+                  Agregar otra tecnología
+                </Boton>
+              </div>
+            }
           >
             <div className="grid items-end gap-3 sm:grid-cols-[minmax(0,1fr)_10rem_7rem_auto]">
-              <Campo etiqueta="Tecnología">
+              <Campo etiqueta="Tecnología" ayuda="Elige del catálogo o pulsa 'Agregar otra tecnología'.">
                 <input
                   className="input"
                   list="mpcat"
                   value={hab.nombre}
                   onChange={(e) => setHab({ ...hab, nombre: e.target.value })}
                   onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); agregarHab(); } }}
-                  placeholder="Ej. react, sql…"
+                  placeholder="Escribe o busca una tecnología (ej. react, rust, docker…)"
                 />
                 <datalist id="mpcat">{cats.tecnologias.map((t) => <option key={t} value={t} />)}</datalist>
+                {hab.nombre.trim() && !cats.tecnologias.includes(hab.nombre.trim().toLowerCase()) && (
+                  <div className="mt-1.5 flex items-center justify-between gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-xs text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-300">
+                    <div>
+                      <span className="font-bold">✨ Nueva: </span>
+                      <span>&quot;{hab.nombre.trim().toLowerCase()}&quot; no está en la base de datos.</span>
+                    </div>
+                    <button
+                      type="button"
+                      className="font-semibold underline hover:text-amber-950 dark:hover:text-amber-100"
+                      onClick={() => {
+                        setOtraHab({ ...otraHab, nombre: hab.nombre.trim().toLowerCase(), nivel: hab.nivel || nivelPorDefecto, anios_uso: hab.anios_uso || 1 });
+                        setMostrarModalOtra(true);
+                      }}
+                    >
+                      Configurar categoría
+                    </button>
+                  </div>
+                )}
               </Campo>
               <Campo etiqueta="Nivel">
                 <select className="input" value={hab.nivel || nivelPorDefecto} onChange={(e) => setHab({ ...hab, nivel: e.target.value })}>
@@ -289,6 +425,11 @@ export function MiPerfil() {
                   <span key={`${h.nombre}-${i}`} className="chip chip-soft">
                     <span className="font-semibold">{h.nombre}</span>
                     <span className="text-[11px] opacity-80">{h.nivel || nivelPorDefecto} · {Number(h.anios_uso) || 0}a</span>
+                    {h.categoria ? (
+                      <span className="rounded bg-brand-100 px-1 py-0.5 text-[10px] font-medium text-brand-800 dark:bg-brand-900/60 dark:text-brand-300">
+                        {ETIQ_CAT_HAB[h.categoria] || h.categoria}
+                      </span>
+                    ) : null}
                     <button
                       type="button"
                       className="rounded-full p-0.5 hover:bg-black/10 dark:hover:bg-white/10"
@@ -488,6 +629,88 @@ export function MiPerfil() {
           </p>
         </aside>
       </div>
+
+      {/* Modal Otra Tecnología */}
+      {mostrarModalOtra && (
+        <div className="dialog-backdrop" role="presentation" onClick={() => setMostrarModalOtra(false)}>
+          <div className="dialog card max-w-md w-full" role="dialog" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+              <div>
+                <h2 className="section-title">Agregar otra tecnología</h2>
+                <p className="help mt-0.5">Si no está en el catálogo, la agregamos automáticamente.</p>
+              </div>
+              <button
+                type="button"
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                onClick={() => setMostrarModalOtra(false)}
+              >
+                <IconoX className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={agregarOtraHab} className="space-y-4 pt-4">
+              <Campo etiqueta="Nombre de la tecnología" requerido>
+                <input
+                  className="input"
+                  placeholder="Ej. c++, vue, terraform…"
+                  value={otraHab.nombre}
+                  onChange={(e) => setOtraHab({ ...otraHab, nombre: e.target.value })}
+                  required
+                  autoFocus
+                />
+              </Campo>
+
+              <Campo etiqueta="Categoría">
+                <select
+                  className="input"
+                  value={otraHab.categoria}
+                  onChange={(e) => setOtraHab({ ...otraHab, categoria: e.target.value })}
+                >
+                  {cats.categorias.map((c) => (
+                    <option key={c} value={c}>{ETIQ_CAT_HAB[c] || c}</option>
+                  ))}
+                </select>
+              </Campo>
+
+              <div className="grid grid-cols-2 gap-3">
+                <Campo etiqueta="Nivel de dominio">
+                  <select
+                    className="input"
+                    value={otraHab.nivel || nivelPorDefecto}
+                    onChange={(e) => setOtraHab({ ...otraHab, nivel: e.target.value })}
+                  >
+                    {cats.niveles.map((n) => <option key={n}>{n}</option>)}
+                  </select>
+                </Campo>
+
+                <Campo etiqueta="Años de experiencia">
+                  <input
+                    className="input"
+                    type="number"
+                    min="0"
+                    max="60"
+                    value={otraHab.anios_uso}
+                    onChange={(e) => setOtraHab({ ...otraHab, anios_uso: Number(e.target.value) })}
+                  />
+                </Campo>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <Boton
+                  variante="secondary"
+                  type="button"
+                  onClick={() => setMostrarModalOtra(false)}
+                >
+                  Cancelar
+                </Boton>
+                <Boton type="submit" icono={IconoMas}>
+                  Agregar a habilidades
+                </Boton>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

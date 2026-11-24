@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
+import { useEventoRealtime } from '../lib/realtime';
 import { EstadoBadge } from '../components/EstadoCandidato';
 import { Aviso, Boton, EmptyState, PageHeader, Pill, Progress, StatCard } from '../components/ui';
 import { IconoMaletin, IconoObjetivo, IconoReloj, IconoTrofeo, IconoUsuarios } from '../components/Iconos';
@@ -27,6 +28,9 @@ export function MisConvocatorias() {
   }, []);
 
   useEffect(() => { cargar(); }, [cargar]);
+
+  useEventoRealtime('CONVOCATORIA_APROBADA', () => cargar());
+  useEventoRealtime('CONVOCATORIA_CERRADA', () => cargar());
 
   function reintentar() {
     setCargando(true);

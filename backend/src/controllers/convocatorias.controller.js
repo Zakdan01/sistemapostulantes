@@ -4,6 +4,7 @@ const Convocatoria = require('../models/convocatoria.model');
 const Persona = require('../models/persona.model');
 const Convocatorias = require('../services/convocatorias.service');
 const Pipeline = require('../services/pipeline');
+const Realtime = require('../services/eventosRealtime');
 const { HttpError } = require('../utils/errors');
 const { DISPONIBILIDADES } = require('../utils/validar');
 const { ESTADOS_CONVOCATORIA, TIPOS_CONVOCATORIA, ESTADOS_CANDIDATO, KPI_MINIMO, CUPOS } = require('../domain/catalogos');
@@ -65,6 +66,11 @@ async function crear(req, res) {
     cupos: cupos === undefined || cupos === null ? CUPOS.POR_DEFECTO : validarCupos(cupos),
     requisitos: requisitos || [],
     creada_por: req.usuario.id
+  });
+  Realtime.emitirEvento({
+    tipo: 'CONVOCATORIA_CREADA',
+    datos: v,
+    destinatario: v.estado === 'pendiente' ? 'admin' : 'todos'
   });
   res.status(201).json(v);
 }
@@ -129,12 +135,23 @@ async function cerrar(req, res) {
   const v = await Convocatoria.detalle(Number(req.params.id));
   if (!v) throw HttpError.notFound('Convocatoria no encontrada');
   exigirDueno(req, v.creada_por);
-  res.json(await Convocatoria.cerrar(v.id));
+  const cerrada = await Convocatoria.cerrar(v.id);
+  Realtime.emitirEvento({
+    tipo: 'CONVOCATORIA_CERRADA',
+    datos: cerrada,
+    destinatario: 'todos'
+  });
+  res.json(cerrada);
 }
 
 async function aprobar(req, res) {
   const v = await Convocatoria.aprobar(Number(req.params.id));
   if (!v) throw HttpError.conflict('Solo se puede aprobar una convocatoria pendiente');
+  Realtime.emitirEvento({
+    tipo: 'CONVOCATORIA_APROBADA',
+    datos: v,
+    destinatario: 'todos'
+  });
   res.json(v);
 }
 
@@ -209,6 +226,13 @@ async function estadoCandidato(req, res) {
   const { fila, kpi_conv, convocatoria, cierre_automatico } = await Pipeline.mover({
     convocatoria: conv, persona, estado
   });
+  if (cierre_automatico) {
+    Realtime.emitirEvento({
+      tipo: 'CONVOCATORIA_CERRADA',
+      datos: { id: convId, estado: 'cerrada', motivo: 'cupos_completos' },
+      destinatario: 'todos'
+    });
+  }
   res.json({
     ...fila,
     kpi_conv,

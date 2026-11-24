@@ -43,6 +43,11 @@ export function guardarSesion({ token, rol, correo, estado_cuenta }) {
   if (rol) localStorage.setItem('rol', rol);
   if (correo) localStorage.setItem('correo', correo);
   localStorage.setItem('estado_cuenta', estado_cuenta || 'activa');
+  try {
+    window.dispatchEvent(new CustomEvent('sesion-cambiada', {
+      detail: { token, rol, correo, estado_cuenta: estado_cuenta || 'activa' }
+    }));
+  } catch (_) {}
 }
 
 export function salir() {
@@ -50,4 +55,7 @@ export function salir() {
   localStorage.removeItem('rol');
   localStorage.removeItem('correo');
   localStorage.removeItem('estado_cuenta');
+  try {
+    window.dispatchEvent(new CustomEvent('sesion-cambiada', { detail: null }));
+  } catch (_) {}
 }

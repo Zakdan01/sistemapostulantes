@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api, sesion } from '../lib/api';
+import { useEventoRealtime } from '../lib/realtime';
 import { EstadoBadge } from '../components/EstadoCandidato';
 import {
   Avatar,
@@ -25,7 +26,7 @@ import {
 // No se postula: el perfil entra solo en las listas donde supera el umbral.
 export function MiPanel() {
   const nav = useNavigate();
-  const s = sesion();
+  const [s, setS] = useState(sesion);
   const [tablero, setTablero] = useState([]);
   const [mis, setMis] = useState([]);
   const [err, setErr] = useState('');
@@ -43,6 +44,19 @@ export function MiPanel() {
   }, []);
 
   useEffect(() => { cargar(); }, [cargar]);
+
+  // Actualizar sesión y datos en vivo cuando el admin apruebe la cuenta
+  useEffect(() => {
+    const onSesion = () => {
+      setS(sesion());
+      cargar();
+    };
+    window.addEventListener('sesion-cambiada', onSesion);
+    return () => window.removeEventListener('sesion-cambiada', onSesion);
+  }, [cargar]);
+
+  useEventoRealtime('CONVOCATORIA_APROBADA', () => cargar());
+  useEventoRealtime('CONVOCATORIA_CERRADA', () => cargar());
 
   const porConv = {};
   for (const t of tablero) {

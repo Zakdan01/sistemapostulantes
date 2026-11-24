@@ -7,8 +7,12 @@ const Tec = require('../controllers/tecnologias.controller');
 const Cfg = require('../controllers/config.controller');
 const Conv = require('../controllers/convocatorias.controller');
 const Usuarios = require('../controllers/usuarios.controller');
+const Realtime = require('../services/eventosRealtime');
 
 const r = Router();
+
+// ---- Canal en Tiempo Real (SSE) --------------------------------------------
+r.get('/realtime', Realtime.conectarCliente);
 
 // Los permisos por ROL viven SOLO aca. El scoping por fila (reclutador = solo lo suyo)
 // lo hacen los controllers (exigirDueno) y los modelos.
@@ -66,11 +70,15 @@ montarConvocatorias('vacantes'); // alias legacy (la UI vieja apuntaba a /vacant
 // Postulante: convocatorias abiertas donde califica (y donde no, con el motivo).
 r.get('/mis-convocatorias', autenticar, asyncHandler(Conv.misConvocatorias));
 
-// ---- Admin de cuentas -------------------------------------------------------
+// ---- Admin de cuentas y catalogos ------------------------------------------
 r.post('/admin/usuarios', autenticar, admin, asyncHandler(Usuarios.crear));
 r.get('/admin/usuarios', autenticar, admin, asyncHandler(Usuarios.listar));
 r.patch('/admin/usuarios/:id/aprobar', autenticar, admin, asyncHandler(Usuarios.aprobar));
 r.patch('/admin/usuarios/:id/rechazar', autenticar, admin, asyncHandler(Usuarios.rechazar));
+r.get('/admin/tecnologias', autenticar, admin, asyncHandler(Tec.listarAdmin));
+r.post('/admin/tecnologias', autenticar, admin, asyncHandler(Tec.crear));
+r.put('/admin/tecnologias/:id', autenticar, admin, asyncHandler(Tec.actualizar));
+r.delete('/admin/tecnologias/:id', autenticar, admin, asyncHandler(Tec.eliminar));
 r.get('/admin/resumen', autenticar, staff, asyncHandler(Conv.resumen));
 
 // ---- Cola del pipeline (dos nombres para el mismo recurso) ------------------

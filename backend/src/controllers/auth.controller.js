@@ -5,8 +5,10 @@ const Persona = require('../models/persona.model');
 const { firmar } = require('../middlewares/auth');
 const { HttpError } = require('../utils/errors');
 const Candidatos = require('../services/candidatos');
+const Realtime = require('../services/eventosRealtime');
 const {
-  exigirCorreo, datosPersona, listaHabilidades, listaExperiencias, listaFormaciones, DISPONIBILIDADES
+  exigirCorreo, exigirPassword, validarTextoLetras, validarTelefono,
+  datosPersona, listaHabilidades, listaExperiencias, listaFormaciones, DISPONIBILIDADES
 } = require('../utils/validar');
 
 // La disponibilidad vive en personas (columna personas.disponibilidad): es lo que usa
@@ -22,16 +24,17 @@ function disponibilidadDe(body) {
 async function registro(req, res) {
   // Registro público SOLO postulante, 6 campos. Nace pendiente (entra limitado).
   const c = exigirCorreo(req.body.correo);
-  const password = String(req.body.password || '');
-  if (password.length < 8) throw HttpError.badRequest('password mínimo 8 caracteres');
+  const password = exigirPassword(req.body.password);
   if (await Usuario.buscarPorCorreo(c)) throw HttpError.conflict('El correo ya está registrado');
-  const nombres = String(req.body.nombres || '').trim();
+  const nombres = validarTextoLetras(req.body.nombres, 'nombres');
   if (!nombres) throw HttpError.badRequest('nombres es requerido');
+  const apellidos = req.body.apellidos ? validarTextoLetras(req.body.apellidos, 'apellidos') : '';
+  const telefono = validarTelefono(req.body.telefono);
 
   const datos = {
     nombres,
-    apellidos: String(req.body.apellidos || '').trim(),
-    telefono: req.body.telefono ? String(req.body.telefono).slice(0, 30) : null,
+    apellidos,
+    telefono,
     direccion: req.body.direccion ? String(req.body.direccion).slice(0, 200) : null,
     linkedin: null, github: null, portafolio_url: null
   };
@@ -59,6 +62,19 @@ async function registro(req, res) {
     return { personaId, usuario: u };
   });
   Candidatos.invalidarPadron();
+  Realtime.emitirEvento({
+    tipo: 'POSTULANTE_REGISTRADO',
+    datos: {
+      id: out.usuario.id,
+      correo: out.usuario.correo,
+      rol: 'postulante',
+      estado_cuenta: 'pendiente',
+      nombres: datos.nombres,
+      apellidos: datos.apellidos,
+      creado_en: new Date()
+    },
+    destinatario: 'admin'
+  });
   res.status(201).json({
     mensaje: 'Registro exitoso. Tu cuenta está pendiente de aprobación.',
     postulante_id: out.personaId,

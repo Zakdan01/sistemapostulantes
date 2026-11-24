@@ -5,6 +5,8 @@ const Candidatos = require('../services/candidatos');
 const { HttpError } = require('../utils/errors');
 const { exigirCorreo } = require('../utils/validar');
 const { ROLES, ESTADOS_CUENTA } = require('../domain/catalogos');
+const { firmar } = require('../middlewares/auth');
+const Realtime = require('../services/eventosRealtime');
 
 const ROLES_STAFF = ROLES.filter((r) => r !== 'postulante');
 
@@ -33,6 +35,30 @@ async function aprobar(req, res) {
   if (!u) throw HttpError.conflict('Solo se puede aprobar una cuenta pendiente');
   // la cuenta activa entra al padron de candidatos: hay que recalcular las listas vivas
   Candidatos.invalidarPadron();
+
+  const nuevoToken = firmar(u);
+
+  // Notificar al postulante con su token renovado para que active su sesión en tiempo real
+  Realtime.emitirEvento({
+    tipo: 'CUENTA_APROBADA',
+    datos: {
+      usuarioId: u.id,
+      correo: u.correo,
+      rol: u.rol,
+      estado_cuenta: 'activa',
+      nuevoToken,
+      mensaje: '¡Tu cuenta ha sido aprobada por el administrador!'
+    },
+    destinatario: u.id
+  });
+
+  // Notificar al admin para actualizar su lista de cuentas por aprobar
+  Realtime.emitirEvento({
+    tipo: 'CUENTA_ACTUALIZADA',
+    datos: { id: u.id, estado_cuenta: 'activa' },
+    destinatario: 'admin'
+  });
+
   res.json(u);
 }
 
@@ -44,6 +70,22 @@ async function rechazar(req, res) {
   const ok = await Usuario.eliminarConPersona(u.id);
   if (!ok) throw HttpError.notFound('Cuenta no encontrada');
   Candidatos.invalidarPadron();
+
+  Realtime.emitirEvento({
+    tipo: 'CUENTA_RECHAZADA',
+    datos: {
+      usuarioId: u.id,
+      mensaje: 'Tu cuenta ha sido rechazada por el administrador.'
+    },
+    destinatario: u.id
+  });
+
+  Realtime.emitirEvento({
+    tipo: 'CUENTA_ELIMINADA',
+    datos: { id: u.id },
+    destinatario: 'admin'
+  });
+
   res.json({ mensaje: 'Cuenta rechazada y eliminada' });
 }
 

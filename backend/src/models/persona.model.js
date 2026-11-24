@@ -18,10 +18,18 @@ async function reemplazarHabilidades(conn, personaId, habilidades) {
       vistos.add(`n:${nombre}`);
       let r = await conn.query('SELECT id FROM tecnologias WHERE nombre=$1', [nombre]);
       if (!r.rows[0]) {
-        const cat = await conn.query("SELECT id FROM catalogo_categoria_tecnologia WHERE nombre='otro'");
+        let catId = null;
+        if (h.categoria) {
+          const c = await conn.query('SELECT id FROM catalogo_categoria_tecnologia WHERE nombre=$1', [h.categoria]);
+          catId = c.rows[0] ? c.rows[0].id : null;
+        }
+        if (!catId) {
+          const cat = await conn.query("SELECT id FROM catalogo_categoria_tecnologia WHERE nombre='otro'");
+          catId = cat.rows[0] ? cat.rows[0].id : null;
+        }
         r = await conn.query(
           'INSERT INTO tecnologias (nombre, categoria_id) VALUES ($1,$2) RETURNING id',
-          [nombre, cat.rows[0] ? cat.rows[0].id : null]
+          [nombre, catId]
         );
       }
       tecId = r.rows[0].id;

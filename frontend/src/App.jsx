@@ -8,7 +8,7 @@ import {
   useNavigate,
   useLocation
 } from 'react-router-dom';
-import { useLayoutEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import { Login } from './pages/Login';
 import { Registro } from './pages/Registro';
 import { Buscar } from './pages/Buscar';
@@ -20,12 +20,15 @@ import { MiPerfil } from './pages/MiPerfil';
 import { MiPanel } from './pages/MiPanel';
 import { Gestor } from './pages/Gestor';
 import { ComoSeCalcula } from './pages/ComoSeCalcula';
+import { GestionTecnologias } from './pages/GestionTecnologias';
 import { Inicio } from './pages/Inicio';
 import { ConvocatoriasPublicas } from './pages/ConvocatoriasPublicas';
 import { Empresas } from './pages/Empresas';
 import { Contacto } from './pages/Contacto';
 import { PublicoCorporativo } from './components/PublicoCorporativo';
 import { sesion, salir } from './lib/api';
+import { iniciarRealtime, cerrarRealtime, useEventoRealtime } from './lib/realtime';
+import { ModalCuentaAprobada } from './components/ModalCuentaAprobada';
 import { ToastProvider } from './components/Toast';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { Avatar } from './components/ui';
@@ -34,6 +37,7 @@ import {
   IconoBuscar,
   IconoMaletin,
   IconoChispa,
+  IconoCodigo,
   IconoUsuario,
   IconoEnlace,
   IconoSalir,
@@ -92,6 +96,7 @@ function enlacesDe(rol, estado) {
       inicio,
       { to: '/interno/buscar', etiqueta: 'Búsqueda', icono: IconoBuscar },
       { to: '/interno/convocatorias', etiqueta: 'Convocatorias', icono: IconoMaletin },
+      { to: '/interno/tecnologias', etiqueta: 'Tecnologías', icono: IconoCodigo },
       { to: '/interno/como-se-calcula', etiqueta: 'Cómo se calcula', icono: IconoChispa },
       sitio
     ];
@@ -113,9 +118,9 @@ function enlacesDe(rol, estado) {
   return enlaces;
 }
 
-function Sidebar({ abierto, onCerrar, tema, onTema }) {
+function Sidebar({ abierto, onCerrar, tema, onTema, sesionInfo }) {
   const nav = useNavigate();
-  const s = sesion();
+  const s = sesionInfo || sesion();
   const enlaces = enlacesDe(s.rol, s.estado);
   return (
     <aside className={`side-panel ${abierto ? 'side-open' : ''}`} aria-label="Menú principal">
@@ -255,6 +260,7 @@ function Paginas({ tema, onTema }) {
         <Route path="/interno/personas/:id" element={<Protegida roles={['admin', 'reclutador']}><Detalle /></Protegida>} />
         <Route path="/interno/convocatorias" element={<Protegida roles={['admin', 'reclutador']}><Convocatorias /></Protegida>} />
         <Route path="/interno/convocatorias/:id" element={<Protegida roles={['admin', 'reclutador']}><Ranking /></Protegida>} />
+        <Route path="/interno/tecnologias" element={<Protegida roles={['admin']}><GestionTecnologias /></Protegida>} />
         <Route path="/interno/como-se-calcula" element={<Protegida roles={['admin']}><ComoSeCalcula /></Protegida>} />
 
         <Route path="/vacantes" element={<Navigate to="/convocatorias" replace />} />
@@ -267,17 +273,62 @@ function Paginas({ tema, onTema }) {
 
 function Shell() {
   const loc = useLocation();
-  const s = sesion();
+  const [s, setS] = useState(sesion);
+  const [modalAprobado, setModalAprobado] = useState(false);
   const [abierto, setAbierto] = useState(false);
   const [tema, setTema] = useTema();
   const alternarTema = () => setTema(tema === 'dark' ? 'light' : 'dark');
+
+  // Mantener sesión y SSE actualizados en cualquier navegación o cambio de estado
+  useEffect(() => {
+    const sincronizar = () => {
+      const actual = sesion();
+      setS(actual);
+      if (actual.token) {
+        iniciarRealtime();
+      } else {
+        cerrarRealtime();
+      }
+    };
+    sincronizar();
+
+    window.addEventListener('sesion-cambiada', sincronizar);
+    window.addEventListener('storage', sincronizar);
+    return () => {
+      window.removeEventListener('sesion-cambiada', sincronizar);
+      window.removeEventListener('storage', sincronizar);
+    };
+  }, [loc.pathname]);
+
+  useEventoRealtime('CUENTA_APROBADA', () => {
+    setS(sesion());
+    setModalAprobado(true);
+  });
+
+  useEventoRealtime('CUENTA_RECHAZADA', (datos) => {
+    alert(datos.mensaje || 'Tu cuenta ha sido rechazada por el administrador.');
+    salir();
+    window.location.href = '/login';
+  });
+
   const publica = esRutaPublica(loc.pathname);
   const conSidebar = Boolean(s.token) && !publica;
 
   return (
     <div className="min-h-screen">
+      <ModalCuentaAprobada
+        abierto={modalAprobado}
+        onCerrar={() => setModalAprobado(false)}
+      />
+
       {conSidebar && (
-        <Sidebar abierto={abierto} onCerrar={() => setAbierto(false)} tema={tema} onTema={alternarTema} />
+        <Sidebar
+          abierto={abierto}
+          onCerrar={() => setAbierto(false)}
+          tema={tema}
+          onTema={alternarTema}
+          sesionInfo={s}
+        />
       )}
       {conSidebar && abierto && (
         <button

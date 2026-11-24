@@ -193,7 +193,7 @@ CREATE INDEX idx_convocatorias_creada_por ON convocatorias (creada_por);
 
 CREATE TABLE convocatorias_requisitos (
     convocatoria_id INT NOT NULL REFERENCES convocatorias(id) ON DELETE CASCADE,
-    tecnologia_id INT NOT NULL REFERENCES tecnologias(id) ON DELETE RESTRICT,
+    tecnologia_id INT NOT NULL REFERENCES tecnologias(id) ON DELETE CASCADE,
     obligatorio BOOLEAN DEFAULT true,
     nivel_minimo INT NULL REFERENCES catalogo_nivel_tecnologia(id),
     PRIMARY KEY (convocatoria_id, tecnologia_id)
