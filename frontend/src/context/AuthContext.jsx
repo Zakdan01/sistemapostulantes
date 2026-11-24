@@ -6,6 +6,7 @@ import { iniciarRealtime, cerrarRealtime, useEventoRealtime } from '../lib/realt
 export function AuthProvider({ children }) {
   const [s, setS] = useState(obtenerSesion);
   const [modalAprobado, setModalAprobado] = useState(false);
+  const [conectados, setConectados] = useState(1);
 
   useEffect(() => {
     const sesionActual = obtenerSesion();
@@ -44,6 +45,13 @@ export function AuthProvider({ children }) {
     window.location.href = '/login';
   });
 
+  useEventoRealtime('CONEXIONES_ACTUALIZADAS', (datos) => {
+    if (datos && (typeof datos.cuentas_conectadas === 'number' || typeof datos.conexiones === 'number')) {
+      const cant = datos.cuentas_conectadas || datos.conexiones || 1;
+      setConectados(cant);
+    }
+  });
+
   const iniciarSesion = useCallback((datos) => {
     guardarSesionApi(datos);
     const actual = obtenerSesion();
@@ -67,11 +75,12 @@ export function AuthProvider({ children }) {
     esAdmin: s.rol === 'admin',
     esReclutador: s.rol === 'reclutador',
     esPostulante: s.rol === 'postulante',
+    conectados,
     modalAprobado,
     cerrarModalAprobado: () => setModalAprobado(false),
     iniciarSesion,
     cerrarSesion
-  }), [s, modalAprobado, iniciarSesion, cerrarSesion]);
+  }), [s, modalAprobado, conectados, iniciarSesion, cerrarSesion]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

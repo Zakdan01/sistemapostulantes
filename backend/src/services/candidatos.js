@@ -298,7 +298,7 @@ async function datosDePersona(personaId) {
 // y si califica. No excluye a nadie: si no califica sigue viendo la convocatoria (con el
 // motivo). Si esta contratado no tiene posicion: el padron lo excluye hasta que cambie su
 // disponibilidad, asi que 'califica' es false con ese motivo.
-async function listaParaPostulante(personaId) {
+async function listaParaPostulante(personaId, esStaff = false) {
   const cfg = await Config.obtenerConfig();
   const yo = await datosDePersona(personaId);
   if (!yo) return [];
@@ -345,7 +345,13 @@ async function listaParaPostulante(personaId) {
       kpi_minimo: umbral,
       kpi_conv: kc.kpi_conv,
       desglose: kc.desglose,
-      requisitos: c.requisitos,
+      requisitos: esStaff
+        ? c.requisitos
+        : (c.requisitos || []).map((r) => ({
+            tecnologia_id: r.tecnologia_id,
+            nombre: r.nombre,
+            obligatorio: r.obligatorio
+          })),
       califica,
       posicion: idx >= 0 ? idx + 1 : null,
       total_candidatos: calc.total,

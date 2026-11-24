@@ -5,6 +5,7 @@ import { useEventoRealtime } from '../lib/realtime';
 import { EstadoBadge } from '../components/EstadoCandidato';
 import { Aviso, Boton, EmptyState, PageHeader, Pill, Progress, StatCard } from '../components/ui';
 import { IconoMaletin, IconoObjetivo, IconoReloj, IconoTrofeo, IconoUsuarios } from '../components/Iconos';
+import { IconoTecnologia } from '../components/IconoTecnologia';
 
 // Vista del postulante: que convocatorias abiertas hay y si califica.
 // El postulante NO postula: si pasa el umbral aparece en la lista del staff.
@@ -157,7 +158,8 @@ export function MisConvocatorias() {
                 <div className="mt-3 flex flex-wrap gap-1.5">
                   {(f.requisitos || []).slice(0, 7).map((r) => (
                     <Pill key={r.nombre} tono={r.obligatorio ? 'violet' : 'slate'}>
-                      {r.nombre}{r.nivel_minimo ? ` · ${r.nivel_minimo}` : ''}
+                      <IconoTecnologia nombre={r.nombre} tamano="xs" />
+                      {r.nombre}{r.obligatorio ? '' : ' (deseable)'}
                     </Pill>
                   ))}
                   {(f.requisitos || []).length > 7 ? <Pill tono="slate">+{(f.requisitos || []).length - 7}</Pill> : null}
@@ -213,7 +215,8 @@ export function MisConvocatorias() {
                 <div className="mt-3 flex flex-wrap gap-1.5">
                   {(f.requisitos || []).slice(0, 7).map((r) => (
                     <Pill key={r.nombre} tono={r.obligatorio ? 'violet' : 'slate'}>
-                      {r.nombre}{r.nivel_minimo ? ` · ${r.nivel_minimo}` : ''}
+                      <IconoTecnologia nombre={r.nombre} tamano="xs" />
+                      {r.nombre}{r.obligatorio ? '' : ' (deseable)'}
                     </Pill>
                   ))}
                   {(f.requisitos || []).length > 7 ? <Pill tono="slate">+{(f.requisitos || []).length - 7}</Pill> : null}

@@ -13,6 +13,7 @@ import {
   Progress
 } from '../components/ui';
 import { IconoBuscar, IconoMaletin, IconoMas, IconoX } from '../components/Iconos';
+import { IconoTecnologia } from '../components/IconoTecnologia';
 
 const ORDEN_CAT = ['lenguaje', 'framework', 'base_datos', 'herramienta', 'otro'];
 const ETIQ_CAT = {
@@ -337,10 +338,11 @@ export function Convocatorias() {
                     <div className="flex flex-wrap gap-1.5">
                       {grupos[c].map((t) => {
                         const elegido = form.reqs[t];
-                        const clase = !elegido ? 'chip' : elegido.obligatorio ? 'chip chip-on' : 'chip chip-soft';
+                        const clase = !elegido ? 'chip inline-flex items-center gap-1' : elegido.obligatorio ? 'chip chip-on inline-flex items-center gap-1' : 'chip chip-soft inline-flex items-center gap-1';
                         return (
                           <button type="button" key={t} onClick={() => toggleReq(t)} className={clase}>
-                            {t}{elegido ? (elegido.obligatorio ? ' ★' : ' ○') : ''}
+                            <IconoTecnologia nombre={t} categoria={c} tamano="xs" />
+                            <span>{t}{elegido ? (elegido.obligatorio ? ' ★' : ' ○') : ''}</span>
                           </button>
                         );
                       })}
@@ -358,7 +360,8 @@ export function Convocatorias() {
                   <p className="text-xs font-semibold">Nivel mínimo exigido</p>
                   {Object.entries(form.reqs).map(([k, r]) => (
                     <div key={k} className="flex flex-wrap items-center gap-2 text-xs">
-                      <span className="min-w-0 flex-1 truncate">
+                      <span className="min-w-0 flex-1 truncate inline-flex items-center gap-1.5">
+                        <IconoTecnologia nombre={k} categoria={r.categoria} tamano="xs" />
                         <b>{k}</b> <span className="text-brand-600 dark:text-brand-300">{r.obligatorio ? '★' : '○'}</span>
                       </span>
                       <select

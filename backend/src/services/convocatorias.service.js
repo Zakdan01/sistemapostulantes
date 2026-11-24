@@ -6,6 +6,7 @@
 const Convocatoria = require('../models/convocatoria.model');
 const Config = require('../models/config.model');
 const Candidatos = require('./candidatos');
+const Realtime = require('./eventosRealtime');
 const { pesosDeRequisitos } = require('./kpiConvocatoria');
 
 const r2 = (n) => Math.round(n * 100) / 100;
@@ -108,8 +109,8 @@ async function ranking(id) {
 }
 
 // Postulante: todas las convocatorias abiertas con su KPI, su posicion y si califica.
-async function misConvocatorias(personaId) {
-  return Candidatos.listaParaPostulante(personaId);
+async function misConvocatorias(personaId, esStaff = false) {
+  return Candidatos.listaParaPostulante(personaId, esStaff);
 }
 
 // Resumen del tablero: contadores del pipeline + cuantos candidatos hay en las listas
@@ -133,7 +134,7 @@ async function resumen(duenioId) {
     for (const v of vivas) for (const r of v.resultados) personas.add(r.persona_id);
     candidatos = personas.size;
   }
-  return { ...contadores, candidatos: { total: candidatos } };
+  return { ...contadores, candidatos: { total: candidatos }, cuentas_conectadas: Realtime.totalConectados() };
 }
 
 module.exports = { listar, publicas, detalle, ranking, resumen, misConvocatorias, conRequisitos };

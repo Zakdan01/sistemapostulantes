@@ -24,6 +24,7 @@ import {
   IconoObjetivo,
   IconoUsuarios
 } from '../components/Iconos';
+import { IconoTecnologia } from '../components/IconoTecnologia';
 
 // Lista VIVA de candidatos de la convocatoria: el sistema enlista solo a quien pasa
 // el umbral (kpi_minimo) y los ordena por KPI de convocatoria. Los que no pasan
@@ -254,8 +255,9 @@ export function Ranking() {
               r.convocatoria.requisitos && r.convocatoria.requisitos.length ? (
                 <div className="flex flex-wrap gap-1.5">
                   {r.convocatoria.requisitos.map((x) => (
-                    <span key={x.nombre} className="chip cursor-default">
-                      {x.nombre}{x.obligatorio ? ' ★' : ' ○'}{x.nivel_minimo ? ` ≥${x.nivel_minimo}` : ''}
+                    <span key={x.nombre} className="chip cursor-default inline-flex items-center gap-1.5">
+                      <IconoTecnologia nombre={x.nombre} tamano="xs" />
+                      <span>{x.nombre}{x.obligatorio ? ' ★' : ' ○'}{x.nivel_minimo ? ` ≥${x.nivel_minimo}` : ''}</span>
                     </span>
                   ))}
                 </div>

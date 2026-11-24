@@ -58,7 +58,7 @@ export function Registro() {
       const r = await api('/api/auth/registro', { method: 'POST', body: JSON.stringify(form) });
       guardarSesion({ token: r.token, rol: 'postulante', correo: form.correo, estado_cuenta: r.estado_cuenta });
       toast('Cuenta creada. Está pendiente de aprobación: completa tu CV en Mi perfil.');
-      setTimeout(() => nav('/mi-panel'), 1200);
+      setTimeout(() => nav('/mi-perfil'), 1200);
     } catch (ex) {
       toast(ex.message, false);
     } finally {

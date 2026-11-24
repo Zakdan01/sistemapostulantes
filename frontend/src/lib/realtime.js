@@ -49,7 +49,15 @@ export function iniciarRealtime() {
   };
 
   es.addEventListener('conectado', (e) => {
-    console.log('[SSE Frontend] Handshake recibido:', e.data);
+    try {
+      const d = JSON.parse(e.data);
+      console.log('[SSE Frontend] Handshake recibido:', d);
+      if (d && (typeof d.cuentas_conectadas === 'number' || typeof d.conexiones === 'number')) {
+        emitirLocal('CONEXIONES_ACTUALIZADAS', d);
+      }
+    } catch {
+      console.log('[SSE Frontend] Handshake recibido:', e.data);
+    }
   });
 
   const eventosMapeados = [
@@ -60,7 +68,8 @@ export function iniciarRealtime() {
     'CUENTA_ELIMINADA',
     'CONVOCATORIA_CREADA',
     'CONVOCATORIA_APROBADA',
-    'CONVOCATORIA_CERRADA'
+    'CONVOCATORIA_CERRADA',
+    'CONEXIONES_ACTUALIZADAS'
   ];
 
   eventosMapeados.forEach((tipo) => {

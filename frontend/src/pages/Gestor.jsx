@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { api, sesion } from '../lib/api';
 import { useToast } from '../lib/toast';
 import { useEventoRealtime } from '../lib/realtime';
+import { useAuth } from '../hooks/useAuth';
 import { TablaKPI } from '../components/TablaKPI';
 import { useAccion } from '../hooks/useAccion';
 import {
@@ -25,6 +26,7 @@ import {
   IconoObjetivo,
   IconoReloj,
   IconoTrofeo,
+  IconoSenal,
   IconoUsuario,
   IconoUsuarios,
   IconoX
@@ -62,6 +64,7 @@ export function Gestor() {
   const [confirmar, setConfirmar] = useState(null);
   const { ocupado, error: errorAccion, ejecutar } = useAccion();
   const toast = useToast();
+  const { conectados } = useAuth();
 
   // Escuchar eventos en tiempo real
   useEventoRealtime('POSTULANTE_REGISTRADO', (datos) => {
@@ -192,7 +195,8 @@ export function Gestor() {
     { etiqueta: 'Cerradas', valor: resumen.cerradas, icono: IconoMaletin, tono: 'slate' },
     { etiqueta: 'Postulantes', valor: resumen.postulantes, icono: IconoUsuarios, tono: 'cyan' },
     { etiqueta: 'Convocatorias por aprobar', valor: resumen.pendientes_aprobacion ?? porAprobar.length, icono: IconoAlerta, tono: 'rose' },
-    { etiqueta: 'Descartados', valor: resumen.descartados, icono: IconoX, tono: 'rose' }
+    { etiqueta: 'Descartados', valor: resumen.descartados, icono: IconoX, tono: 'rose' },
+    { etiqueta: 'Cuentas en línea', valor: conectados, icono: IconoSenal, tono: 'emerald' }
   ] : [];
 
   if (!resumen && !err) {

@@ -37,8 +37,11 @@ function conectarCliente(req, res) {
   clientes.add(cliente);
   console.log(`[SSE Backend] Cliente conectado: ID=${id}, usuarioId=${usuario.id}, rol=${usuario.rol}. Total conectados: ${clientes.size}`);
 
-  // Mensaje de saludo inicial
-  res.write(`event: conectado\ndata: ${JSON.stringify({ ok: true, usuarioId: usuario.id, rol: usuario.rol })}\n\n`);
+  const metricas = obtenerMetricasConectados();
+  // Mensaje de saludo inicial con métricas de conexiones
+  res.write(`event: conectado\ndata: ${JSON.stringify({ ok: true, usuarioId: usuario.id, rol: usuario.rol, ...metricas })}\n\n`);
+
+  notificarMetricas();
 
   // Pulso periódico (heartbeat) cada 25 segundos para evitar desconexiones por timeout
   const ping = setInterval(() => {
@@ -53,6 +56,28 @@ function conectarCliente(req, res) {
     clearInterval(ping);
     clientes.delete(cliente);
     console.log(`[SSE Backend] Cliente desconectado: ID=${id}. Total conectados: ${clientes.size}`);
+    notificarMetricas();
+  });
+}
+
+function obtenerMetricasConectados() {
+  const usuariosUnicos = new Set();
+  for (const c of clientes) {
+    if (c.usuario && c.usuario.id) {
+      usuariosUnicos.add(Number(c.usuario.id));
+    }
+  }
+  return {
+    conexiones: clientes.size,
+    cuentas_conectadas: usuariosUnicos.size
+  };
+}
+
+function notificarMetricas() {
+  emitirEvento({
+    tipo: 'CONEXIONES_ACTUALIZADAS',
+    datos: obtenerMetricasConectados(),
+    destinatario: 'todos'
   });
 }
 
@@ -97,11 +122,12 @@ function emitirEvento({ tipo, datos, destinatario = 'todos' }) {
 }
 
 function totalConectados() {
-  return clientes.size;
+  return obtenerMetricasConectados().cuentas_conectadas;
 }
 
 module.exports = {
   conectarCliente,
   emitirEvento,
-  totalConectados
+  totalConectados,
+  obtenerMetricasConectados
 };

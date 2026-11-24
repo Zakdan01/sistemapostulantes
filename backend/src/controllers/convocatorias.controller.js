@@ -254,7 +254,8 @@ async function misConvocatorias(req, res) {
     personaId = Number(req.query.persona_id);
     if (!personaId) throw HttpError.badRequest('persona_id es requerido');
   }
-  res.json(await Convocatorias.misConvocatorias(personaId));
+  const esStaff = ['admin', 'reclutador'].includes(req.usuario.rol);
+  res.json(await Convocatorias.misConvocatorias(personaId, esStaff));
 }
 
 async function resumen(req, res) {

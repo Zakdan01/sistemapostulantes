@@ -17,7 +17,6 @@ import { Convocatorias } from './pages/Convocatorias';
 import { Ranking } from './pages/Ranking';
 import { MisConvocatorias } from './pages/MisConvocatorias';
 import { MiPerfil } from './pages/MiPerfil';
-import { MiPanel } from './pages/MiPanel';
 import { Gestor } from './pages/Gestor';
 import { ComoSeCalcula } from './pages/ComoSeCalcula';
 import { GestionTecnologias } from './pages/GestionTecnologias';
@@ -64,8 +63,11 @@ function esRutaPublica(path) {
     || path.startsWith('/convocatorias');
 }
 
-function casaDe(rol) {
-  return rol === 'postulante' ? '/mi-panel' : '/interno';
+function casaDe(rol, estado) {
+  if (rol === 'postulante') {
+    return estado === 'pendiente' ? '/mi-perfil' : '/mis-convocatorias';
+  }
+  return '/interno';
 }
 
 function Protegida({ children, roles }) {
@@ -73,9 +75,9 @@ function Protegida({ children, roles }) {
   if (!token) {
     return <Navigate to={window.location.pathname.startsWith('/interno') ? '/interno/login' : '/login'} replace />;
   }
-  if (roles && !roles.includes(rol)) return <Navigate to={casaDe(rol)} replace />;
-  if (estado === 'pendiente' && !['/mi-panel', '/mi-perfil'].includes(window.location.pathname)) {
-    return <Navigate to="/mi-panel" replace />;
+  if (roles && !roles.includes(rol)) return <Navigate to={casaDe(rol, estado)} replace />;
+  if (estado === 'pendiente' && window.location.pathname !== '/mi-perfil') {
+    return <Navigate to="/mi-perfil" replace />;
   }
   return children;
 }
@@ -87,13 +89,10 @@ const ROLES = {
 };
 
 function enlacesDe(rol, estado) {
-  const inicio = rol === 'postulante'
-    ? { to: '/mi-panel', etiqueta: 'Mi panel', icono: IconoPanel, end: true }
-    : { to: '/interno', etiqueta: 'Gestor', icono: IconoPanel, end: true };
   const sitio = { to: '/', etiqueta: 'Sitio público', icono: IconoEnlace, end: true };
   if (rol === 'admin') {
     return [
-      inicio,
+      { to: '/interno', etiqueta: 'Gestor', icono: IconoPanel, end: true },
       { to: '/interno/buscar', etiqueta: 'Búsqueda', icono: IconoBuscar },
       { to: '/interno/convocatorias', etiqueta: 'Convocatorias', icono: IconoMaletin },
       { to: '/interno/tecnologias', etiqueta: 'Tecnologías', icono: IconoCodigo },
@@ -103,15 +102,15 @@ function enlacesDe(rol, estado) {
   }
   if (rol === 'reclutador') {
     return [
-      inicio,
+      { to: '/interno', etiqueta: 'Gestor', icono: IconoPanel, end: true },
       { to: '/interno/buscar', etiqueta: 'Búsqueda', icono: IconoBuscar },
       { to: '/interno/convocatorias', etiqueta: 'Convocatorias', icono: IconoMaletin },
       sitio
     ];
   }
-  const enlaces = [inicio];
+  const enlaces = [];
   if (estado !== 'pendiente') {
-    enlaces.push({ to: '/mis-convocatorias', etiqueta: 'Mis convocatorias', icono: IconoMaletin });
+    enlaces.push({ to: '/mis-convocatorias', etiqueta: 'Convocatorias', icono: IconoMaletin });
   }
   enlaces.push({ to: '/mi-perfil', etiqueta: 'Mi perfil', icono: IconoUsuario });
   enlaces.push(sitio);
@@ -120,13 +119,13 @@ function enlacesDe(rol, estado) {
 
 function Sidebar({ abierto, onCerrar, tema, onTema, sesionInfo }) {
   const nav = useNavigate();
-  const { sesion: authSesion, cerrarSesion } = useAuth();
+  const { sesion: authSesion, cerrarSesion, conectados } = useAuth();
   const s = sesionInfo || authSesion;
   const enlaces = enlacesDe(s.rol, s.estado);
   return (
     <aside className={`side-panel ${abierto ? 'side-open' : ''}`} aria-label="Menú principal">
       <div className="flex items-center gap-2.5 px-1 py-1">
-        <Link to={casaDe(s.rol)} onClick={onCerrar} className="flex min-w-0 items-center gap-2.5" aria-label="Ir al panel">
+        <Link to={casaDe(s.rol, s.estado)} onClick={onCerrar} className="flex min-w-0 items-center gap-2.5" aria-label="Ir al panel">
           <span className="brand-mark">P</span>
           <span className="min-w-0">
             <span className="brand-title block truncate">Postulantes</span>
@@ -162,6 +161,13 @@ function Sidebar({ abierto, onCerrar, tema, onTema, sesionInfo }) {
       </nav>
 
       <div className="side-foot">
+        <div className="flex items-center gap-2 px-2 py-1 text-xs text-slate-500 dark:text-slate-400">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+          <span className="truncate">{conectados} {conectados === 1 ? 'cuenta en línea' : 'cuentas en línea'}</span>
+        </div>
         <div className="side-user">
           <Avatar nombre={s.correo || 'Sin sesión'} tamano="sm" />
           <div className="min-w-0 flex-1">
@@ -192,6 +198,7 @@ function Sidebar({ abierto, onCerrar, tema, onTema, sesionInfo }) {
 }
 
 function Topbar({ onAbrir, tema, onTema, casa }) {
+  const { conectados } = useAuth();
   return (
     <header className="topbar lg:hidden">
       <button
@@ -206,9 +213,13 @@ function Topbar({ onAbrir, tema, onTema, casa }) {
         <span className="brand-mark h-8 w-8 rounded-lg text-sm">P</span>
         <span className="text-sm">Postulantes</span>
       </Link>
+      <div className="ml-auto mr-1 flex items-center gap-1.5 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+        <span>{conectados} en línea</span>
+      </div>
       <button
         type="button"
-        className="btn btn-ghost ml-auto p-2"
+        className="btn btn-ghost p-2"
         onClick={onTema}
         aria-label={tema === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
       >
@@ -249,8 +260,8 @@ function Paginas({ tema, onTema }) {
           <Route path="/registro" element={<Registro />} />
         </Route>
 
-        {/* Panel del postulante */}
-        <Route path="/mi-panel" element={<Protegida roles={['postulante']}><MiPanel /></Protegida>} />
+        {/* Vistas del postulante */}
+        <Route path="/mi-panel" element={<Navigate to="/mis-convocatorias" replace />} />
         <Route path="/mis-convocatorias" element={<Protegida roles={['postulante']}><MisConvocatorias /></Protegida>} />
         <Route path="/mi-perfil" element={<Protegida roles={['postulante']}><MiPerfil /></Protegida>} />
 
@@ -309,7 +320,7 @@ function Shell() {
 
       <div className={conSidebar ? 'lg:pl-72' : ''}>
         {conSidebar && (
-          <Topbar onAbrir={() => setAbierto(true)} tema={tema} onTema={alternarTema} casa={casaDe(rol)} />
+          <Topbar onAbrir={() => setAbierto(true)} tema={tema} onTema={alternarTema} casa={casaDe(rol, s.estado)} />
         )}
         {!conSidebar && !publica && <TemaFlotante tema={tema} onTema={alternarTema} />}
         <main className={conSidebar ? 'mx-auto w-full max-w-6xl px-4 pb-12 pt-5 sm:px-6 lg:px-8 lg:pt-8' : ''}>

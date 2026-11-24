@@ -19,6 +19,7 @@ import {
   IconoMas,
   IconoX
 } from '../components/Iconos';
+import { IconoTecnologia } from '../components/IconoTecnologia';
 
 export function GestionTecnologias() {
   const catalogos = useCatalogos();
@@ -264,8 +265,11 @@ export function GestionTecnologias() {
                     <td className="text-xs font-mono text-slate-400">
                       #{t.id}
                     </td>
-                    <td className="font-semibold text-slate-900 dark:text-slate-100">
-                      {t.nombre}
+                    <td>
+                      <div className="flex items-center gap-2">
+                        <IconoTecnologia nombre={t.nombre} categoria={t.categoria} tamano="sm" />
+                        <span className="font-semibold text-slate-900 dark:text-slate-100">{t.nombre}</span>
+                      </div>
                     </td>
                     <td>
                       <Pill tono={t.categoria === 'otro' ? 'amber' : 'brand'}>

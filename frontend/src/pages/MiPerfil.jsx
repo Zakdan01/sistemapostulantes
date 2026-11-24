@@ -23,6 +23,7 @@ import {
   IconoUsuario,
   IconoX
 } from '../components/Iconos';
+import { IconoTecnologia } from '../components/IconoTecnologia';
 
 // Mi perfil: el postulante completa su CV (contacto + habilidades + experiencias + formaciones).
 // Los catalogos (niveles, disponibilidades, instituciones) vienen del backend.
@@ -423,6 +424,7 @@ export function MiPerfil() {
               <div className="mt-3 flex flex-wrap gap-2">
                 {habs.map((h, i) => (
                   <span key={`${h.nombre}-${i}`} className="chip chip-soft">
+                    <IconoTecnologia nombre={h.nombre} categoria={h.categoria} tamano="xs" />
                     <span className="font-semibold">{h.nombre}</span>
                     <span className="text-[11px] opacity-80">{h.nivel || nivelPorDefecto} · {Number(h.anios_uso) || 0}a</span>
                     {h.categoria ? (

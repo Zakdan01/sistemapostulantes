@@ -50,7 +50,10 @@ export function Login({ portal = 'interno' }) {
       }
       guardarSesion({ token: r.token, rol: r.rol, correo: form.correo, estado_cuenta: r.estado_cuenta });
       toast(r.estado_cuenta === 'pendiente' ? 'Entraste con cuenta pendiente de aprobación.' : 'Sesión iniciada.');
-      nav(r.rol === 'postulante' ? '/mi-panel' : '/interno');
+      const destino = r.rol === 'postulante'
+        ? (r.estado_cuenta === 'pendiente' ? '/mi-perfil' : '/mis-convocatorias')
+        : '/interno';
+      nav(destino);
     } catch (ex) {
       toast(ex.message, false);
     } finally {

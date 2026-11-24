@@ -36,7 +36,9 @@ export function PublicoCorporativo({ tema, onTema }) {
   const { pathname } = useLocation();
   const corporativa = esRutaCorporativa(pathname);
   const s = sesion();
-  const panel = s.rol === 'postulante' ? '/mi-panel' : '/interno';
+  const panel = s.rol === 'postulante'
+    ? (s.estado === 'pendiente' ? '/mi-perfil' : '/mis-convocatorias')
+    : '/interno';
   useCorporateEffects();
 
   useEffect(() => {
