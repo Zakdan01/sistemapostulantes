@@ -9,9 +9,18 @@ function authHeaders() {
 }
 
 export async function api(path, opts = {}) {
+  const options = { ...opts };
+  if (
+    options.body &&
+    typeof options.body === 'object' &&
+    !(options.body instanceof FormData)
+  ) {
+    options.body = JSON.stringify(options.body);
+  }
+
   const r = await fetch(API + path, {
-    ...opts,
-    headers: { 'Content-Type': 'application/json', ...authHeaders(), ...(opts.headers || {}) }
+    ...options,
+    headers: { 'Content-Type': 'application/json', ...authHeaders(), ...(options.headers || {}) }
   });
   let body = null;
   try { body = await r.json(); } catch { body = null; }
@@ -47,7 +56,7 @@ export function guardarSesion({ token, rol, correo, estado_cuenta }) {
     window.dispatchEvent(new CustomEvent('sesion-cambiada', {
       detail: { token, rol, correo, estado_cuenta: estado_cuenta || 'activa' }
     }));
-  } catch (_) {}
+  } catch {}
 }
 
 export function salir() {
@@ -57,5 +66,5 @@ export function salir() {
   localStorage.removeItem('estado_cuenta');
   try {
     window.dispatchEvent(new CustomEvent('sesion-cambiada', { detail: null }));
-  } catch (_) {}
+  } catch {}
 }

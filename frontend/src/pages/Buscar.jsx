@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import { TablaKPI } from '../components/TablaKPI';
@@ -36,26 +36,32 @@ export function Buscar() {
       .catch(() => {});
   }, []);
 
-  const buscar = useCallback(async () => {
-    try {
-      const q = new URLSearchParams();
-      if (elegidas.length) q.set('tec', elegidas.join(','));
-      q.set('modo', modo);
-      if (anios !== '') q.set('anios_min', anios);
-      if (tipo) q.set('tipo_trabajo', tipo);
-      if (nivel) q.set('nivel', nivel);
-      const r = await api(`/api/personas?${q.toString()}`);
-      setFilas(r.resultados || []);
-      setTotal(Number(r.total) || 0);
-      setErr('');
-    } catch (ex) {
-      setErr(ex.message);
-    } finally {
-      setCargando(false);
-    }
-  }, [elegidas, modo, anios, tipo, nivel]);
+  useEffect(() => {
+    let activo = true;
+    const q = new URLSearchParams();
+    if (elegidas.length) q.set('tec', elegidas.join(','));
+    q.set('modo', modo);
+    if (anios !== '') q.set('anios_min', anios);
+    if (tipo) q.set('tipo_trabajo', tipo);
+    if (nivel) q.set('nivel', nivel);
 
-  useEffect(() => { buscar(); }, [buscar]);
+    api(`/api/personas?${q.toString()}`)
+      .then((r) => {
+        if (activo) {
+          setFilas(r.resultados || []);
+          setTotal(Number(r.total) || 0);
+          setErr('');
+        }
+      })
+      .catch((ex) => {
+        if (activo) setErr(ex.message);
+      })
+      .finally(() => {
+        if (activo) setCargando(false);
+      });
+
+    return () => { activo = false; };
+  }, [elegidas, modo, anios, tipo, nivel]);
 
   function toggle(t) {
     setElegidas((prev) => (prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]));

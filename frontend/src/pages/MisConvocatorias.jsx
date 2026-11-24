@@ -27,7 +27,23 @@ export function MisConvocatorias() {
     }
   }, []);
 
-  useEffect(() => { cargar(); }, [cargar]);
+  useEffect(() => {
+    let cancelado = false;
+    api('/api/mis-convocatorias')
+      .then((r) => {
+        if (!cancelado) {
+          setFilas(Array.isArray(r) ? r : []);
+          setErr('');
+        }
+      })
+      .catch((ex) => {
+        if (!cancelado) setErr(ex.message);
+      })
+      .finally(() => {
+        if (!cancelado) setCargando(false);
+      });
+    return () => { cancelado = true; };
+  }, []);
 
   useEventoRealtime('CONVOCATORIA_APROBADA', () => cargar());
   useEventoRealtime('CONVOCATORIA_CERRADA', () => cargar());

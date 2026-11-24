@@ -2,8 +2,14 @@ const { pool } = require('../config/db');
 const { HttpError } = require('../utils/errors');
 const { CLAVES_CONFIG_KPI, PESOS_PERFIL } = require('../domain/catalogos');
 
-// La configuracion del KPI se lee en CADA calculo (ranking, perfiles, resumenes).
-// Se cachea unos segundos y se invalida al guardar un cambio.
+/**
+ * La configuración del motor de evaluación (configuracion_kpi) alimenta
+ * los parámetros de ponderación en `services/kpiConvocatoria.js` (multiplicadores
+ * obligatorios/deseables, peso de experiencia afín, tope de años de requisitos)
+ * y los umbrales de clasificación.
+ *
+ * Se cachea en memoria por 30s y se invalida automáticamente al actualizarse.
+ */
 const TTL_MS = 30 * 1000;
 let cache = { ts: 0, datos: null };
 

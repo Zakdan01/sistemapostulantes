@@ -96,7 +96,20 @@ export function Convocatorias() {
       .catch((ex) => setErr(ex.message))
       .finally(() => setCargandoLista(false));
   }
-  useEffect(() => { cargar(); }, []);
+  useEffect(() => {
+    let activo = true;
+    api('/api/convocatorias')
+      .then((data) => {
+        if (activo) setLista(data);
+      })
+      .catch((ex) => {
+        if (activo) setErr(ex.message);
+      })
+      .finally(() => {
+        if (activo) setCargandoLista(false);
+      });
+    return () => { activo = false; };
+  }, []);
 
   function toggleReq(nombre) {
     const reqs = { ...form.reqs };

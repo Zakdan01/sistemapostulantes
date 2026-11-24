@@ -50,7 +50,22 @@ export function Ranking() {
     } catch (ex) { setError(ex.message); }
   }, [id, setError]);
 
-  useEffect(() => { cargar(); }, [cargar]);
+  useEffect(() => {
+    let cancelado = false;
+    api(`/api/convocatorias/${id}/ranking`)
+      .then((d) => {
+        if (!cancelado) {
+          setR(d);
+          setUmbral(String(d.umbral));
+          setCuposEdit(String(d.cupos ?? ''));
+          setError('');
+        }
+      })
+      .catch((ex) => {
+        if (!cancelado) setError(ex.message);
+      });
+    return () => { cancelado = true; };
+  }, [id, setError]);
 
   const resultadosFiltrados = useMemo(() => {
     let arr = r?.resultados || [];

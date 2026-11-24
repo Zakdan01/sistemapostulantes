@@ -8,7 +8,7 @@ import {
   useNavigate,
   useLocation
 } from 'react-router-dom';
-import { useEffect, useLayoutEffect, useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 import { Login } from './pages/Login';
 import { Registro } from './pages/Registro';
 import { Buscar } from './pages/Buscar';
@@ -26,8 +26,8 @@ import { ConvocatoriasPublicas } from './pages/ConvocatoriasPublicas';
 import { Empresas } from './pages/Empresas';
 import { Contacto } from './pages/Contacto';
 import { PublicoCorporativo } from './components/PublicoCorporativo';
-import { sesion, salir } from './lib/api';
-import { iniciarRealtime, cerrarRealtime, useEventoRealtime } from './lib/realtime';
+import { AuthProvider } from './context/AuthContext';
+import { useAuth } from './hooks/useAuth';
 import { ModalCuentaAprobada } from './components/ModalCuentaAprobada';
 import { ToastProvider } from './components/Toast';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -69,12 +69,12 @@ function casaDe(rol) {
 }
 
 function Protegida({ children, roles }) {
-  const s = sesion();
-  if (!s.token) {
+  const { token, rol, estado } = useAuth();
+  if (!token) {
     return <Navigate to={window.location.pathname.startsWith('/interno') ? '/interno/login' : '/login'} replace />;
   }
-  if (roles && !roles.includes(s.rol)) return <Navigate to={casaDe(s.rol)} replace />;
-  if (s.estado === 'pendiente' && !['/mi-panel', '/mi-perfil'].includes(window.location.pathname)) {
+  if (roles && !roles.includes(rol)) return <Navigate to={casaDe(rol)} replace />;
+  if (estado === 'pendiente' && !['/mi-panel', '/mi-perfil'].includes(window.location.pathname)) {
     return <Navigate to="/mi-panel" replace />;
   }
   return children;
@@ -120,7 +120,8 @@ function enlacesDe(rol, estado) {
 
 function Sidebar({ abierto, onCerrar, tema, onTema, sesionInfo }) {
   const nav = useNavigate();
-  const s = sesionInfo || sesion();
+  const { sesion: authSesion, cerrarSesion } = useAuth();
+  const s = sesionInfo || authSesion;
   const enlaces = enlacesDe(s.rol, s.estado);
   return (
     <aside className={`side-panel ${abierto ? 'side-open' : ''}`} aria-label="Menú principal">
@@ -180,7 +181,7 @@ function Sidebar({ abierto, onCerrar, tema, onTema, sesionInfo }) {
         <button
           type="button"
           className="btn btn-ghost w-full justify-start px-3 py-2 text-sm text-rose-600 hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-950/40"
-          onClick={() => { salir(); nav('/login'); }}
+          onClick={() => { cerrarSesion(); nav('/login'); }}
         >
           <IconoSalir className="h-4 w-4" />
           Cerrar sesión
@@ -273,52 +274,19 @@ function Paginas({ tema, onTema }) {
 
 function Shell() {
   const loc = useLocation();
-  const [s, setS] = useState(sesion);
-  const [modalAprobado, setModalAprobado] = useState(false);
+  const { sesion: s, token, rol, modalAprobado, cerrarModalAprobado } = useAuth();
   const [abierto, setAbierto] = useState(false);
   const [tema, setTema] = useTema();
   const alternarTema = () => setTema(tema === 'dark' ? 'light' : 'dark');
 
-  // Mantener sesión y SSE actualizados en cualquier navegación o cambio de estado
-  useEffect(() => {
-    const sincronizar = () => {
-      const actual = sesion();
-      setS(actual);
-      if (actual.token) {
-        iniciarRealtime();
-      } else {
-        cerrarRealtime();
-      }
-    };
-    sincronizar();
-
-    window.addEventListener('sesion-cambiada', sincronizar);
-    window.addEventListener('storage', sincronizar);
-    return () => {
-      window.removeEventListener('sesion-cambiada', sincronizar);
-      window.removeEventListener('storage', sincronizar);
-    };
-  }, [loc.pathname]);
-
-  useEventoRealtime('CUENTA_APROBADA', () => {
-    setS(sesion());
-    setModalAprobado(true);
-  });
-
-  useEventoRealtime('CUENTA_RECHAZADA', (datos) => {
-    alert(datos.mensaje || 'Tu cuenta ha sido rechazada por el administrador.');
-    salir();
-    window.location.href = '/login';
-  });
-
   const publica = esRutaPublica(loc.pathname);
-  const conSidebar = Boolean(s.token) && !publica;
+  const conSidebar = Boolean(token) && !publica;
 
   return (
     <div className="min-h-screen">
       <ModalCuentaAprobada
         abierto={modalAprobado}
-        onCerrar={() => setModalAprobado(false)}
+        onCerrar={cerrarModalAprobado}
       />
 
       {conSidebar && (
@@ -341,7 +309,7 @@ function Shell() {
 
       <div className={conSidebar ? 'lg:pl-72' : ''}>
         {conSidebar && (
-          <Topbar onAbrir={() => setAbierto(true)} tema={tema} onTema={alternarTema} casa={casaDe(s.rol)} />
+          <Topbar onAbrir={() => setAbierto(true)} tema={tema} onTema={alternarTema} casa={casaDe(rol)} />
         )}
         {!conSidebar && !publica && <TemaFlotante tema={tema} onTema={alternarTema} />}
         <main className={conSidebar ? 'mx-auto w-full max-w-6xl px-4 pb-12 pt-5 sm:px-6 lg:px-8 lg:pt-8' : ''}>
@@ -355,9 +323,11 @@ function Shell() {
 export default function App() {
   return (
     <BrowserRouter>
-      <ToastProvider>
-        <Shell />
-      </ToastProvider>
+      <AuthProvider>
+        <ToastProvider>
+          <Shell />
+        </ToastProvider>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

@@ -1,9 +1,18 @@
-// Calificación del perfil: 5 sectores, 20% cada uno.
-// - Experiencias >= 1
-// - Formaciones >= 1
-// - Habilidades/Tecnologías >= 1
-// - Disponibilidad
-// - Datos de contacto (al menos uno: correo/teléfono/dirección/linkedin/github/portafolio_url)
+/**
+ * Calificación del perfil (kpi_perfil):
+ * Mide el nivel de completitud del CV en 5 dimensiones (20% cada una):
+ * - Experiencias >= 1
+ * - Formaciones >= 1
+ * - Habilidades/Tecnologías >= 1
+ * - Disponibilidad declarada
+ * - Datos de contacto (al menos uno: correo/teléfono/dirección/linkedin/github/portafolio_url)
+ *
+ * NOTA DE ARQUITECTURA:
+ * El ordenamiento del ranking principal se realiza por `kpi_conv` (calculado en
+ * `kpiConvocatoria.js` en base a requisitos y `configuracion_kpi`).
+ * Este `kpi_perfil` actúa como indicador de calidad/completitud general y criterio
+ * de desempate en caso de puntuaciones idénticas.
+ */
 const DIAS_ACTUALIDAD = 180;
 
 function esActual(fecha) {
