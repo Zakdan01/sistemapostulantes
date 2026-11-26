@@ -25,6 +25,7 @@ import { ConvocatoriasPublicas } from './pages/ConvocatoriasPublicas';
 import { Empresas } from './pages/Empresas';
 import { Contacto } from './pages/Contacto';
 import { PublicoCorporativo } from './components/PublicoCorporativo';
+import { LogoHeartgold } from './components/LogoHeartgold';
 import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './hooks/useAuth';
 import { ModalCuentaAprobada } from './components/ModalCuentaAprobada';
@@ -125,11 +126,11 @@ function Sidebar({ abierto, onCerrar, tema, onTema, sesionInfo }) {
   return (
     <aside className={`side-panel ${abierto ? 'side-open' : ''}`} aria-label="Menú principal">
       <div className="flex items-center gap-2.5 px-1 py-1">
-        <Link to={casaDe(s.rol, s.estado)} onClick={onCerrar} className="flex min-w-0 items-center gap-2.5" aria-label="Ir al panel">
-          <span className="brand-mark">P</span>
+        <Link to={casaDe(s.rol, s.estado)} onClick={onCerrar} className="flex min-w-0 items-center gap-3" aria-label="Ir al panel">
+          <LogoHeartgold className="h-12 w-12 shrink-0" />
           <span className="min-w-0">
-            <span className="brand-title block truncate">Postulantes</span>
-            <span className="brand-sub block">Selección inteligente</span>
+            <span className="brand-title block text-[15px] font-extrabold truncate">Heartgold Inc.</span>
+            <span className="brand-sub block text-[11px]">Gestión de talento</span>
           </span>
         </Link>
         <button
@@ -161,7 +162,7 @@ function Sidebar({ abierto, onCerrar, tema, onTema, sesionInfo }) {
       </nav>
 
       <div className="side-foot">
-        <div className="flex items-center gap-2 px-2 py-1 text-xs text-slate-500 dark:text-slate-400">
+        <div className="flex items-center gap-2 px-2 py-1 text-xs text-amber-900/60 dark:text-amber-200/60">
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
@@ -172,7 +173,7 @@ function Sidebar({ abierto, onCerrar, tema, onTema, sesionInfo }) {
           <Avatar nombre={s.correo || 'Sin sesión'} tamano="sm" />
           <div className="min-w-0 flex-1">
             <p className="truncate text-xs font-semibold">{s.correo || 'Sin sesión'}</p>
-            <p className="mt-0.5 flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
+            <p className="mt-0.5 flex items-center gap-1.5 text-[11px] text-amber-900/70 dark:text-amber-200/60 font-medium">
               {ROLES[s.rol] || 'Invitado'}
               {s.estado === 'pendiente' ? (
                 <span className="pill pill-amber">pendiente</span>
@@ -209,9 +210,9 @@ function Topbar({ onAbrir, tema, onTema, casa }) {
       >
         <IconoMenu className="h-5 w-5" />
       </button>
-      <Link to={casa} className="flex items-center gap-2 font-bold" aria-label="Ir al panel">
-        <span className="brand-mark h-8 w-8 rounded-lg text-sm">P</span>
-        <span className="text-sm">Postulantes</span>
+      <Link to={casa} className="flex items-center gap-2.5 font-bold" aria-label="Ir al panel">
+        <LogoHeartgold className="h-9 w-9 shrink-0" />
+        <span className="text-sm">Heartgold</span>
       </Link>
       <div className="ml-auto mr-1 flex items-center gap-1.5 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
         <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
@@ -323,7 +324,7 @@ function Shell() {
           <Topbar onAbrir={() => setAbierto(true)} tema={tema} onTema={alternarTema} casa={casaDe(rol, s.estado)} />
         )}
         {!conSidebar && !publica && <TemaFlotante tema={tema} onTema={alternarTema} />}
-        <main className={conSidebar ? 'mx-auto w-full max-w-6xl px-4 pb-12 pt-5 sm:px-6 lg:px-8 lg:pt-8' : ''}>
+        <main className={conSidebar ? 'mx-auto w-full max-w-7xl 2xl:max-w-[1440px] px-4 pb-16 pt-5 sm:px-6 lg:px-10 lg:pt-8' : ''}>
           <Paginas tema={tema} onTema={alternarTema} />
         </main>
       </div>

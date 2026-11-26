@@ -5,7 +5,9 @@ import {
   separarRequisitos,
   cuposCubiertos,
   mensajeConvocatoria,
-  esRutaCorporativa
+  esRutaCorporativa,
+  resumenPublico,
+  tecnologiasPublicas
 } from '../src/lib/corporativo.js';
 
 function luminancia(hex) {
@@ -69,6 +71,32 @@ test('esRutaCorporativa separa las páginas del sitio de los formularios de acce
     assert.equal(esRutaCorporativa(ruta), false, ruta);
   }
   assert.equal(esRutaCorporativa('/convocatorias/3'), true);
+});
+
+test('resumenPublico deriva cifras del catálogo público sin inventar datos', () => {
+  const lista = [
+    { tipo: 'Pasantía', cupos: 3, vacantes: 2, requisitos: ['python', 'react (deseable)'] },
+    { tipo: 'De planta', cupos: 1, vacantes: 1, requisitos: ['python', 'sql'] }
+  ];
+  assert.deepEqual(resumenPublico(lista), {
+    convocatorias: 2,
+    vacantes: 3,
+    tecnologias: 3,
+    modalidades: 2
+  });
+  assert.deepEqual(resumenPublico(null), {
+    convocatorias: 0,
+    vacantes: 0,
+    tecnologias: 0,
+    modalidades: 0
+  });
+});
+
+test('tecnologiasPublicas quita el sufijo deseable, ordena y limita', () => {
+  const lista = [{ requisitos: ['react (deseable)', 'Python', 'SQL', 'Python'] }];
+  assert.deepEqual(tecnologiasPublicas(lista), ['Python', 'react', 'SQL']);
+  assert.deepEqual(tecnologiasPublicas(lista, 2), ['Python', 'react']);
+  assert.deepEqual(tecnologiasPublicas(undefined), []);
 });
 
 test('el texto --muted cumple contraste AA sobre --surface en ambas hojas del marco', () => {

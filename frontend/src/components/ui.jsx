@@ -128,7 +128,7 @@ export function AnilloKPI({ valor = 0, max = 100, tamano = 104, etiqueta, clasif
   const pct = Math.max(0, Math.min(1, numero / (Number(max) || 100)));
   const radio = 42;
   const circunferencia = 2 * Math.PI * radio;
-  const color = clasificacion === 'Alto' ? '#10b981' : clasificacion === 'Medio' ? '#f59e0b' : '#06b6d4';
+  const color = clasificacion === 'Alto' ? '#10b981' : clasificacion === 'Medio' ? '#f59e0b' : '#b45309';
   return (
     <div className="relative shrink-0" style={{ width: tamano, height: tamano }}>
       <svg viewBox="0 0 100 100" width={tamano} height={tamano} className="-rotate-90" aria-hidden="true">
@@ -297,7 +297,7 @@ export function DialogoConfirmar({
 
 export function PageHeader({ titulo, subtitulo, icono: Icono, children }) {
   return (
-    <div className="page-head">
+    <div className="page-head mb-6 sm:mb-8">
       <div className="flex min-w-0 items-start gap-3">
         {Icono ? (
           <span className="hidden h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-brand-500 to-accent-600 text-white shadow-lg shadow-brand-500/25 sm:grid">
@@ -316,7 +316,7 @@ export function PageHeader({ titulo, subtitulo, icono: Icono, children }) {
 
 export function Seccion({ titulo, icono: Icono, extra, children, className = '' }) {
   return (
-    <section className={`card p-5 ${className}`}>
+    <section className={`card p-5 sm:p-6 ${className}`}>
       {titulo || extra ? (
         <div className="mb-3 flex items-center gap-2">
           {Icono ? (

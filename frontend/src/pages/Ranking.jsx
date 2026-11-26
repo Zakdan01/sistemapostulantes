@@ -289,22 +289,22 @@ export function Ranking() {
         </div>
       </section>
 
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="card p-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="card p-5 rounded-2xl">
           <p className="text-2xl font-extrabold tabular-nums">{r.total_patron}</p>
-          <p className="help mt-1">Personas en el padrón</p>
+          <p className="help mt-1 font-medium">Personas en el padrón</p>
         </div>
-        <div className="card p-4">
+        <div className="card p-5 rounded-2xl">
           <p className="text-2xl font-extrabold tabular-nums text-emerald-600 dark:text-emerald-400">{r.total}</p>
-          <p className="help mt-1">Pasan el umbral {r.umbral}</p>
+          <p className="help mt-1 font-medium">Pasan el umbral {r.umbral}</p>
         </div>
-        <div className="card p-4">
+        <div className="card p-5 rounded-2xl">
           <p className="text-2xl font-extrabold tabular-nums text-amber-600 dark:text-amber-400">{r.excluidos.length}</p>
-          <p className="help mt-1">Quedan afuera (con motivo)</p>
+          <p className="help mt-1 font-medium">Quedan afuera (con motivo)</p>
         </div>
-        <div className="card p-4">
+        <div className="card p-5 rounded-2xl">
           <p className="text-2xl font-extrabold tabular-nums text-brand-600 dark:text-brand-300">{disponibles}</p>
-          <p className="help mt-1">Cupos libres</p>
+          <p className="help mt-1 font-medium">Cupos libres</p>
         </div>
       </div>
 

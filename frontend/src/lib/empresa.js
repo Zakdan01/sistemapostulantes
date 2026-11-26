@@ -1,7 +1,7 @@
-// Datos de contacto de la consultora. Unico lugar a editar: la pagina /contacto
-// y los enlaces de Empresas leen de aca.
+// Datos de contacto de Heartgold Inc. Unico lugar a editar: la pagina /contacto
+// y los enlaces de Empresas leen de aca. El correo conserva el dominio historico.
 export const EMPRESA = {
-  nombre: 'Consultora',
+  nombre: 'Heartgold Inc.',
   direccion: 'Av. América #123, piso 4, Cochabamba',
   telefono: '+591 4 123 4567',
   correo: 'contacto@consultora.com',

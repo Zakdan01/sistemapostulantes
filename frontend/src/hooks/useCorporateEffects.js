@@ -37,9 +37,17 @@ export function useCorporateEffects() {
     }
 
     const header = document.querySelector('.site-header');
-    const alScroll = () => header?.classList.toggle('con-scrolled', window.scrollY > 12);
+    const progreso = document.querySelector('.scroll-progress');
+    const alScroll = () => {
+      header?.classList.toggle('con-scrolled', window.scrollY > 12);
+      if (!progreso) return;
+      const total = document.documentElement.scrollHeight - window.innerHeight;
+      const avance = total > 0 ? Math.min(Math.max(window.scrollY / total, 0), 1) : 0;
+      progreso.style.transform = `scaleX(${avance})`;
+    };
     alScroll();
     window.addEventListener('scroll', alScroll, { passive: true });
+    window.addEventListener('resize', alScroll, { passive: true });
 
     const stats = document.querySelector('.hero-stats');
     const conteos = stats ? Array.from(stats.querySelectorAll('[data-conteo]')) : [];
@@ -51,7 +59,8 @@ export function useCorporateEffects() {
         const inicio = performance.now();
         conteos.forEach((n) => {
           const fin = Number(n.dataset.conteo);
-          if (!Number.isFinite(fin)) return;
+          // Mientras carga, el texto es "…" o "—": no lo sobrescribimos con 0.
+          if (!Number.isFinite(fin) || !/^\d+$/.test(String(n.textContent).trim())) return;
           const paso = (ahora) => {
             const t = Math.min((ahora - inicio) / 850, 1);
             n.textContent = String(Math.round(fin * (1 - Math.pow(1 - t, 3))));
@@ -89,6 +98,7 @@ export function useCorporateEffects() {
       frames.forEach(cancelAnimationFrame);
       if (salto !== null) cancelAnimationFrame(salto);
       window.removeEventListener('scroll', alScroll);
+      window.removeEventListener('resize', alScroll);
     };
   }, [pathname, hash]);
 }

@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../lib/api';
+import { resumenPublico, tecnologiasPublicas } from '../lib/corporativo';
 import { EMPRESA } from '../lib/empresa';
 import { Icono } from '../components/IconosCorporativos';
 import { ConvocatoriaCardCorporativa } from '../components/ConvocatoriaCardCorporativa';
@@ -22,10 +23,28 @@ const PASOS = [
   { numero: '04', titulo: 'Acompañamos', texto: 'Seguimos cada etapa hasta la contratación y cerramos la convocatoria al cubrir los cupos.' }
 ];
 
+const CASOS = [
+  { icono: 'briefcase', titulo: 'Una empresa cubre un puesto', texto: 'Registra el perfil, los cupos y los requisitos. La convocatoria queda pendiente hasta que el equipo la revisa y la publica.', pie: 'Del pedido a la publicación, sin correos dispersos.' },
+  { icono: 'users', titulo: 'Un postulante entra en las listas', texto: 'Completa su perfil una sola vez. Al publicarse una convocatoria, el sistema lo incluye donde cumple el umbral y le muestra su posición.', pie: 'Si no cumple, también ve el motivo.' },
+  { icono: 'chart', titulo: 'Un reclutador decide con trazabilidad', texto: 'Toma candidatos, registra contactos y mueve el pipeline con transiciones controladas. Al cubrir el último cupo, la convocatoria se cierra sola.', pie: 'Cada movimiento queda en la bitácora.' }
+];
+
+const PREGUNTAS = [
+  { pregunta: '¿Tengo que postularme a cada convocatoria?', respuesta: 'No. El postulante completa su perfil una sola vez y el sistema arma la lista de candidatos disponibles cuando se publica una convocatoria.' },
+  { pregunta: '¿Cómo sé si cumplo el umbral de una convocatoria?', respuesta: 'En “Mis convocatorias” podés ver tu posición y el KPI de la convocatoria. Si no superás el umbral, la propia pantalla indica el motivo de exclusión.' },
+  { pregunta: '¿Cuándo se cierra una convocatoria?', respuesta: 'Automáticamente cuando se cubre el último cupo. También puede cerrarla el equipo administrativo; una vez cerrada o rechazada, deja de aceptar cambios.' },
+  { pregunta: '¿Puedo enviar una convocatoria sin crear una cuenta?', respuesta: 'Sí. Usá el formulario de contacto: preparamos el correo con los datos del puesto y nuestro equipo lo registra en la plataforma tras revisarlo.' },
+  { pregunta: '¿Qué significa que mi cuenta esté pendiente?', respuesta: 'Que todavía no fue aprobada. Podés ingresar y completar tu perfil, pero recién entra en el padrón de candidatos cuando el equipo la aprueba.' },
+  { pregunta: '¿Los datos son visibles para cualquier visitante?', respuesta: 'No. El catálogo público muestra solo convocatorias abiertas, con puesto, tipo, cupos y requisitos. Los perfiles y las listas internas requieren una cuenta con permisos.' }
+];
+
 export function Inicio() {
   const [lista, setLista] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [err, setErr] = useState('');
+  const resumen = useMemo(() => resumenPublico(lista), [lista]);
+  const tecnologias = useMemo(() => tecnologiasPublicas(lista), [lista]);
+  const cifra = (valor) => (cargando ? '…' : err ? '—' : valor);
 
   useEffect(() => {
     let vivo = true;
@@ -46,7 +65,7 @@ export function Inicio() {
             <span className="eyebrow"><Icono nombre="spark" /> Selección con criterios claros</span>
             <h1>Conectamos talento con <span className="grad-text">oportunidades reales</span>.</h1>
             <p className="lead">
-              En <strong>nuestra consultora</strong> recibimos y registramos convocatorias y postulantes.
+              En <strong>Heartgold Inc.</strong> recibimos y registramos convocatorias y postulantes.
               Organizamos cada proceso en una sola plataforma: requisitos, perfiles, umbrales y seguimiento,
               sin hojas de cálculo ni correos perdidos.
             </p>
@@ -54,10 +73,10 @@ export function Inicio() {
               <Link className="btn btn-primary" to="/convocatorias">Ver convocatorias <Icono nombre="arrow" /></Link>
               <Link className="btn btn-secondary" to="/contacto">Enviar una convocatoria</Link>
             </div>
-            <div className="hero-stats" aria-label="Cifras de la operación">
-              <div className="mini-stat"><b data-conteo="15">15</b><span>Convocatorias registradas</span></div>
-              <div className="mini-stat"><b data-conteo="50">50</b><span>Candidatos activos</span></div>
-              <div className="mini-stat"><b data-conteo="3">3</b><span>Perfiles de acceso</span></div>
+            <div className="hero-stats" aria-label="Cifras en vivo del catálogo público">
+              <div className="mini-stat"><b data-conteo={resumen.convocatorias}>{cifra(resumen.convocatorias)}</b><span>Convocatorias abiertas</span></div>
+              <div className="mini-stat"><b data-conteo={resumen.vacantes}>{cifra(resumen.vacantes)}</b><span>Vacantes disponibles</span></div>
+              <div className="mini-stat"><b data-conteo={resumen.tecnologias}>{cifra(resumen.tecnologias)}</b><span>Tecnologías solicitadas</span></div>
             </div>
           </div>
 
@@ -109,6 +128,18 @@ export function Inicio() {
         </div>
       </section>
 
+      {tecnologias.length > 0 ? (
+        <div className="tech-marquee" aria-label="Tecnologías solicitadas en las convocatorias abiertas">
+          <div className="tech-track">
+            {[0, 1].map((copia) => (
+              <div className="tech-grupo" key={copia} aria-hidden={copia === 1 ? 'true' : undefined}>
+                {tecnologias.map((t) => <span key={`${copia}-${t}`}>{t}</span>)}
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
       <section className="section section-alt" id="proceso">
         <div className="container">
           <div className="section-head reveal">
@@ -124,6 +155,47 @@ export function Inicio() {
               </li>
             ))}
           </ol>
+        </div>
+      </section>
+
+      <section className="panorama" id="enfoque" aria-label="Nuestra mirada">
+        <div className="panorama-fondo" aria-hidden="true" />
+        <div className="container panorama-inner reveal">
+          <span className="eyebrow"><Icono nombre="spark" /> Nuestra mirada</span>
+          <h2>Las personas primero. <span className="grad-text">Los criterios, después.</span></h2>
+          <p>
+            Detrás de cada convocatoria hay una persona esperando una respuesta. Por eso combinamos
+            reglas claras, trazabilidad y un trato cercano en cada etapa del proceso.
+          </p>
+          <Link className="btn btn-primary" to="/contacto">Hablemos de tu búsqueda <Icono nombre="arrow" /></Link>
+        </div>
+      </section>
+
+      <section className="section" id="casos">
+        <div className="container casos-grid">
+          <div className="caso-imagen reveal" aria-hidden="true">
+            <img src="/images/panorama-bosque.jpg" alt="" loading="lazy" />
+            <span className="caso-imagen-pie">Procesos con criterios claros, de principio a fin</span>
+          </div>
+          <div className="casos-copy">
+            <div className="section-head reveal">
+              <span className="eyebrow eyebrow-soft">Casos de uso</span>
+              <h2>Una plataforma, tres formas de usarla</h2>
+              <p>Situaciones reales del día a día que la herramienta resuelve sin hojas de cálculo ni correos perdidos.</p>
+            </div>
+            <div className="casos-lista">
+              {CASOS.map((c) => (
+                <article className="caso reveal" key={c.titulo}>
+                  <span className="card-icon icon-emerald"><Icono nombre={c.icono} /></span>
+                  <div>
+                    <h3>{c.titulo}</h3>
+                    <p>{c.texto}</p>
+                    <span className="card-foot">{c.pie}</span>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
@@ -224,6 +296,29 @@ export function Inicio() {
               </ul>
               <Link className="btn btn-accent" to="/registro">Registrarme <Icono nombre="arrow" /></Link>
             </article>
+          </div>
+        </div>
+      </section>
+
+      <section className="section section-alt" id="faq">
+        <div className="container faq-grid">
+          <div className="section-head reveal">
+            <span className="eyebrow eyebrow-soft">Preguntas frecuentes</span>
+            <h2>Lo que más nos preguntan</h2>
+            <p>Respuestas directas sobre el registro, los umbrales y el cierre de las convocatorias.</p>
+            <Link className="btn btn-ghost btn-sm" to="/contacto">¿Te quedó alguna duda? <Icono nombre="arrow" /></Link>
+          </div>
+          <div className="faq reveal">
+            {PREGUNTAS.map((p, i) => (
+              <details className="faq-item" name="faq" key={p.pregunta}>
+                <summary>
+                  <span className="faq-num">{String(i + 1).padStart(2, '0')}</span>
+                  <span>{p.pregunta}</span>
+                  <Icono nombre="arrow" className="ico faq-ico" />
+                </summary>
+                <p>{p.respuesta}</p>
+              </details>
+            ))}
           </div>
         </div>
       </section>

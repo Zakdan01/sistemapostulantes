@@ -5,6 +5,7 @@ import { Link, Outlet, useLocation } from 'react-router-dom';
 import { sesion, salir } from '../lib/api';
 import { esRutaCorporativa } from '../lib/corporativo';
 import { Icono, SpriteCorporativo } from './IconosCorporativos';
+import { LogoHeartgold } from './LogoHeartgold';
 import { useCorporateEffects } from '../hooks/useCorporateEffects';
 
 const ID_MARCO = 'css-marco';
@@ -73,13 +74,14 @@ export function PublicoCorporativo({ tema, onTema }) {
     <>
       <SpriteCorporativo />
       <a className="skip-link" href="#main">Saltar al contenido principal</a>
+      <div className="scroll-progress" aria-hidden="true" />
 
       <header className="site-header" id="siteHeader">
         <div className="container nav-wrap">
-          <Link className="brand" to="/" onClick={cerrarMenu} aria-label="Consultora de Convocatorias, inicio">
-            <span className="brand-mark">CC</span>
+          <Link className="brand" to="/" onClick={cerrarMenu} aria-label="Heartgold Inc., inicio">
+            <LogoHeartgold className="h-12 w-12 shrink-0" />
             <span className="brand-copy">
-              <strong>Consultora de Convocatorias</strong>
+              <strong>Heartgold Inc.</strong>
               <small>Registro y selección de talento</small>
             </span>
           </Link>
@@ -139,10 +141,10 @@ export function PublicoCorporativo({ tema, onTema }) {
       <footer className="site-footer">
         <div className="container footer-grid">
           <div>
-            <Link className="brand brand-footer" to="/" aria-label="Consultora de Convocatorias, inicio">
-              <span className="brand-mark">CC</span>
+            <Link className="brand brand-footer" to="/" aria-label="Heartgold Inc., inicio">
+              <LogoHeartgold className="h-12 w-12 shrink-0" />
               <span className="brand-copy">
-                <strong>Consultora de Convocatorias</strong>
+                <strong>Heartgold Inc.</strong>
                 <small>Registro y selección de talento</small>
               </span>
             </Link>
@@ -152,7 +154,9 @@ export function PublicoCorporativo({ tema, onTema }) {
             <h4>Navegación</h4>
             <Link to="/#servicios">Servicios</Link>
             <Link to="/#proceso">Cómo trabajamos</Link>
+            <Link to="/#casos">Casos de uso</Link>
             <Link to="/convocatorias">Convocatorias</Link>
+            <Link to="/#faq">Preguntas frecuentes</Link>
             <Link to="/#plataforma">Plataforma</Link>
           </div>
           <div>
@@ -170,8 +174,8 @@ export function PublicoCorporativo({ tema, onTema }) {
           </div>
         </div>
         <div className="container footer-bottom">
-          <span>© {ANIO} Consultora de Convocatorias. Todos los derechos reservados.</span>
-          <span>Hecho para conectar talento y oportunidades.</span>
+          <span>© {ANIO} Heartgold Inc. Todos los derechos reservados.</span>
+          <span>Hecho para conectar talento y oportunidades. Fotos de paisaje: Unsplash.</span>
         </div>
       </footer>
     </>

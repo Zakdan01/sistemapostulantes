@@ -91,7 +91,7 @@ export function Buscar() {
         </Pill>
       </PageHeader>
 
-      <section className="card p-5">
+      <section className="card p-6 rounded-2xl">
         <div className="mb-4 flex flex-wrap items-center gap-2">
           <span className="grid h-9 w-9 place-items-center rounded-xl bg-brand-50 text-brand-700 dark:bg-brand-950/60 dark:text-brand-300">
             <IconoFiltro className="h-4 w-4" />

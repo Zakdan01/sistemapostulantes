@@ -476,8 +476,8 @@ export function Convocatorias() {
       </div>
 
       {cargandoLista ? (
-        <div className="grid gap-3 md:grid-cols-2">
-          {[0, 1, 2, 3].map((i) => <div key={i} className="skeleton h-52" />)}
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {[0, 1, 2, 3, 4, 5].map((i) => <div key={i} className="skeleton h-56 rounded-2xl" />)}
         </div>
       ) : visibles.length === 0 ? (
         <EmptyState
@@ -489,9 +489,9 @@ export function Convocatorias() {
           <Boton variante="primary" icono={IconoMas} onClick={() => setMostrarForm(true)}>Nueva convocatoria</Boton>
         </EmptyState>
       ) : (
-        <div className="grid gap-3 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {visibles.map((v) => (
-            <article key={v.id} className="card card-hover flex flex-col gap-3 p-4">
+            <article key={v.id} className="card card-hover flex flex-col justify-between gap-3.5 p-5 rounded-2xl">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">

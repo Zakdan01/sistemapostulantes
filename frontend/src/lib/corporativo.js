@@ -21,6 +21,42 @@ export function cuposCubiertos({ cupos, vacantes }) {
   return Math.max((Number(cupos) || 0) - (Number(vacantes) || 0), 0);
 }
 
+// El catálogo público no expone conteos internos, así que las cifras se derivan
+// de lo que el propio endpoint publica. Nunca se inventan datos de padrón.
+export function resumenPublico(convocatorias = []) {
+  const lista = Array.isArray(convocatorias) ? convocatorias : [];
+  const nombres = new Set();
+  lista.forEach((c) => {
+    const requisitos = c && Array.isArray(c.requisitos) ? c.requisitos : [];
+    requisitos.forEach((r) => {
+      const nombre = String(r).replace(SUFIJO_DESEABLE, '').trim();
+      if (nombre) nombres.add(nombre);
+    });
+  });
+  return {
+    convocatorias: lista.length,
+    vacantes: lista.reduce((total, c) => {
+      const valor = Number(c?.vacantes ?? c?.cupos) || 0;
+      return total + Math.max(valor, 0);
+    }, 0),
+    tecnologias: nombres.size,
+    modalidades: new Set(lista.map((c) => c?.tipo).filter(Boolean)).size
+  };
+}
+
+export function tecnologiasPublicas(convocatorias = [], limite = 18) {
+  const lista = Array.isArray(convocatorias) ? convocatorias : [];
+  const nombres = new Set();
+  lista.forEach((c) => {
+    const requisitos = c && Array.isArray(c.requisitos) ? c.requisitos : [];
+    requisitos.forEach((r) => {
+      const nombre = String(r).replace(SUFIJO_DESEABLE, '').trim();
+      if (nombre) nombres.add(nombre);
+    });
+  });
+  return Array.from(nombres).sort((a, b) => a.localeCompare(b, 'es')).slice(0, limite);
+}
+
 export function mensajeConvocatoria(datos, correo) {
   const valor = (clave) => String(datos[clave] || '').trim();
   const nombre = valor('nombre');
@@ -31,7 +67,7 @@ export function mensajeConvocatoria(datos, correo) {
   const detalle = valor('detalle');
 
   const cuerpo = [
-    'Hola equipo de la consultora:',
+    'Hola equipo de Heartgold Inc.:',
     '',
     'Quisiera registrar la siguiente convocatoria:',
     '',

@@ -111,8 +111,8 @@ export function Detalle() {
         {d.disponibilidad ? <Pill tono="cyan" punto>{capitalizar(d.disponibilidad)}</Pill> : null}
       </PageHeader>
 
-      <section className="card card-accent overflow-hidden">
-        <div className="flex flex-col gap-5 p-5 sm:flex-row sm:items-center">
+      <section className="card card-accent overflow-hidden rounded-2xl">
+        <div className="flex flex-col gap-6 p-6 sm:flex-row sm:items-center">
           <Avatar nombre={nombre} tamano="xl" />
           <div className="min-w-0 flex-1">
             <p className="text-lg font-extrabold tracking-tight">{nombre}</p>

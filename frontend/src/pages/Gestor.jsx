@@ -185,34 +185,40 @@ export function Gestor() {
   }
 
   // ---------------- Vista del staff (admin / reclutador) ----------------
-  const tarjetas = resumen ? [
-    { etiqueta: 'Convocatorias abiertas', valor: resumen.abiertas, icono: IconoMaletin, tono: 'cyan' },
-    { etiqueta: 'Candidatos en lista', valor: resumen.candidatos?.total, icono: IconoUsuarios, tono: 'violet' },
-    { etiqueta: 'Preseleccionados', valor: resumen.preseleccionados, icono: IconoObjetivo, tono: 'emerald' },
-    { etiqueta: 'Contratados', valor: resumen.contratados, icono: IconoTrofeo, tono: 'amber' },
+  const kpisPrincipales = resumen ? [
+    { etiqueta: 'Convocatorias abiertas', valor: resumen.abiertas, icono: IconoMaletin, tono: 'amber', hint: 'Procesos activos' },
+    { etiqueta: 'Candidatos en lista', valor: resumen.candidatos?.total, icono: IconoUsuarios, tono: 'amber', hint: 'Pasan el umbral' },
+    { etiqueta: 'Preseleccionados', valor: resumen.preseleccionados, icono: IconoObjetivo, tono: 'emerald', hint: 'En etapa avanzada' },
+    { etiqueta: 'Contratados', valor: resumen.contratados, icono: IconoTrofeo, tono: 'amber', hint: 'Cupos cubiertos' }
+  ] : [];
+
+  const kpisSecundarios = resumen ? [
     { etiqueta: 'Tomados', valor: resumen.pendientes, icono: IconoReloj, tono: 'slate' },
     { etiqueta: 'Contactados', valor: resumen.consultas, icono: IconoUsuario, tono: 'amber' },
-    { etiqueta: 'Cerradas', valor: resumen.cerradas, icono: IconoMaletin, tono: 'slate' },
-    { etiqueta: 'Postulantes', valor: resumen.postulantes, icono: IconoUsuarios, tono: 'cyan' },
-    { etiqueta: 'Convocatorias por aprobar', valor: resumen.pendientes_aprobacion ?? porAprobar.length, icono: IconoAlerta, tono: 'rose' },
     { etiqueta: 'Descartados', valor: resumen.descartados, icono: IconoX, tono: 'rose' },
-    { etiqueta: 'Cuentas en línea', valor: conectados, icono: IconoSenal, tono: 'emerald' }
+    { etiqueta: 'Cerradas', valor: resumen.cerradas, icono: IconoMaletin, tono: 'slate' },
+    { etiqueta: 'Postulantes', valor: resumen.postulantes, icono: IconoUsuarios, tono: 'amber' },
+    { etiqueta: 'Por aprobar', valor: resumen.pendientes_aprobacion ?? porAprobar.length, icono: IconoAlerta, tono: 'rose' },
+    { etiqueta: 'En línea', valor: conectados, icono: IconoSenal, tono: 'emerald' }
   ] : [];
 
   if (!resumen && !err) {
     return (
-      <div className="space-y-5">
+      <div className="space-y-6">
         <div className="space-y-2"><div className="skeleton h-8 w-72" /><div className="skeleton h-4 w-96 max-w-full" /></div>
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-          {Array.from({ length: 10 }).map((_, i) => <div key={i} className="skeleton h-28" />)}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => <div key={i} className="skeleton h-32 rounded-2xl" />)}
         </div>
-        <div className="skeleton h-48" />
+        <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
+          {Array.from({ length: 7 }).map((_, i) => <div key={i} className="skeleton h-24 rounded-xl" />)}
+        </div>
+        <div className="skeleton h-48 rounded-2xl" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <PageHeader
         titulo={rol === 'reclutador' ? 'Mi panel de reclutamiento' : 'Panel de administración'}
         subtitulo="Resumen de convocatorias, cuentas y candidatos del sistema."
@@ -227,9 +233,17 @@ export function Gestor() {
       {err ? <Aviso tono="error" titulo="No se pudo cargar el panel">{err}</Aviso> : null}
       {errorAccion ? <Aviso tono="error">{errorAccion}</Aviso> : null}
 
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-        {tarjetas.map((t) => (
-          <StatCard key={t.etiqueta} valor={t.valor} etiqueta={t.etiqueta} icono={t.icono} tono={t.tono} />
+      {/* KPIs Destacados */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {kpisPrincipales.map((t) => (
+          <StatCard key={t.etiqueta} valor={t.valor} etiqueta={t.etiqueta} icono={t.icono} tono={t.tono} hint={t.hint} className="p-5" />
+        ))}
+      </div>
+
+      {/* Métricas Operativas */}
+      <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
+        {kpisSecundarios.map((t) => (
+          <StatCard key={t.etiqueta} valor={t.valor} etiqueta={t.etiqueta} icono={t.icono} tono={t.tono} className="p-3.5" />
         ))}
       </div>
 
