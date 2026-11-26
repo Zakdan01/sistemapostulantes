@@ -5,7 +5,7 @@
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
-    "test": "node --test tests/api.test.js tests/convocatorias.test.js tests/cuentas.test.js tests/scopes.test.js tests/kpiConv.test.js"
+    "test": "node --test tests/api.test.js tests/convocatorias.test.js tests/cuentas.test.js tests/scopes.test.js tests/kpiConv.test.js tests/inscripciones.test.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

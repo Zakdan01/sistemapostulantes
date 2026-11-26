@@ -1,6 +1,6 @@
 -- =========================================================================
 -- esquema_final.sql — Sistema Postulantes v2 (ESQUEMA FINAL, creación de cero)
--- Base: sistemapostulantes. 17 tablas + 1 vista.
+-- Base: sistemapostulantes. 18 tablas + 1 vista.
 --
 -- Ejecutar UNA sola vez sobre una base nueva:
 --   CREATE DATABASE sistemapostulantes;
@@ -18,6 +18,7 @@ BEGIN;
 
 -- ===== LIMPIEZA (la base se recrea de cero) =====
 DROP VIEW IF EXISTS v_perfil_completo CASCADE;
+DROP TABLE IF EXISTS inscripciones_postulante CASCADE;
 DROP TABLE IF EXISTS candidatos_convocatoria CASCADE;
 DROP TABLE IF EXISTS convocatorias_requisitos CASCADE;
 DROP TABLE IF EXISTS convocatorias CASCADE;
@@ -200,6 +201,24 @@ CREATE TABLE convocatorias_requisitos (
 );
 COMMENT ON COLUMN convocatorias_requisitos.nivel_minimo IS 'NULL = sin minimo. Si se omite al crear, se guarda basico';
 CREATE INDEX idx_requisitos_tecnologia ON convocatorias_requisitos (tecnologia_id);
+
+-- ===== INSCRIPCIONES DEL POSTULANTE =====
+-- Registra la decisión del postulante: si quiere participar (aceptado=true)
+-- o si rechazó (aceptado=false). Sin fila = aún no decidió.
+-- La fila la crea/actualiza SOLO el postulante desde /mis-convocatorias.
+-- El staff la CONSULTA en el ranking pero no la modifica.
+CREATE TABLE inscripciones_postulante (
+    persona_id      INT NOT NULL REFERENCES personas(id) ON DELETE CASCADE,
+    convocatoria_id INT NOT NULL REFERENCES convocatorias(id) ON DELETE CASCADE,
+    aceptado        BOOLEAN NOT NULL DEFAULT true,
+    fecha           TIMESTAMPTZ NOT NULL DEFAULT now(),
+    PRIMARY KEY (persona_id, convocatoria_id)
+);
+COMMENT ON TABLE inscripciones_postulante
+  IS 'Voluntad del postulante: aceptado=true quiere participar, false rechazó. Sin fila=pendiente de decisión';
+COMMENT ON COLUMN inscripciones_postulante.aceptado
+  IS 'true=inscrito (staff puede tomarlo), false=no interesado (staff lo ve pero no puede tomarlo)';
+CREATE INDEX idx_inscripciones_convocatoria ON inscripciones_postulante (convocatoria_id);
 
 -- ===== PIPELINE DE CANDIDATOS =====
 -- La fila la crea el staff al TOMAR a alguien de la lista viva. Los snapshots

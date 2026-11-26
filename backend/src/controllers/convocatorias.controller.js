@@ -2,6 +2,8 @@
 // services/convocatorias.service.js, services/pipeline.js y models/convocatoria.model.js.
 const Convocatoria = require('../models/convocatoria.model');
 const Persona = require('../models/persona.model');
+const Inscripcion = require('../models/inscripcion.model');
+const Candidatos = require('../services/candidatos');
 const Convocatorias = require('../services/convocatorias.service');
 const Pipeline = require('../services/pipeline');
 const Realtime = require('../services/eventosRealtime');
@@ -258,6 +260,45 @@ async function misConvocatorias(req, res) {
   res.json(await Convocatorias.misConvocatorias(personaId, esStaff));
 }
 
+// Postulante: acepta (true) o rechaza (false) participar en una convocatoria abierta donde califica.
+async function inscribirse(req, res) {
+  const convId = Number(req.params.id);
+  const { aceptado } = req.body || {};
+  if (typeof aceptado !== 'boolean') {
+    throw HttpError.badRequest('aceptado debe ser true o false');
+  }
+
+  const persona = await Persona.porUsuario(req.usuario.id);
+  if (!persona) throw HttpError.notFound('Perfil no encontrado');
+
+  const conv = await Convocatoria.detalle(convId);
+  if (!conv) throw HttpError.notFound('Convocatoria no encontrada');
+  if (conv.estado !== 'abierta') {
+    throw HttpError.conflict('La convocatoria no está abierta');
+  }
+
+  if (aceptado) {
+    const lista = await Candidatos.listaParaPostulante(persona.id);
+    const item = lista.find((c) => c.id === convId);
+    if (!item || !item.califica) {
+      throw HttpError.conflict(item?.motivo_exclusion || 'No calificás para esta convocatoria');
+    }
+  } else {
+    const enPipeline = await Convocatoria.buscarCandidato(convId, persona.id);
+    if (enPipeline) {
+      throw HttpError.conflict('Ya fuiste tomado por el staff: no podés retirarte');
+    }
+  }
+
+  const fila = await Inscripcion.upsert(persona.id, convId, aceptado);
+  Realtime.emitirEvento({
+    tipo: aceptado ? 'CANDIDATO_INSCRITO' : 'CANDIDATO_RETIRADO',
+    datos: { persona_id: persona.id, convocatoria_id: convId, aceptado },
+    destinatario: 'staff'
+  });
+  res.json(fila);
+}
+
 async function resumen(req, res) {
   const duenioId = req.usuario.rol === 'reclutador' ? req.usuario.id : undefined;
   res.json(await Convocatorias.resumen(duenioId));
@@ -283,5 +324,5 @@ async function cola(req, res) {
 
 module.exports = {
   crear, listar, publicas, detalle, cerrar, eliminar, aprobar, rechazar, ranking,
-  actualizar, umbral, cupos, estadoCandidato, misConvocatorias, resumen, cola
+  actualizar, umbral, cupos, estadoCandidato, misConvocatorias, inscribirse, resumen, cola
 };

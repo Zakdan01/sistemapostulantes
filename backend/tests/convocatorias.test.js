@@ -41,6 +41,14 @@ async function crearYPublicar(body, token = admin) {
   return r.body.id;
 }
 
+async function inscribir(convId, correo) {
+  const tok = await login(correo);
+  const r = await api(`/api/mis-convocatorias/${convId}/inscripcion`, {
+    method: 'POST', headers: auth(tok), body: JSON.stringify({ aceptado: true })
+  });
+  assert.equal(r.status, 200, `inscribir ${correo}: ${JSON.stringify(r.body)}`);
+}
+
 before(async () => {
   admin = await login('admin@consultora.com');
   rec1 = await login('reclutador1@consultora.com');
@@ -321,8 +329,9 @@ test('PATCH umbral invalido 400 y de convocatoria ajena 403', async () => {
 
 test('el staff toma un candidato de la lista y se congelan los snapshots', async () => {
   const r0 = await api(`/api/convocatorias/${convocatoriaId}/ranking`, { headers: auth(admin) });
-  const primero = r0.body.resultados[0];
+  const primero = r0.body.resultados.find((p) => /^postulante\d+@test\.com$/.test(p.correo)) || r0.body.resultados[0];
   assert.ok(primero, 'hay candidatos en la lista viva');
+  await inscribir(convocatoriaId, primero.correo);
 
   const r = await api(`/api/convocatorias/${convocatoriaId}/candidatos/${primero.persona_id}/estado`, {
     method: 'PATCH', headers: auth(admin), body: JSON.stringify({ estado: 'postulado' })
@@ -382,8 +391,9 @@ test('las transiciones validas recorren el pipeline completo', async () => {
 
 test('de descartado se puede volver a consulta', async () => {
   const r0 = await api(`/api/convocatorias/${convocatoriaId}/ranking`, { headers: auth(admin) });
-  const libre = r0.body.resultados.find((p) => !p.estado_candidato);
+  const libre = r0.body.resultados.find((p) => !p.estado_candidato && /^postulante\d+@test\.com$/.test(p.correo));
   assert.ok(libre, 'hay candidatos sin tomar');
+  await inscribir(convocatoriaId, libre.correo);
   const pid = libre.persona_id;
   const ir = async (estado, esperado) => {
     const r = await api(`/api/convocatorias/${convocatoriaId}/candidatos/${pid}/estado`, {
@@ -435,8 +445,11 @@ test('cupos: validacion, permisos y campos derivados en el listado', async () =>
 test('contratar el ultimo cupo cierra la convocatoria y bloquea el pipeline', async () => {
   const id = await crearYPublicar({ titulo: `Conv Cierre ${Date.now()}`, kpi_minimo: 0, cupos: 1 });
   const r0 = await api(`/api/convocatorias/${id}/ranking`, { headers: auth(admin) });
-  assert.ok(r0.body.resultados.length >= 2, 'hay al menos dos candidatos para tomar');
-  const [uno, dos] = r0.body.resultados;
+  const conCuenta = r0.body.resultados.filter((p) => /^postulante\d+@test\.com$/.test(p.correo));
+  assert.ok(conCuenta.length >= 2, 'hay al menos dos candidatos para tomar');
+  const [uno, dos] = conCuenta;
+  await inscribir(id, uno.correo);
+  await inscribir(id, dos.correo);
 
   const mover = (pid, estado) => api(`/api/convocatorias/${id}/candidatos/${pid}/estado`, {
     method: 'PATCH', headers: auth(admin), body: JSON.stringify({ estado })
@@ -474,7 +487,9 @@ test('contratar el ultimo cupo cierra la convocatoria y bloquea el pipeline', as
 test('bajar los cupos por debajo de los contratados cierra la convocatoria', async () => {
   const id = await crearYPublicar({ titulo: `Conv Bajar Cupos ${Date.now()}`, kpi_minimo: 0, cupos: 3 });
   const r0 = await api(`/api/convocatorias/${id}/ranking`, { headers: auth(admin) });
-  const p = r0.body.resultados[0];
+  const p = r0.body.resultados.find((c) => /^postulante\d+@test\.com$/.test(c.correo));
+  assert.ok(p, 'hay candidato con cuenta');
+  await inscribir(id, p.correo);
   const mover = (estado) => api(`/api/convocatorias/${id}/candidatos/${p.persona_id}/estado`, {
     method: 'PATCH', headers: auth(admin), body: JSON.stringify({ estado })
   });
@@ -662,6 +677,7 @@ test('contratado sale del padron hasta que cambia su disponibilidad', async () =
   const r0 = await api(`/api/convocatorias/${id}/ranking`, { headers: auth(admin) });
   const quien = r0.body.resultados.find((p) => /^postulante\d+@test\.com$/.test(p.correo));
   assert.ok(quien, 'hay un postulante del seed en la lista');
+  await inscribir(id, quien.correo);
 
   const contrato = await api(`/api/convocatorias/${id}/candidatos/${quien.persona_id}/estado`, {
     method: 'PATCH', headers: auth(admin), body: JSON.stringify({ estado: 'contratado' })

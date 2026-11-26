@@ -10,6 +10,7 @@
 --   56 personas: 54 con cuenta de postulante (1 pendiente y 1 rechazada sin perfil)
 --     + 2 cargadas por el staff sin cuenta
 --   39 filas de pipeline con los 5 estados
+--   42 inscripciones (39 aceptadas + 3 rechazos demo)
 --   111 eventos, 104 experiencias, 87 formaciones y 203 habilidades
 --
 -- El postulante NO se postula: el sistema arma la lista de candidatos solo, segun
@@ -22,7 +23,8 @@ SET client_encoding = 'UTF8';
 BEGIN;
 
 -- ===== LIMPIEZA (permite recargar el seed sin duplicar filas) =====
-TRUNCATE TABLE candidatos_convocatoria, convocatorias_requisitos, convocatorias,
+TRUNCATE TABLE candidatos_convocatoria, inscripciones_postulante,
+  convocatorias_requisitos, convocatorias,
   habilidades_postulante, tecnologias, formaciones_academicas, experiencias_laborales,
   eventos_postulacion, personas, usuarios, configuracion_kpi, catalogo_instituciones,
   catalogo_nivel_formacion, catalogo_tipo_trabajo, catalogo_nivel_tecnologia,
@@ -791,6 +793,65 @@ INSERT INTO convocatorias_requisitos (convocatoria_id, tecnologia_id, obligatori
   ((SELECT id FROM convocatorias WHERE titulo='Marketing Digital'),(SELECT id FROM tecnologias WHERE nombre='css'),false,(SELECT id FROM catalogo_nivel_tecnologia WHERE nombre='basico')),
   ((SELECT id FROM convocatorias WHERE titulo='Atención al Cliente'),(SELECT id FROM tecnologias WHERE nombre='git'),false,(SELECT id FROM catalogo_nivel_tecnologia WHERE nombre='basico')),
   ((SELECT id FROM convocatorias WHERE titulo='Atención al Cliente'),(SELECT id FROM tecnologias WHERE nombre='html'),false,(SELECT id FROM catalogo_nivel_tecnologia WHERE nombre='basico'));
+
+-- ===== INSCRIPCIONES DEL POSTULANTE =====
+-- Los 39 candidatos del pipeline aceptaron (el staff ya los tomó).
+-- 3 rechazos demo: postulantes que califican pero no quieren participar.
+INSERT INTO inscripciones_postulante (persona_id, convocatoria_id, aceptado) VALUES
+  -- Desarrollador Junior (6 aceptados)
+  ((SELECT id FROM personas WHERE correo='postulante01@test.com'),(SELECT id FROM convocatorias WHERE titulo='Desarrollador Junior'),true),
+  ((SELECT id FROM personas WHERE correo='postulante15@test.com'),(SELECT id FROM convocatorias WHERE titulo='Desarrollador Junior'),true),
+  ((SELECT id FROM personas WHERE correo='postulante07@test.com'),(SELECT id FROM convocatorias WHERE titulo='Desarrollador Junior'),true),
+  ((SELECT id FROM personas WHERE correo='postulante36@test.com'),(SELECT id FROM convocatorias WHERE titulo='Desarrollador Junior'),true),
+  ((SELECT id FROM personas WHERE correo='postulante48@test.com'),(SELECT id FROM convocatorias WHERE titulo='Desarrollador Junior'),true),
+  ((SELECT id FROM personas WHERE correo='postulante53@test.com'),(SELECT id FROM convocatorias WHERE titulo='Desarrollador Junior'),true),
+  -- Desarrollador Semi-senior (6 aceptados)
+  ((SELECT id FROM personas WHERE correo='postulante18@test.com'),(SELECT id FROM convocatorias WHERE titulo='Desarrollador Semi-senior'),true),
+  ((SELECT id FROM personas WHERE correo='postulante20@test.com'),(SELECT id FROM convocatorias WHERE titulo='Desarrollador Semi-senior'),true),
+  ((SELECT id FROM personas WHERE correo='postulante19@test.com'),(SELECT id FROM convocatorias WHERE titulo='Desarrollador Semi-senior'),true),
+  ((SELECT id FROM personas WHERE correo='postulante41@test.com'),(SELECT id FROM convocatorias WHERE titulo='Desarrollador Semi-senior'),true),
+  ((SELECT id FROM personas WHERE correo='postulante42@test.com'),(SELECT id FROM convocatorias WHERE titulo='Desarrollador Semi-senior'),true),
+  ((SELECT id FROM personas WHERE correo='postulante54@test.com'),(SELECT id FROM convocatorias WHERE titulo='Desarrollador Semi-senior'),true),
+  -- Analista de Datos (6 aceptados)
+  ((SELECT id FROM personas WHERE correo='postulante06@test.com'),(SELECT id FROM convocatorias WHERE titulo='Analista de Datos'),true),
+  ((SELECT id FROM personas WHERE correo='postulante17@test.com'),(SELECT id FROM convocatorias WHERE titulo='Analista de Datos'),true),
+  ((SELECT id FROM personas WHERE correo='postulante30@test.com'),(SELECT id FROM convocatorias WHERE titulo='Analista de Datos'),true),
+  ((SELECT id FROM personas WHERE correo='postulante31@test.com'),(SELECT id FROM convocatorias WHERE titulo='Analista de Datos'),true),
+  ((SELECT id FROM personas WHERE correo='postulante50@test.com'),(SELECT id FROM convocatorias WHERE titulo='Analista de Datos'),true),
+  ((SELECT id FROM personas WHERE correo='postulante52@test.com'),(SELECT id FROM convocatorias WHERE titulo='Analista de Datos'),true),
+  -- Soporte Técnico N2 (2 aceptados)
+  ((SELECT id FROM personas WHERE correo='postulante22@test.com'),(SELECT id FROM convocatorias WHERE titulo='Soporte Técnico N2'),true),
+  ((SELECT id FROM personas WHERE correo='postulante38@test.com'),(SELECT id FROM convocatorias WHERE titulo='Soporte Técnico N2'),true),
+  -- QA Manual (3 aceptados)
+  ((SELECT id FROM personas WHERE correo='postulante03@test.com'),(SELECT id FROM convocatorias WHERE titulo='QA Manual'),true),
+  ((SELECT id FROM personas WHERE correo='postulante10@test.com'),(SELECT id FROM convocatorias WHERE titulo='QA Manual'),true),
+  ((SELECT id FROM personas WHERE correo='postulante16@test.com'),(SELECT id FROM convocatorias WHERE titulo='QA Manual'),true),
+  -- Diseño UI (3 aceptados)
+  ((SELECT id FROM personas WHERE correo='postulante04@test.com'),(SELECT id FROM convocatorias WHERE titulo='Diseño UI'),true),
+  ((SELECT id FROM personas WHERE correo='postulante12@test.com'),(SELECT id FROM convocatorias WHERE titulo='Diseño UI'),true),
+  ((SELECT id FROM personas WHERE correo='postulante33@test.com'),(SELECT id FROM convocatorias WHERE titulo='Diseño UI'),true),
+  -- Soporte TI (3 aceptados)
+  ((SELECT id FROM personas WHERE correo='postulante02@test.com'),(SELECT id FROM convocatorias WHERE titulo='Soporte TI'),true),
+  ((SELECT id FROM personas WHERE correo='postulante11@test.com'),(SELECT id FROM convocatorias WHERE titulo='Soporte TI'),true),
+  ((SELECT id FROM personas WHERE correo='postulante28@test.com'),(SELECT id FROM convocatorias WHERE titulo='Soporte TI'),true),
+  -- DevOps Junior (4 aceptados)
+  ((SELECT id FROM personas WHERE correo='postulante09@test.com'),(SELECT id FROM convocatorias WHERE titulo='DevOps Junior'),true),
+  ((SELECT id FROM personas WHERE correo='postulante24@test.com'),(SELECT id FROM convocatorias WHERE titulo='DevOps Junior'),true),
+  ((SELECT id FROM personas WHERE correo='postulante35@test.com'),(SELECT id FROM convocatorias WHERE titulo='DevOps Junior'),true),
+  ((SELECT id FROM personas WHERE correo='postulante37@test.com'),(SELECT id FROM convocatorias WHERE titulo='DevOps Junior'),true),
+  -- Pasantía Administrativa (2 aceptados)
+  ((SELECT id FROM personas WHERE correo='postulante13@test.com'),(SELECT id FROM convocatorias WHERE titulo='Pasantía Administrativa'),true),
+  ((SELECT id FROM personas WHERE correo='postulante47@test.com'),(SELECT id FROM convocatorias WHERE titulo='Pasantía Administrativa'),true),
+  -- Marketing Digital (3 aceptados)
+  ((SELECT id FROM personas WHERE correo='postulante26@test.com'),(SELECT id FROM convocatorias WHERE titulo='Marketing Digital'),true),
+  ((SELECT id FROM personas WHERE correo='postulante44@test.com'),(SELECT id FROM convocatorias WHERE titulo='Marketing Digital'),true),
+  ((SELECT id FROM personas WHERE correo='postulante51@test.com'),(SELECT id FROM convocatorias WHERE titulo='Marketing Digital'),true),
+  -- Atención al Cliente (1 aceptado)
+  ((SELECT id FROM personas WHERE correo='postulante05@test.com'),(SELECT id FROM convocatorias WHERE titulo='Atención al Cliente'),true),
+  -- === RECHAZOS DEMO (3 filas) ===
+  ((SELECT id FROM personas WHERE correo='postulante08@test.com'),(SELECT id FROM convocatorias WHERE titulo='Desarrollador Junior'),false),
+  ((SELECT id FROM personas WHERE correo='postulante21@test.com'),(SELECT id FROM convocatorias WHERE titulo='Desarrollador Semi-senior'),false),
+  ((SELECT id FROM personas WHERE correo='postulante23@test.com'),(SELECT id FROM convocatorias WHERE titulo='Analista de Datos'),false);
 
 -- ===== PIPELINE DE CANDIDATOS =====
 -- La fila la crea el staff al tomar a alguien de la lista viva. Los snapshots quedan congelados.

@@ -69,6 +69,8 @@ montarConvocatorias('vacantes'); // alias legacy (la UI vieja apuntaba a /vacant
 
 // Postulante: convocatorias abiertas donde califica (y donde no, con el motivo).
 r.get('/mis-convocatorias', autenticar, asyncHandler(Conv.misConvocatorias));
+// Inscripción voluntaria: el postulante acepta o rechaza participar.
+r.post('/mis-convocatorias/:id/inscripcion', autenticar, soloRol('postulante'), soloActiva, asyncHandler(Conv.inscribirse));
 
 // ---- Admin de cuentas y catalogos ------------------------------------------
 r.post('/admin/usuarios', autenticar, admin, asyncHandler(Usuarios.crear));

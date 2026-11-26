@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
+import { useEventoRealtime } from '../lib/realtime';
 import { Badge } from '../components/TablaKPI';
 import { EstadoBadge } from '../components/EstadoCandidato';
 import { ACCIONES, transicionesDe } from '../lib/estados';
@@ -67,6 +68,9 @@ export function Ranking() {
       });
     return () => { cancelado = true; };
   }, [id, setError]);
+
+  useEventoRealtime('CANDIDATO_INSCRITO', () => cargar());
+  useEventoRealtime('CANDIDATO_RETIRADO', () => cargar());
 
   const resultadosFiltrados = useMemo(() => {
     let arr = r?.resultados || [];
@@ -183,10 +187,13 @@ export function Ranking() {
     if (!etapa) {
       const accion = ACCIONES.postulado;
       const clave = `${p.persona_id}postulado`;
+      const inscrito = p.inscripcion === true;
       return (
         <Boton
           variante={accion.variante}
           tamano="xs"
+          disabled={!inscrito}
+          title={!inscrito ? 'El candidato aún no ha aceptado inscribirse' : undefined}
           cargando={ocupado === clave}
           onClick={() => cambiar(p.persona_id, 'postulado', 'tomado como candidato')}
         >
@@ -389,6 +396,7 @@ export function Ranking() {
                   <th className="text-right" title="Calidad general del perfil (desempate)">Perfil %</th>
                   <th className="text-right" title="Obligatorios presentes / total de obligatorios (sin nivel ni años)">Match</th>
                   <th className="text-left">Calificación</th>
+                  <th className="text-left">Inscripción</th>
                   <th className="text-left">Estado</th>
                   <th className="text-left">Acción</th>
                 </tr>
@@ -436,6 +444,15 @@ export function Ranking() {
                       <td className="text-right tabular-nums">{p.kpi}</td>
                       <td className="text-right tabular-nums">{p.match}%</td>
                       <td><Badge valor={p.clasificacion} /></td>
+                      <td>
+                        {p.inscripcion === true ? (
+                          <Pill tono="green" punto>Inscrito</Pill>
+                        ) : p.inscripcion === false ? (
+                          <Pill tono="red">No interesado</Pill>
+                        ) : (
+                          <Pill tono="amber">Pendiente</Pill>
+                        )}
+                      </td>
                       <td><EstadoBadge estado={p.estado_candidato} /></td>
                       <td>{acciones(p)}</td>
                     </tr>

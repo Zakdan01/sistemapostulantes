@@ -148,7 +148,7 @@ function umbralDe(convocatoria) {
 }
 
 // Calcula la lista viva de UNA convocatoria con el padron ya cargado.
-function calcularUno(convocatoria, personas, cfg, estados, umbral) {
+function calcularUno(convocatoria, personas, cfg, estados, umbral, inscripciones = {}) {
   const requisitos = convocatoria.requisitos || [];
   const resultados = [];
   const excluidos = [];
@@ -199,7 +199,8 @@ function calcularUno(convocatoria, personas, cfg, estados, umbral) {
         match: matchPct(requisitos, p.habilidades),
         desglose: kc.desglose,
         estado_candidato: est ? est.estado : null,
-        candidato_id: est ? est.candidato_id : null
+        candidato_id: est ? est.candidato_id : null,
+        inscripcion: inscripciones[p.id] ?? null
       });
     } else {
       excluidos.push({
@@ -224,13 +225,24 @@ async function calcularVarios(convocatorias, opciones = {}) {
   const [cfg, padronDatos] = await Promise.all([Config.obtenerConfig(), padron()]);
   const { personas } = padronDatos;
   const porConv = {};
+  const inscrPorConv = {};
   if (convocatorias.length) {
-    const { rows } = await pool.query(
-      `SELECT convocatoria_id, id AS candidato_id, persona_id, estado
-       FROM candidatos_convocatoria WHERE convocatoria_id = ANY($1)`,
-      [convocatorias.map((c) => c.id)]);
+    const ids = convocatorias.map((c) => c.id);
+    const [{ rows }, { rows: inscrRows }] = await Promise.all([
+      pool.query(
+        `SELECT convocatoria_id, id AS candidato_id, persona_id, estado
+         FROM candidatos_convocatoria WHERE convocatoria_id = ANY($1)`,
+        [ids]),
+      pool.query(
+        `SELECT convocatoria_id, persona_id, aceptado
+         FROM inscripciones_postulante WHERE convocatoria_id = ANY($1)`,
+        [ids])
+    ]);
     for (const r of rows) {
       (porConv[r.convocatoria_id] = porConv[r.convocatoria_id] || {})[r.persona_id] = r;
+    }
+    for (const r of inscrRows) {
+      (inscrPorConv[r.convocatoria_id] = inscrPorConv[r.convocatoria_id] || {})[r.persona_id] = r.aceptado;
     }
   }
   return convocatorias.map((c) => calcularUno(
@@ -238,7 +250,8 @@ async function calcularVarios(convocatorias, opciones = {}) {
     personas,
     cfg,
     porConv[c.id] || {},
-    opciones.umbral !== undefined && opciones.umbral !== null ? Number(opciones.umbral) : umbralDe(c)
+    opciones.umbral !== undefined && opciones.umbral !== null ? Number(opciones.umbral) : umbralDe(c),
+    inscrPorConv[c.id] || {}
   ));
 }
 
@@ -311,11 +324,18 @@ async function listaParaPostulante(personaId, esStaff = false) {
   // una sola pasada sobre el padron para todas las convocatorias abiertas
   const listas = await calcularVarios(conReqs);
 
-  const { rows: pipeline } = await pool.query(
-    'SELECT id AS candidato_id, convocatoria_id, estado FROM candidatos_convocatoria WHERE persona_id=$1',
-    [personaId]);
+  const [{ rows: pipeline }, { rows: misInscr }] = await Promise.all([
+    pool.query(
+      'SELECT id AS candidato_id, convocatoria_id, estado FROM candidatos_convocatoria WHERE persona_id=$1',
+      [personaId]),
+    pool.query(
+      'SELECT convocatoria_id, aceptado FROM inscripciones_postulante WHERE persona_id=$1',
+      [personaId])
+  ]);
   const mioPorConv = {};
   for (const p of pipeline) mioPorConv[p.convocatoria_id] = p;
+  const insPorConv = {};
+  for (const ins of misInscr) insPorConv[ins.convocatoria_id] = ins.aceptado;
 
   return conReqs.map((c, i) => {
     const calc = listas[i];
@@ -362,7 +382,8 @@ async function listaParaPostulante(personaId, esStaff = false) {
             ? 'Estás contratado: cambiá tu disponibilidad para volver al enlistado'
             : `KPI ${kc.kpi_conv} < umbral ${umbral}`,
       estado_candidato: mio ? mio.estado : null,
-      candidato_id: mio ? mio.candidato_id : null
+      candidato_id: mio ? mio.candidato_id : null,
+      inscripcion: insPorConv[c.id] ?? null
     };
   });
 }

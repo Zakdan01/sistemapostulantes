@@ -69,7 +69,9 @@ export function iniciarRealtime() {
     'CONVOCATORIA_CREADA',
     'CONVOCATORIA_APROBADA',
     'CONVOCATORIA_CERRADA',
-    'CONEXIONES_ACTUALIZADAS'
+    'CONEXIONES_ACTUALIZADAS',
+    'CANDIDATO_INSCRITO',
+    'CANDIDATO_RETIRADO'
   ];
 
   eventosMapeados.forEach((tipo) => {

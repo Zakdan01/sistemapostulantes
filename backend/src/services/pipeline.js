@@ -4,6 +4,7 @@
 const Config = require('../models/config.model');
 const Convocatoria = require('../models/convocatoria.model');
 const Persona = require('../models/persona.model');
+const Inscripcion = require('../models/inscripcion.model');
 const { conTransaccion } = require('../config/db');
 const { HttpError } = require('../utils/errors');
 const { puedeTransitar, transicionesPermitidas, ESTADOS_CANDIDATO } = require('../domain/catalogos');
@@ -59,7 +60,13 @@ async function mover({ convocatoria, persona, estado }) {
 
   let snapshot = null;
   const previo = await Convocatoria.buscarCandidato(convocatoria.id, persona.id);
-  if (!previo) snapshot = await calcularSnapshots();
+  if (!previo) {
+    const insc = await Inscripcion.buscar(persona.id, convocatoria.id);
+    if (!insc || !insc.aceptado) {
+      throw HttpError.conflict('El candidato no ha aceptado inscribirse en esta convocatoria');
+    }
+    snapshot = await calcularSnapshots();
+  }
 
   const resultado = await conTransaccion(async (conn) => {
     const conv = await Convocatoria.bloquearConvocatoria(conn, convocatoria.id);
